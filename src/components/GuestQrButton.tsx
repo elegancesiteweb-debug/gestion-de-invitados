@@ -3,17 +3,40 @@
 import { useState } from "react";
 import QRCode from "qrcode";
 
-export function GuestQrButton({ url, guestName }: { url: string; guestName: string }) {
+type QrKind = "rsvp" | "checkin";
+
+export function GuestQrButton({
+  guestName,
+  rsvpUrl,
+  checkinUrl,
+}: {
+  guestName: string;
+  rsvpUrl: string;
+  checkinUrl: string;
+}) {
   const [open, setOpen] = useState(false);
-  const [dataUrl, setDataUrl] = useState<string | null>(null);
+  const [kind, setKind] = useState<QrKind>("rsvp");
+  const [dataUrls, setDataUrls] = useState<Partial<Record<QrKind, string>>>({});
+
+  async function ensureQr(k: QrKind) {
+    if (dataUrls[k]) return;
+    const url = k === "rsvp" ? rsvpUrl : checkinUrl;
+    const generated = await QRCode.toDataURL(url, { width: 320, margin: 1 });
+    setDataUrls((prev) => ({ ...prev, [k]: generated }));
+  }
 
   async function handleOpen() {
-    if (!dataUrl) {
-      const generated = await QRCode.toDataURL(url, { width: 320, margin: 1 });
-      setDataUrl(generated);
-    }
+    await ensureQr("rsvp");
+    setKind("rsvp");
     setOpen(true);
   }
+
+  async function switchTo(k: QrKind) {
+    await ensureQr(k);
+    setKind(k);
+  }
+
+  const dataUrl = dataUrls[kind];
 
   return (
     <>
@@ -35,18 +58,40 @@ export function GuestQrButton({ url, guestName }: { url: string; guestName: stri
             onClick={(e) => e.stopPropagation()}
           >
             <p className="mb-3 font-medium">{guestName}</p>
+
+            <div className="mb-3 flex justify-center gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => switchTo("rsvp")}
+                className={`rounded-full px-3 py-1 ${kind === "rsvp" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600"}`}
+              >
+                Confirmación
+              </button>
+              <button
+                type="button"
+                onClick={() => switchTo("checkin")}
+                className={`rounded-full px-3 py-1 ${kind === "checkin" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600"}`}
+              >
+                Acceso (día del evento)
+              </button>
+            </div>
+
             {dataUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={dataUrl} alt={`QR de confirmación para ${guestName}`} className="mx-auto" />
+              <img src={dataUrl} alt={`QR de ${kind === "rsvp" ? "confirmación" : "acceso"} para ${guestName}`} className="mx-auto" />
             )}
+
             <p className="mt-3 text-xs text-gray-500">
-              Pega este QR en la invitación para que el invitado confirme su asistencia.
+              {kind === "rsvp"
+                ? "Pega este QR en la invitación para que el invitado confirme su asistencia."
+                : "Este QR es solo para el día del evento: al escanearlo con la cámara del celular se registra la llegada."}
             </p>
+
             <div className="mt-4 flex justify-center gap-3">
               {dataUrl && (
                 <a
                   href={dataUrl}
-                  download={`qr-${guestName.replace(/\s+/g, "-").toLowerCase()}.png`}
+                  download={`qr-${kind}-${guestName.replace(/\s+/g, "-").toLowerCase()}.png`}
                   className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-700"
                 >
                   Descargar

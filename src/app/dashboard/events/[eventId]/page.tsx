@@ -203,7 +203,11 @@ export default async function EventDetailPage({
                     </td>
                     <td className="px-4 py-2 space-x-3 whitespace-nowrap">
                       <CopyLinkButton url={confirmUrl} />
-                      <GuestQrButton url={confirmUrl} guestName={guest.name} />
+                      <GuestQrButton
+                        guestName={guest.name}
+                        rsvpUrl={confirmUrl}
+                        checkinUrl={`${baseUrl}/checkin/${guest.checkinToken}`}
+                      />
                     </td>
                     <td className="px-4 py-2 space-x-3 whitespace-nowrap">
                       {guest.email && (
