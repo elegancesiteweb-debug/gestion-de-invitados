@@ -8,6 +8,9 @@ import { EventTabsNav, type TabKey } from "@/components/event-dashboard/EventTab
 import { GuestsPanel } from "@/components/event-dashboard/GuestsPanel";
 import { ConfirmationsPanel } from "@/components/event-dashboard/ConfirmationsPanel";
 import { TablesPanel } from "@/components/event-dashboard/TablesPanel";
+import { AccessPanel } from "@/components/event-dashboard/AccessPanel";
+import { SendsPanel } from "@/components/event-dashboard/SendsPanel";
+import { SettingsPanel } from "@/components/event-dashboard/SettingsPanel";
 
 export default async function EventDetailPage({
   params,
@@ -79,6 +82,12 @@ export default async function EventDetailPage({
           <ConfirmationsPanel guests={event.guests} />
         ) : activeTab === "mesas" ? (
           <TablesPanel guests={event.guests} />
+        ) : activeTab === "accesos" ? (
+          <AccessPanel guests={event.guests} />
+        ) : activeTab === "envios" ? (
+          <SendsPanel event={event} guests={event.guests} baseUrl={baseUrl} />
+        ) : activeTab === "configuracion" ? (
+          <SettingsPanel event={event} />
         ) : (
           <GuestsPanel event={event} guests={event.guests} baseUrl={baseUrl} />
         )}

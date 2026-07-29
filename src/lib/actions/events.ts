@@ -58,3 +58,17 @@ export async function deleteEvent(eventId: string) {
   revalidatePath("/dashboard");
   redirect("/dashboard");
 }
+
+export async function updateEventSettings(eventId: string, formData: FormData) {
+  const organizerId = await requireOrganizerId();
+
+  const messageTemplate = (formData.get("messageTemplate") as string | null)?.trim() || null;
+  const showTableOnRsvp = formData.get("showTableOnRsvp") === "on";
+
+  await prisma.event.updateMany({
+    where: { id: eventId, organizerId },
+    data: { messageTemplate, showTableOnRsvp },
+  });
+
+  revalidatePath(`/dashboard/events/${eventId}`);
+}

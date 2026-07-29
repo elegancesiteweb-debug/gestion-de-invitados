@@ -2,6 +2,9 @@ const TABS = [
   { key: "invitados", label: "Invitados" },
   { key: "confirmaciones", label: "Confirmaciones" },
   { key: "mesas", label: "Mesas" },
+  { key: "accesos", label: "Accesos" },
+  { key: "envios", label: "Envíos" },
+  { key: "configuracion", label: "Configuración" },
 ] as const;
 
 export type TabKey = (typeof TABS)[number]["key"];

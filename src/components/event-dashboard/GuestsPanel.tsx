@@ -7,6 +7,7 @@ import {
   sendGuestEmail,
 } from "@/lib/actions/guests";
 import { buildWhatsAppLink, buildRsvpMessage } from "@/lib/whatsapp";
+import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { GuestQrButton } from "@/components/GuestQrButton";
@@ -21,6 +22,7 @@ export function GuestsPanel({
   baseUrl: string;
 }) {
   const tableNames = [...new Set(guests.map((g) => g.tableName).filter(Boolean))] as string[];
+  const template = event.messageTemplate || DEFAULT_MESSAGE_TEMPLATE;
 
   return (
     <div className="space-y-8 py-6">
@@ -125,11 +127,15 @@ export function GuestsPanel({
                   ? buildWhatsAppLink(
                       guest.phone,
                       buildRsvpMessage({
+                        template,
                         guestName: guest.name,
                         eventTitle: event.title,
                         eventDate: event.eventDate.toLocaleDateString("es-ES", {
                           dateStyle: "long",
                         }),
+                        location: event.location,
+                        tableName: guest.tableName,
+                        maxCompanions: guest.maxCompanions,
                         confirmUrl,
                       })
                     )

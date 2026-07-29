@@ -40,6 +40,9 @@ export default async function ConfirmAttendancePage({
           <p className="text-sm text-gray-600">
             Hola <span className="font-medium">{guest.name}</span>, por favor confirma tu asistencia.
           </p>
+          {guest.event.showTableOnRsvp && guest.tableName && (
+            <p className="mt-1 text-sm text-gray-500">Mesa asignada: {guest.tableName}</p>
+          )}
         </div>
 
         <RsvpForm

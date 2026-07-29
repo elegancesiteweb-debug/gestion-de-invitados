@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { guestSchema } from "@/lib/validations";
 import { sendRsvpEmail } from "@/lib/email";
+import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -135,12 +136,15 @@ export async function sendGuestEmail(eventId: string, guestId: string) {
 
   await sendRsvpEmail({
     to: guest.email,
+    template: event.messageTemplate || DEFAULT_MESSAGE_TEMPLATE,
     guestName: guest.name,
     eventTitle: event.title,
     eventDate: event.eventDate.toLocaleDateString("es-ES", {
       dateStyle: "long",
     }),
     location: event.location,
+    tableName: guest.tableName,
+    maxCompanions: guest.maxCompanions,
     confirmUrl,
   });
 
@@ -161,15 +165,19 @@ export async function sendAllPendingEmails(eventId: string) {
   });
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const template = event.messageTemplate || DEFAULT_MESSAGE_TEMPLATE;
 
   await Promise.allSettled(
     pendingGuests.map(async (guest) => {
       await sendRsvpEmail({
         to: guest.email as string,
+        template,
         guestName: guest.name,
         eventTitle: event.title,
         eventDate: event.eventDate.toLocaleDateString("es-ES", { dateStyle: "long" }),
         location: event.location,
+        tableName: guest.tableName,
+        maxCompanions: guest.maxCompanions,
         confirmUrl: `${baseUrl}/c/${guest.token}`,
       });
       await prisma.guest.update({
