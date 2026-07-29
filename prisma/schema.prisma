@@ -55,6 +55,9 @@ model Event {
   messageTemplate String?
   showTableOnRsvp Boolean @default(true)
 
+  publicRsvpToken      String? @unique
+  generalMaxCompanions Int     @default(5)
+
   guests Guest[]
 
   @@index([organizerId])

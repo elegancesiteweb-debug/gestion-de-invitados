@@ -33,3 +33,10 @@ export const rsvpSchema = z.object({
   companionsConfirmed: z.coerce.number().int().min(0).default(0),
   messageFromGuest: z.string().max(500).optional(),
 });
+
+export const generalRsvpSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  status: z.enum(["CONFIRMED", "DECLINED"]),
+  companionsConfirmed: z.coerce.number().int().min(0).default(0),
+  messageFromGuest: z.string().max(500).optional(),
+});

@@ -11,6 +11,7 @@ import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { GuestQrButton } from "@/components/GuestQrButton";
+import { EmbedCodeButton } from "@/components/EmbedCodeButton";
 
 export function GuestsPanel({
   event,
@@ -164,6 +165,10 @@ export function GuestsPanel({
                         guestName={guest.name}
                         rsvpUrl={confirmUrl}
                         checkinUrl={`${baseUrl}/checkin/${guest.checkinToken}`}
+                      />
+                      <EmbedCodeButton
+                        url={confirmUrl}
+                        title={`Confirmar asistencia - ${guest.name}`}
                       />
                     </td>
                     <td className="px-4 py-2 space-x-3 whitespace-nowrap">

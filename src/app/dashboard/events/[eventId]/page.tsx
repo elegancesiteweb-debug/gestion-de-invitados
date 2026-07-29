@@ -87,7 +87,7 @@ export default async function EventDetailPage({
         ) : activeTab === "envios" ? (
           <SendsPanel event={event} guests={event.guests} baseUrl={baseUrl} />
         ) : activeTab === "configuracion" ? (
-          <SettingsPanel event={event} />
+          <SettingsPanel event={event} baseUrl={baseUrl} />
         ) : (
           <GuestsPanel event={event} guests={event.guests} baseUrl={baseUrl} />
         )}

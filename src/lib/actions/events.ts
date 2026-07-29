@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { eventSchema } from "@/lib/validations";
@@ -85,10 +86,27 @@ export async function updateEventSettings(eventId: string, formData: FormData) {
 
   const messageTemplate = (formData.get("messageTemplate") as string | null)?.trim() || null;
   const showTableOnRsvp = formData.get("showTableOnRsvp") === "on";
+  const generalMaxCompanions = Math.max(
+    0,
+    parseInt((formData.get("generalMaxCompanions") as string | null) ?? "5", 10) || 5
+  );
 
   await prisma.event.updateMany({
     where: { id: eventId, organizerId },
-    data: { messageTemplate, showTableOnRsvp },
+    data: { messageTemplate, showTableOnRsvp, generalMaxCompanions },
+  });
+
+  revalidatePath(`/dashboard/events/${eventId}`);
+}
+
+export async function toggleGeneralRsvp(eventId: string, formData: FormData) {
+  const organizerId = await requireOrganizerId();
+
+  const enable = formData.get("enable") === "true";
+
+  await prisma.event.updateMany({
+    where: { id: eventId, organizerId },
+    data: { publicRsvpToken: enable ? nanoid(12) : null },
   });
 
   revalidatePath(`/dashboard/events/${eventId}`);
