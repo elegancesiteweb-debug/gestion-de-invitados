@@ -7,12 +7,15 @@ para integrarlo en esa invitación, además de poder compartirse directo por ema
 
 ## Funcionalidades
 
-- Cuentas de organizador (registro / login).
-- Múltiples eventos por organizador.
-- Alta de invitados manual o por importación CSV.
-- Link y QR de confirmación de asistencia únicos por invitado.
-- Envío del link por email (Resend) o WhatsApp (enlace `wa.me` prellenado).
-- Panel con estadísticas en tiempo real: confirmados, rechazados, pendientes, total de asistentes.
+- Cuentas de organizador (registro / login), múltiples eventos por organizador.
+- Alta de invitados manual o por importación CSV, con mesa asignada.
+- Link y QR de confirmación de asistencia únicos por invitado (RSVP).
+- Control de acceso el día del evento: QR de check-in separado del de confirmación
+  (escaneable con la cámara nativa del celular, sin librería de escaneo en la app).
+- Envío por email (Resend) o WhatsApp (`wa.me`), usando una plantilla de mensaje
+  personalizable por evento (con variables como `{nombre}`, `{mesa}`, `{link}`, etc.).
+- Dashboard por pestañas: Invitados, Confirmaciones, Mesas, Accesos, Envíos, Configuración.
+- Exportar / imprimir la lista de confirmaciones (PDF vía impresión del navegador).
 
 ## Stack
 
@@ -66,10 +69,12 @@ Pasos:
 ## Estructura del proyecto
 
 ```
-prisma/schema.prisma        # modelo de datos (Organizer, Event, Guest)
-src/app/(auth)/             # login / registro
-src/app/dashboard/          # panel del organizador (eventos, invitados)
-src/app/c/[token]/          # página pública de confirmación de asistencia
-src/lib/actions/            # server actions (eventos, invitados, RSVP)
-src/lib/                    # auth, prisma client, email, whatsapp, validaciones
+prisma/schema.prisma          # modelo de datos (Organizer, Event, Guest)
+src/app/(auth)/               # login / registro
+src/app/dashboard/events/[eventId]/  # dashboard del evento, por pestañas (?tab=)
+src/app/c/[token]/             # página pública de confirmación de asistencia (RSVP)
+src/app/checkin/[checkinToken]/  # página pública de control de acceso (día del evento)
+src/components/event-dashboard/  # paneles del dashboard (Invitados, Mesas, Accesos, ...)
+src/lib/actions/               # server actions (eventos, invitados, RSVP, check-in)
+src/lib/                        # auth, prisma client, email, whatsapp, plantillas, validaciones
 ```

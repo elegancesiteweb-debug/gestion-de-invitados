@@ -1,7 +1,8 @@
+import Link from "next/link";
 import type { Guest } from "@prisma/client";
 import { StatusBadge } from "@/components/StatusBadge";
 
-export function ConfirmationsPanel({ guests }: { guests: Guest[] }) {
+export function ConfirmationsPanel({ eventId, guests }: { eventId: string; guests: Guest[] }) {
   const responded = guests
     .filter((g) => g.respondedAt !== null)
     .sort((a, b) => (b.respondedAt as Date).getTime() - (a.respondedAt as Date).getTime());
@@ -16,6 +17,15 @@ export function ConfirmationsPanel({ guests }: { guests: Guest[] }) {
 
   return (
     <div className="space-y-3 py-6">
+      <div className="flex justify-end">
+        <Link
+          href={`/dashboard/events/${eventId}/print`}
+          className="text-sm text-gold-dark hover:underline"
+        >
+          Exportar / imprimir lista
+        </Link>
+      </div>
+
       {responded.map((guest) => (
         <div key={guest.id} className="rounded-lg border border-gold/20 bg-white p-4">
           <div className="flex items-center justify-between">

@@ -79,7 +79,7 @@ export default async function EventDetailPage({
         <EventTabsNav activeTab={activeTab} />
 
         {activeTab === "confirmaciones" ? (
-          <ConfirmationsPanel guests={event.guests} />
+          <ConfirmationsPanel eventId={event.id} guests={event.guests} />
         ) : activeTab === "mesas" ? (
           <TablesPanel guests={event.guests} />
         ) : activeTab === "accesos" ? (
