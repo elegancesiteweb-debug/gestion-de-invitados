@@ -62,7 +62,7 @@ export async function submitGeneralRsvp(publicRsvpToken: string, formData: FormD
 
   const { name, status, companionsConfirmed, messageFromGuest } = parsed.data;
 
-  if (companionsConfirmed > event.generalMaxCompanions) {
+  if (event.generalMaxCompanions !== null && companionsConfirmed > event.generalMaxCompanions) {
     return {
       error: `Puedes confirmar como máximo ${event.generalMaxCompanions} acompañante(s)`,
     };
@@ -72,7 +72,7 @@ export async function submitGeneralRsvp(publicRsvpToken: string, formData: FormD
     data: {
       eventId: event.id,
       name,
-      maxCompanions: event.generalMaxCompanions,
+      maxCompanions: event.generalMaxCompanions ?? companionsConfirmed,
       status,
       companionsConfirmed: status === "CONFIRMED" ? companionsConfirmed : 0,
       messageFromGuest: messageFromGuest || null,

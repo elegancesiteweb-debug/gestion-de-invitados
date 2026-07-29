@@ -6,7 +6,8 @@ import { CopyLinkButton } from "@/components/CopyLinkButton";
 export function EmbedCodeButton({ url, title }: { url: string; title: string }) {
   const [open, setOpen] = useState(false);
 
-  const snippet = `<iframe src="${url}" style="width:100%;max-width:480px;height:640px;border:none;" title="${title}"></iframe>`;
+  const embedUrl = `${url}${url.includes("?") ? "&" : "?"}embed=1`;
+  const snippet = `<iframe src="${embedUrl}" style="width:100%;max-width:480px;height:640px;border:none;background:transparent;" title="${title}" allowtransparency="true"></iframe>`;
 
   return (
     <>

@@ -2,6 +2,7 @@ import type { Event } from "@prisma/client";
 import { updateEventSettings, toggleGeneralRsvp } from "@/lib/actions/events";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { TemplateEditor } from "@/components/event-dashboard/TemplateEditor";
+import { GeneralPassesInput } from "@/components/event-dashboard/GeneralPassesInput";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { EmbedCodeButton } from "@/components/EmbedCodeButton";
 
@@ -29,18 +30,7 @@ export function SettingsPanel({ event, baseUrl }: { event: Event; baseUrl: strin
           Mostrar la mesa asignada en la página de confirmación del invitado
         </label>
 
-        <div>
-          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
-            Acompañantes máximos en el formulario general
-          </label>
-          <input
-            type="number"
-            name="generalMaxCompanions"
-            min={0}
-            defaultValue={event.generalMaxCompanions}
-            className="w-24 rounded-lg border border-gold/25 px-3 py-2 text-sm"
-          />
-        </div>
+        <GeneralPassesInput initialValue={event.generalMaxCompanions} />
 
         <button
           type="submit"

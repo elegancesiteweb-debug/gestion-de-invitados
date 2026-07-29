@@ -10,7 +10,7 @@ export function GeneralRsvpForm({
   maxCompanions,
 }: {
   publicRsvpToken: string;
-  maxCompanions: number;
+  maxCompanions: number | null;
 }) {
   const [status, setStatus] = useState<"CONFIRMED" | "DECLINED">("CONFIRMED");
   const [state, formAction, pending] = useActionState<RsvpState, FormData>(
@@ -69,20 +69,20 @@ export function GeneralRsvpForm({
         </label>
       </div>
 
-      {status === "CONFIRMED" && maxCompanions > 0 && (
+      {status === "CONFIRMED" && maxCompanions !== 0 && (
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
-            Total de personas (incluyéndote, máx. {maxCompanions + 1})
+            Acompañantes {maxCompanions !== null ? `(máx. ${maxCompanions})` : ""}
           </label>
           <input
             type="number"
             name="companionsConfirmed"
             min={0}
-            max={maxCompanions}
+            max={maxCompanions ?? undefined}
             defaultValue={0}
             className="w-24 rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
           />
-          <p className="mt-1 text-xs text-ink-muted">Acompañantes además de ti.</p>
+          <p className="mt-1 text-xs text-ink-muted">Cuántas personas además de ti.</p>
         </div>
       )}
 

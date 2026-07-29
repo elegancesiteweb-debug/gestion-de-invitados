@@ -1,13 +1,18 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { RsvpForm } from "@/components/RsvpForm";
+import { EmbedTransparentBackground } from "@/components/EmbedTransparentBackground";
 
 export default async function ConfirmAttendancePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ embed?: string }>;
 }) {
   const { token } = await params;
+  const { embed } = await searchParams;
+  const isEmbed = embed === "1";
 
   const guest = await prisma.guest.findUnique({
     where: { token },
@@ -19,8 +24,13 @@ export default async function ConfirmAttendancePage({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16">
-      <div className="rounded-2xl border border-gold/20 bg-white/70 p-7 shadow-lg backdrop-blur-xl">
+    <div
+      className={`mx-auto flex w-full max-w-md flex-1 flex-col justify-center ${
+        isEmbed ? "px-2 py-4" : "px-4 py-16"
+      }`}
+    >
+      {isEmbed && <EmbedTransparentBackground />}
+      <div className={isEmbed ? "" : "rounded-2xl border border-gold/20 bg-white/70 p-7 shadow-lg backdrop-blur-xl"}>
         <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">
           Confirmación de asistencia
         </p>

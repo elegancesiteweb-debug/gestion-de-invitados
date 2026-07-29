@@ -56,7 +56,7 @@ model Event {
   showTableOnRsvp Boolean @default(true)
 
   publicRsvpToken      String? @unique
-  generalMaxCompanions Int     @default(5)
+  generalMaxCompanions Int?    @default(5) // null = sin límite de acompañantes
 
   guests Guest[]
 

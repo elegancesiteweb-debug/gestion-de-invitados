@@ -42,6 +42,15 @@ body {
   background-attachment: fixed;
 }
 
+/* Used when a page is loaded inside an embedded <iframe> (?embed=1) so the
+   form blends into whatever background the host invitation page already has,
+   instead of showing our own page background underneath it. */
+html.embed-transparent,
+html.embed-transparent body {
+  background: transparent !important;
+  background-image: none !important;
+}
+
 input:not([type="radio"]):not([type="checkbox"]),
 textarea,
 select {

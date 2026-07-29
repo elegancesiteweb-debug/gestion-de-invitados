@@ -86,10 +86,15 @@ export async function updateEventSettings(eventId: string, formData: FormData) {
 
   const messageTemplate = (formData.get("messageTemplate") as string | null)?.trim() || null;
   const showTableOnRsvp = formData.get("showTableOnRsvp") === "on";
-  const generalMaxCompanions = Math.max(
-    0,
-    parseInt((formData.get("generalMaxCompanions") as string | null) ?? "5", 10) || 5
-  );
+
+  const generalUnlimited = formData.get("generalUnlimited") === "on";
+  let generalMaxCompanions: number | null;
+  if (generalUnlimited) {
+    generalMaxCompanions = null;
+  } else {
+    const parsedMax = parseInt((formData.get("generalMaxCompanions") as string | null) ?? "", 10);
+    generalMaxCompanions = Number.isFinite(parsedMax) && parsedMax >= 0 ? parsedMax : 0;
+  }
 
   await prisma.event.updateMany({
     where: { id: eventId, organizerId },
