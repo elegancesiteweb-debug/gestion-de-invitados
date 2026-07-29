@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organizer {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  events Event[]
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  organizerId String
+  organizer   Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+
+  title       String
+  slug        String   @unique
+  description String?
+  eventDate   DateTime
+  location    String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  guests Guest[]
+
+  @@index([organizerId])
+}
+
+enum GuestStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+}
+
+model Guest {
+  id      String @id @default(cuid())
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  name  String
+  email String?
+  phone String?
+
+  token String @unique
+
+  maxCompanions       Int         @default(0)
+  status              GuestStatus @default(PENDING)
+  companionsConfirmed Int?
+  messageFromGuest    String?
+  respondedAt         DateTime?
+  invitationSentAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+}
