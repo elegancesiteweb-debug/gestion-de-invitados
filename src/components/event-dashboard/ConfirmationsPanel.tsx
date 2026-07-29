@@ -8,7 +8,7 @@ export function ConfirmationsPanel({ guests }: { guests: Guest[] }) {
 
   if (responded.length === 0) {
     return (
-      <div className="py-10 text-center text-sm text-gray-500">
+      <div className="py-10 text-center text-sm text-ink-muted">
         Aún no hay confirmaciones. Aparecerán aquí cuando los invitados respondan.
       </div>
     );
@@ -17,11 +17,11 @@ export function ConfirmationsPanel({ guests }: { guests: Guest[] }) {
   return (
     <div className="space-y-3 py-6">
       {responded.map((guest) => (
-        <div key={guest.id} className="rounded-lg border border-gray-200 bg-white p-4">
+        <div key={guest.id} className="rounded-lg border border-gold/20 bg-white p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">{guest.name}</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-ink-muted">
                 {guest.status === "CONFIRMED"
                   ? `Asistirá · ${1 + (guest.companionsConfirmed ?? 0)} persona(s)`
                   : "No podrá asistir"}
@@ -37,7 +37,7 @@ export function ConfirmationsPanel({ guests }: { guests: Guest[] }) {
             <StatusBadge status={guest.status} />
           </div>
           {guest.messageFromGuest && (
-            <p className="mt-2 border-l-2 border-indigo-200 pl-3 text-sm italic text-gray-600">
+            <p className="mt-2 border-l-2 border-gold/30 pl-3 text-sm italic text-ink-muted">
               {guest.messageFromGuest}
             </p>
           )}

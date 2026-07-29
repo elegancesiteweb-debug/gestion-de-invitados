@@ -27,25 +27,39 @@ export function RsvpForm({
   );
 
   return (
-    <form action={formAction} className="mt-4 space-y-3">
-      <div className="flex gap-4">
-        <label className="flex items-center gap-2 text-sm">
+    <form action={formAction} className="mt-5 space-y-4">
+      <div className="grid grid-cols-2 gap-2">
+        <label
+          className={`cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm font-medium transition ${
+            status === "CONFIRMED"
+              ? "border-success/40 bg-success-bg text-success"
+              : "border-gold/20 bg-white/60 text-ink-muted"
+          }`}
+        >
           <input
             type="radio"
             name="status"
             value="CONFIRMED"
             checked={status === "CONFIRMED"}
             onChange={() => setStatus("CONFIRMED")}
+            className="sr-only"
           />
           Asistiré
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label
+          className={`cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm font-medium transition ${
+            status === "DECLINED"
+              ? "border-danger/40 bg-danger-bg text-danger"
+              : "border-gold/20 bg-white/60 text-ink-muted"
+          }`}
+        >
           <input
             type="radio"
             name="status"
             value="DECLINED"
             checked={status === "DECLINED"}
             onChange={() => setStatus("DECLINED")}
+            className="sr-only"
           />
           No podré asistir
         </label>
@@ -53,7 +67,7 @@ export function RsvpForm({
 
       {status === "CONFIRMED" && maxCompanions > 0 && (
         <div>
-          <label className="block text-sm font-medium mb-1">
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
             Acompañantes (máx. {maxCompanions})
           </label>
           <input
@@ -62,30 +76,30 @@ export function RsvpForm({
             min={0}
             max={maxCompanions}
             defaultValue={currentCompanions ?? 0}
-            className="w-24 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+            className="w-24 rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
           />
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium mb-1">Mensaje (opcional)</label>
+        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+          Mensaje (opcional)
+        </label>
         <textarea
           name="messageFromGuest"
           defaultValue={currentMessage ?? ""}
           rows={2}
-          className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+          className="w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
         />
       </div>
 
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-      {state?.ok && (
-        <p className="text-sm text-green-600">¡Gracias! Tu respuesta fue registrada.</p>
-      )}
+      {state?.error && <p className="text-sm text-danger">{state.error}</p>}
+      {state?.ok && <p className="text-sm text-success">¡Gracias! Tu respuesta fue registrada.</p>}
 
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+        className="w-full rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2.5 text-sm font-medium text-white shadow-md shadow-gold/30 transition hover:shadow-lg hover:shadow-gold/40 disabled:opacity-50"
       >
         {pending ? "Enviando..." : "Confirmar"}
       </button>

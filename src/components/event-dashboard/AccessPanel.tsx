@@ -10,24 +10,24 @@ export function AccessPanel({ guests }: { guests: Guest[] }) {
   return (
     <div className="space-y-6 py-6">
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-          <p className="text-2xl font-semibold text-green-600">{arrived.length}</p>
-          <p className="text-xs text-gray-500">Registrados</p>
+        <div className="rounded-lg border border-gold/20 bg-white p-4 text-center">
+          <p className="font-serif text-3xl font-medium text-success">{arrived.length}</p>
+          <p className="text-xs text-ink-muted">Registrados</p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-          <p className="text-2xl font-semibold text-indigo-600">{totalPasses}</p>
-          <p className="text-xs text-gray-500">Pases usados</p>
+        <div className="rounded-lg border border-gold/20 bg-white p-4 text-center">
+          <p className="font-serif text-3xl font-medium text-gold-dark">{totalPasses}</p>
+          <p className="text-xs text-ink-muted">Pases usados</p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-          <p className="text-2xl font-semibold text-amber-600">{notArrived.length}</p>
-          <p className="text-xs text-gray-500">Sin ingresar</p>
+        <div className="rounded-lg border border-gold/20 bg-white p-4 text-center">
+          <p className="font-serif text-3xl font-medium text-warning">{notArrived.length}</p>
+          <p className="text-xs text-ink-muted">Sin ingresar</p>
         </div>
       </div>
 
       <div>
-        <h2 className="mb-3 text-lg font-medium">Registros de entrada</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Registros de entrada</h2>
         {arrived.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ink-muted">
             Sin accesos registrados aún. Aparecerán aquí al escanear el QR de acceso de cada
             invitado.
           </p>
@@ -36,16 +36,16 @@ export function AccessPanel({ guests }: { guests: Guest[] }) {
             {arrived.map((guest) => (
               <div
                 key={guest.id}
-                className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3"
+                className="flex items-center justify-between rounded-lg border border-gold/20 bg-white p-3"
               >
                 <div>
                   <p className="font-medium">{guest.name}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-ink-muted">
                     {guest.tableName || "Sin mesa"} · {guest.checkedInPasses ?? 1} pase
                     {(guest.checkedInPasses ?? 1) !== 1 ? "s" : ""}
                   </p>
                 </div>
-                <p className="text-sm font-medium text-green-600">
+                <p className="text-sm font-medium text-success">
                   {(guest.checkedInAt as Date).toLocaleTimeString("es-ES", {
                     hour: "2-digit",
                     minute: "2-digit",

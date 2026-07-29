@@ -43,7 +43,7 @@ export function GuestQrButton({
       <button
         onClick={handleOpen}
         type="button"
-        className="text-sm text-indigo-600 hover:underline"
+        className="text-sm text-gold-dark hover:underline"
       >
         Ver QR
       </button>
@@ -63,14 +63,14 @@ export function GuestQrButton({
               <button
                 type="button"
                 onClick={() => switchTo("rsvp")}
-                className={`rounded-full px-3 py-1 ${kind === "rsvp" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600"}`}
+                className={`rounded-full px-3 py-1 ${kind === "rsvp" ? "bg-gradient-to-br from-gold-dark to-gold-deep text-white" : "bg-warm text-ink-muted"}`}
               >
                 Confirmación
               </button>
               <button
                 type="button"
                 onClick={() => switchTo("checkin")}
-                className={`rounded-full px-3 py-1 ${kind === "checkin" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600"}`}
+                className={`rounded-full px-3 py-1 ${kind === "checkin" ? "bg-gradient-to-br from-gold-dark to-gold-deep text-white" : "bg-warm text-ink-muted"}`}
               >
                 Acceso (día del evento)
               </button>
@@ -81,7 +81,7 @@ export function GuestQrButton({
               <img src={dataUrl} alt={`QR de ${kind === "rsvp" ? "confirmación" : "acceso"} para ${guestName}`} className="mx-auto" />
             )}
 
-            <p className="mt-3 text-xs text-gray-500">
+            <p className="mt-3 text-xs text-ink-muted">
               {kind === "rsvp"
                 ? "Pega este QR en la invitación para que el invitado confirme su asistencia."
                 : "Este QR es solo para el día del evento: al escanearlo con la cámara del celular se registra la llegada."}
@@ -92,7 +92,7 @@ export function GuestQrButton({
                 <a
                   href={dataUrl}
                   download={`qr-${kind}-${guestName.replace(/\s+/g, "-").toLowerCase()}.png`}
-                  className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-700"
+                  className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm text-white hover:shadow-lg"
                 >
                   Descargar
                 </a>
@@ -100,7 +100,7 @@ export function GuestQrButton({
               <button
                 onClick={() => setOpen(false)}
                 type="button"
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
+                className="rounded-lg border border-gold/25 px-3 py-1.5 text-sm hover:bg-warm"
               >
                 Cerrar
               </button>

@@ -49,20 +49,20 @@ export default async function EventDetailPage({
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10">
-      <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">
+      <Link href="/dashboard" className="text-sm text-gold-dark hover:underline">
         ← Tus eventos
       </Link>
 
       <div className="mt-2 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{event.title}</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
+          <p className="text-sm text-ink-muted">
             {event.eventDate.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" })}
             {event.location ? ` · ${event.location}` : ""}
           </p>
         </div>
         <form action={deleteEvent.bind(null, event.id)}>
-          <button type="submit" className="text-sm text-red-600 hover:underline">
+          <button type="submit" className="text-sm text-danger hover:underline">
             Eliminar evento
           </button>
         </form>

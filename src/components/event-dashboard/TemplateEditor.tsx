@@ -42,7 +42,7 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: string })
             key={v}
             type="button"
             onClick={() => insertVariable(v)}
-            className="rounded-full bg-indigo-50 px-3 py-1 text-xs text-indigo-700 hover:bg-indigo-100"
+            className="rounded-full bg-gold/10 px-3 py-1 text-xs text-gold-dark hover:bg-gold/20"
           >
             {`{${v}}`}
           </button>
@@ -55,12 +55,12 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: string })
         value={value}
         onChange={(e) => setValue(e.target.value)}
         rows={8}
-        className="w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm"
+        className="w-full rounded-lg border border-gold/25 px-3 py-2 font-mono text-sm"
       />
 
       <div>
-        <p className="mb-1 text-xs font-medium text-gray-500">Vista previa:</p>
-        <pre className="whitespace-pre-wrap rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+        <p className="mb-1 text-xs font-medium text-ink-muted">Vista previa:</p>
+        <pre className="whitespace-pre-wrap rounded-lg border border-gold/20 bg-warm p-3 text-sm text-ink">
           {renderTemplate(value, SAMPLE_VARS)}
         </pre>
       </div>

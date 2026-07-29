@@ -4,10 +4,10 @@ import { createEvent } from "@/lib/actions/events";
 export default function NewEventPage() {
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-10">
-      <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">
+      <Link href="/dashboard" className="text-sm text-gold-dark hover:underline">
         ← Volver
       </Link>
-      <h1 className="mt-2 text-2xl font-semibold">Nuevo evento</h1>
+      <h1 className="mt-2 font-serif text-2xl font-medium text-ink">Nuevo evento</h1>
 
       <form action={createEvent} className="mt-6 space-y-4">
         <div>
@@ -16,7 +16,7 @@ export default function NewEventPage() {
             name="title"
             required
             placeholder="Boda de Ana y Luis"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -25,7 +25,7 @@ export default function NewEventPage() {
             type="datetime-local"
             name="eventDate"
             required
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -33,7 +33,7 @@ export default function NewEventPage() {
           <input
             name="location"
             placeholder="Salón Los Jardines"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -41,7 +41,7 @@ export default function NewEventPage() {
           <textarea
             name="description"
             rows={3}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -52,13 +52,13 @@ export default function NewEventPage() {
             name="notes"
             rows={2}
             placeholder="Código de vestimenta, estacionamiento, etc."
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
           />
         </div>
 
         <button
           type="submit"
-          className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="w-full rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2 text-sm font-medium text-white hover:shadow-lg"
         >
           Crear evento
         </button>

@@ -51,61 +51,68 @@ export default function RegisterPage() {
 
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-16">
-      <div className="w-full max-w-sm space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Crea tu cuenta</h1>
-          <p className="text-sm text-gray-500">
+      <div className="w-full max-w-sm space-y-6 rounded-2xl border border-gold/20 bg-white/70 p-8 shadow-lg backdrop-blur-xl">
+        <div className="text-center">
+          <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">Comienza gratis</p>
+          <h1 className="mt-1 font-serif text-2xl font-medium text-ink">Crea tu cuenta</h1>
+          <p className="mt-1 text-sm text-ink-muted">
             Organiza tus eventos y gestiona a tus invitados.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Nombre</label>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+              Nombre
+            </label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+              Email
+            </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Contraseña</label>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+              Contraseña
+            </label>
             <input
               type="password"
               required
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
             />
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="w-full rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2.5 text-sm font-medium text-white shadow-md shadow-gold/30 transition hover:shadow-lg hover:shadow-gold/40 disabled:opacity-50"
           >
             {loading ? "Creando cuenta..." : "Crear cuenta"}
           </button>
         </form>
 
-        <p className="text-sm text-gray-500">
+        <p className="text-center text-sm text-ink-muted">
           ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="text-indigo-600 hover:underline">
+          <Link href="/login" className="text-gold-dark hover:underline">
             Inicia sesión
           </Link>
         </p>

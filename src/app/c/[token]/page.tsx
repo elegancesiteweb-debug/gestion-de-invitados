@@ -20,28 +20,27 @@ export default async function ConfirmAttendancePage({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16">
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <p className="text-xs uppercase tracking-wide text-gray-400">Confirmación de asistencia</p>
-        <h1 className="mt-1 text-xl font-semibold">{guest.event.title}</h1>
-        <p className="mt-1 text-sm text-gray-500">
+      <div className="rounded-2xl border border-gold/20 bg-white/70 p-7 shadow-lg backdrop-blur-xl">
+        <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">
+          Confirmación de asistencia
+        </p>
+        <h1 className="mt-1 font-serif text-2xl font-medium text-ink">{guest.event.title}</h1>
+        <p className="mt-1 text-sm text-ink-muted">
           {guest.event.eventDate.toLocaleString("es-ES", {
             dateStyle: "long",
             timeStyle: "short",
           })}
         </p>
-        {guest.event.location && (
-          <p className="text-sm text-gray-500">{guest.event.location}</p>
-        )}
-        {guest.event.notes && (
-          <p className="mt-2 text-sm text-gray-600">{guest.event.notes}</p>
-        )}
+        {guest.event.location && <p className="text-sm text-ink-muted">{guest.event.location}</p>}
+        {guest.event.notes && <p className="mt-2 text-sm text-ink-muted">{guest.event.notes}</p>}
 
-        <div className="mt-4 border-t border-gray-100 pt-4">
-          <p className="text-sm text-gray-600">
-            Hola <span className="font-medium">{guest.name}</span>, por favor confirma tu asistencia.
+        <div className="mt-4 border-t border-gold/15 pt-4">
+          <p className="text-sm text-ink-muted">
+            Hola <span className="font-medium text-ink">{guest.name}</span>, por favor confirma tu
+            asistencia.
           </p>
           {guest.event.showTableOnRsvp && guest.tableName && (
-            <p className="mt-1 text-sm text-gray-500">Mesa asignada: {guest.tableName}</p>
+            <p className="mt-1 text-sm text-ink-muted">Mesa asignada: {guest.tableName}</p>
           )}
         </div>
 

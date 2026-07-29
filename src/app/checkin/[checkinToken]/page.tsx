@@ -20,9 +20,9 @@ export default async function CheckInPage({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16">
-      <div className="rounded-lg border border-gray-200 bg-white p-6 text-center shadow-sm">
-        <p className="text-xs uppercase tracking-wide text-gray-400">Control de acceso</p>
-        <h1 className="mt-1 text-xl font-semibold">{guest.event.title}</h1>
+      <div className="rounded-2xl border border-gold/20 bg-white/70 p-7 text-center shadow-lg backdrop-blur-xl">
+        <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">Control de acceso</p>
+        <h1 className="mt-1 font-serif text-2xl font-medium text-ink">{guest.event.title}</h1>
 
         <CheckInRunner
           checkinToken={checkinToken}

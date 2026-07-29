@@ -17,17 +17,17 @@ export function SendsPanel({
 
   return (
     <div className="space-y-6 py-6">
-      <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4">
+      <div className="flex items-center justify-between rounded-lg border border-gold/20 bg-white p-4">
         <div>
           <p className="font-medium">{notSent.length} invitado(s) sin contactar</p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-ink-muted">
             El mensaje se toma de la plantilla configurada en la pestaña Configuración.
           </p>
         </div>
         <form action={sendAllPendingEmails.bind(null, event.id)}>
           <button
             type="submit"
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2 text-sm font-medium text-white hover:shadow-lg"
           >
             Enviar email a pendientes
           </button>
@@ -35,11 +35,11 @@ export function SendsPanel({
       </div>
 
       {notSent.length === 0 ? (
-        <p className="text-sm text-gray-500">Ya se contactó a todos los invitados.</p>
+        <p className="text-sm text-ink-muted">Ya se contactó a todos los invitados.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-gold/20 bg-white">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
+            <thead className="bg-warm text-left text-xs uppercase text-ink-muted">
               <tr>
                 <th className="px-4 py-2">Nombre</th>
                 <th className="px-4 py-2">Contacto</th>
@@ -66,15 +66,15 @@ export function SendsPanel({
                   : null;
 
                 return (
-                  <tr key={guest.id} className="border-t border-gray-100">
+                  <tr key={guest.id} className="border-t border-gold/15">
                     <td className="px-4 py-2 font-medium">{guest.name}</td>
-                    <td className="px-4 py-2 text-xs text-gray-500">
+                    <td className="px-4 py-2 text-xs text-ink-muted">
                       {guest.email || ""} {guest.phone ? `· ${guest.phone}` : ""}
                     </td>
                     <td className="px-4 py-2 space-x-3 whitespace-nowrap">
                       {guest.email && (
                         <form action={sendGuestEmail.bind(null, event.id, guest.id)} className="inline">
-                          <button type="submit" className="text-sm text-indigo-600 hover:underline">
+                          <button type="submit" className="text-sm text-gold-dark hover:underline">
                             Email
                           </button>
                         </form>
@@ -84,7 +84,7 @@ export function SendsPanel({
                           href={whatsappLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-green-600 hover:underline"
+                          className="text-sm text-success hover:underline"
                         >
                           WhatsApp
                         </a>

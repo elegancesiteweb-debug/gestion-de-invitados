@@ -17,7 +17,7 @@ export function TablesPanel({ guests }: { guests: Guest[] }) {
 
   if (tables.length === 0) {
     return (
-      <div className="py-10 text-center text-sm text-gray-500">
+      <div className="py-10 text-center text-sm text-ink-muted">
         Aún no hay invitados con mesa asignada.
       </div>
     );
@@ -29,16 +29,16 @@ export function TablesPanel({ guests }: { guests: Guest[] }) {
         const confirmed = table.guests.filter((g) => g.status === "CONFIRMED").length;
         const pending = table.guests.filter((g) => g.status === "PENDING").length;
         return (
-          <div key={table.label} className="rounded-lg border border-gray-200 bg-white p-4">
+          <div key={table.label} className="rounded-lg border border-gold/20 bg-white p-4">
             <p className="font-medium">{table.label}</p>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-ink-muted">
               {table.guests.length} invitado{table.guests.length !== 1 ? "s" : ""}
             </p>
             <div className="mt-2 flex gap-3 text-xs">
-              <span className="text-green-600">{confirmed} confirmado(s)</span>
-              {pending > 0 && <span className="text-amber-600">{pending} pendiente(s)</span>}
+              <span className="text-success">{confirmed} confirmado(s)</span>
+              {pending > 0 && <span className="text-warning">{pending} pendiente(s)</span>}
             </div>
-            <ul className="mt-3 space-y-1 text-sm text-gray-600">
+            <ul className="mt-3 space-y-1 text-sm text-ink-muted">
               {table.guests.map((g) => (
                 <li key={g.id}>{g.name}</li>
               ))}
