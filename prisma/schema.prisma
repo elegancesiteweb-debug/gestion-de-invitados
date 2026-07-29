@@ -58,7 +58,13 @@ model Event {
   publicRsvpToken      String? @unique
   generalMaxCompanions Int?    @default(5) // null = sin límite de acompañantes
 
-  guests Guest[]
+  dressCode         String?
+  mapUrl            String?
+  reminderDaysAfter Int?    @default(3) // null = recordatorios desactivados
+
+  guests      Guest[]
+  tasks       Task[]
+  budgetItems BudgetItem[]
 
   @@index([organizerId])
 }
@@ -84,8 +90,10 @@ model Guest {
   status              GuestStatus @default(PENDING)
   companionsConfirmed Int?
   messageFromGuest    String?
+  dietaryNotes        String?
   respondedAt         DateTime?
   invitationSentAt    DateTime?
+  reminderSentAt      DateTime?
 
   tableName String?
 
@@ -94,6 +102,29 @@ model Guest {
   checkedInPasses Int?
 
   createdAt DateTime @default(now())
+
+  @@index([eventId])
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  title     String
+  done      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+}
+
+model BudgetItem {
+  id              String   @id @default(cuid())
+  eventId         String
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  category        String
+  estimatedAmount Float
+  actualAmount    Float?
+  createdAt       DateTime @default(now())
 
   @@index([eventId])
 }

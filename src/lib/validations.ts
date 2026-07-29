@@ -32,6 +32,7 @@ export const rsvpSchema = z.object({
   status: z.enum(["CONFIRMED", "DECLINED"]),
   companionsConfirmed: z.coerce.number().int().min(0).default(0),
   messageFromGuest: z.string().max(500).optional(),
+  dietaryNotes: z.string().max(200).optional(),
 });
 
 export const generalRsvpSchema = z.object({
@@ -39,4 +40,5 @@ export const generalRsvpSchema = z.object({
   status: z.enum(["CONFIRMED", "DECLINED"]),
   companionsConfirmed: z.coerce.number().int().min(0).default(0),
   messageFromGuest: z.string().max(500).optional(),
+  dietaryNotes: z.string().max(200).optional(),
 });

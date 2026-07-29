@@ -26,3 +26,22 @@ services:
         value: onboarding@resend.dev
       - key: NODE_VERSION
         value: 20.18.0
+      - key: CRON_SECRET
+        generateValue: true
+
+  - type: cron
+    name: gestion-invitados-reminders
+    runtime: node
+    plan: free
+    schedule: "0 14 * * *"
+    buildCommand: "true"
+    startCommand: >-
+      node -e "fetch(process.env.CRON_URL,{method:'POST',headers:{Authorization:'Bearer '+process.env.CRON_SECRET}}).then(r=>r.text()).then(t=>console.log(t))"
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          name: gestion-invitados
+          type: web
+          envVarKey: CRON_SECRET
+      - key: CRON_URL
+        sync: false

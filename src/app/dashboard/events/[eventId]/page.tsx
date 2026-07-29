@@ -11,6 +11,8 @@ import { TablesPanel } from "@/components/event-dashboard/TablesPanel";
 import { AccessPanel } from "@/components/event-dashboard/AccessPanel";
 import { SendsPanel } from "@/components/event-dashboard/SendsPanel";
 import { SettingsPanel } from "@/components/event-dashboard/SettingsPanel";
+import { TasksPanel } from "@/components/event-dashboard/TasksPanel";
+import { BudgetPanel } from "@/components/event-dashboard/BudgetPanel";
 
 export default async function EventDetailPage({
   params,
@@ -30,7 +32,11 @@ export default async function EventDetailPage({
 
   const event = await prisma.event.findFirst({
     where: { id: eventId, organizerId: session.user.id },
-    include: { guests: { orderBy: { createdAt: "asc" } } },
+    include: {
+      guests: { orderBy: { createdAt: "asc" } },
+      tasks: { orderBy: { createdAt: "asc" } },
+      budgetItems: { orderBy: { createdAt: "asc" } },
+    },
   });
 
   if (!event) {
@@ -76,12 +82,16 @@ export default async function EventDetailPage({
       </div>
 
       <div className="mt-8">
-        <EventTabsNav activeTab={activeTab} />
+        <EventTabsNav activeTab={activeTab} accountType={session.user.accountType} />
 
         {activeTab === "confirmaciones" ? (
           <ConfirmationsPanel eventId={event.id} guests={event.guests} />
         ) : activeTab === "mesas" ? (
           <TablesPanel guests={event.guests} />
+        ) : activeTab === "tareas" ? (
+          <TasksPanel eventId={event.id} tasks={event.tasks} />
+        ) : activeTab === "presupuesto" ? (
+          <BudgetPanel eventId={event.id} items={event.budgetItems} />
         ) : activeTab === "accesos" ? (
           <AccessPanel guests={event.guests} />
         ) : activeTab === "envios" ? (

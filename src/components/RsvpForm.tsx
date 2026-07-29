@@ -11,12 +11,14 @@ export function RsvpForm({
   currentStatus,
   currentCompanions,
   currentMessage,
+  currentDietaryNotes,
 }: {
   token: string;
   maxCompanions: number;
   currentStatus: string;
   currentCompanions: number | null;
   currentMessage: string | null;
+  currentDietaryNotes: string | null;
 }) {
   const [status, setStatus] = useState(
     currentStatus === "DECLINED" ? "DECLINED" : "CONFIRMED"
@@ -78,6 +80,21 @@ export function RsvpForm({
             defaultValue={currentCompanions ?? 0}
             disabled={maxCompanions === 0}
             className="w-24 rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 disabled:opacity-50"
+          />
+        </div>
+      )}
+
+      {status === "CONFIRMED" && (
+        <div>
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+            Restricciones alimentarias (opcional)
+          </label>
+          <input
+            type="text"
+            name="dietaryNotes"
+            defaultValue={currentDietaryNotes ?? ""}
+            placeholder="Ej. Vegetariano, alergia a maní"
+            className="w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
           />
         </div>
       )}

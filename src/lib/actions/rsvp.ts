@@ -15,13 +15,14 @@ export async function submitRsvp(token: string, formData: FormData) {
     status: formData.get("status"),
     companionsConfirmed: formData.get("companionsConfirmed") || 0,
     messageFromGuest: formData.get("messageFromGuest") || undefined,
+    dietaryNotes: formData.get("dietaryNotes") || undefined,
   });
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
-  const { status, companionsConfirmed, messageFromGuest } = parsed.data;
+  const { status, companionsConfirmed, messageFromGuest, dietaryNotes } = parsed.data;
 
   if (companionsConfirmed > guest.maxCompanions) {
     return {
@@ -35,6 +36,7 @@ export async function submitRsvp(token: string, formData: FormData) {
       status,
       companionsConfirmed: status === "CONFIRMED" ? companionsConfirmed : 0,
       messageFromGuest: messageFromGuest || null,
+      dietaryNotes: status === "CONFIRMED" ? dietaryNotes || null : null,
       respondedAt: new Date(),
     },
   });
@@ -54,13 +56,14 @@ export async function submitGeneralRsvp(publicRsvpToken: string, formData: FormD
     status: formData.get("status"),
     companionsConfirmed: formData.get("companionsConfirmed") || 0,
     messageFromGuest: formData.get("messageFromGuest") || undefined,
+    dietaryNotes: formData.get("dietaryNotes") || undefined,
   });
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
-  const { name, status, companionsConfirmed, messageFromGuest } = parsed.data;
+  const { name, status, companionsConfirmed, messageFromGuest, dietaryNotes } = parsed.data;
 
   if (event.generalMaxCompanions !== null && companionsConfirmed > event.generalMaxCompanions) {
     return {
@@ -76,6 +79,7 @@ export async function submitGeneralRsvp(publicRsvpToken: string, formData: FormD
       status,
       companionsConfirmed: status === "CONFIRMED" ? companionsConfirmed : 0,
       messageFromGuest: messageFromGuest || null,
+      dietaryNotes: status === "CONFIRMED" ? dietaryNotes || null : null,
       respondedAt: new Date(),
       token: nanoid(12),
       checkinToken: nanoid(12),

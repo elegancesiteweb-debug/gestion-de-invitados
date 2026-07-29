@@ -59,6 +59,11 @@ export function ConfirmationsPanel({ eventId, guests }: { eventId: string; guest
               {guest.messageFromGuest}
             </p>
           )}
+          {guest.dietaryNotes && (
+            <p className="mt-2 text-xs text-ink-muted">
+              <span className="font-medium">Restricción alimentaria:</span> {guest.dietaryNotes}
+            </p>
+          )}
         </div>
       ))}
     </div>

@@ -86,6 +86,20 @@ export function GeneralRsvpForm({
         </div>
       )}
 
+      {status === "CONFIRMED" && (
+        <div>
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+            Restricciones alimentarias (opcional)
+          </label>
+          <input
+            type="text"
+            name="dietaryNotes"
+            placeholder="Ej. Vegetariano, alergia a maní"
+            className="w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          />
+        </div>
+      )}
+
       <div>
         <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
           Mensaje (opcional)

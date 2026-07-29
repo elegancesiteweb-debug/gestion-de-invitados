@@ -1,5 +1,7 @@
 import type { Event, Guest } from "@prisma/client";
 import { sendAllPendingEmails, sendGuestEmail } from "@/lib/actions/guests";
+import { sendRemindersNow } from "@/lib/actions/reminders";
+import { getReminderEligibleGuests } from "@/lib/reminders";
 import { buildWhatsAppLink, buildRsvpMessage } from "@/lib/whatsapp";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 
@@ -14,6 +16,7 @@ export function SendsPanel({
 }) {
   const template = event.messageTemplate || DEFAULT_MESSAGE_TEMPLATE;
   const notSent = guests.filter((g) => !g.invitationSentAt);
+  const reminderEligible = getReminderEligibleGuests(event, guests);
 
   return (
     <div className="space-y-6 py-6">
@@ -33,6 +36,27 @@ export function SendsPanel({
           </button>
         </form>
       </div>
+
+      {event.reminderDaysAfter != null && (
+        <div className="flex items-center justify-between rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
+          <div>
+            <p className="font-medium">{reminderEligible.length} invitado(s) listos para recordatorio</p>
+            <p className="text-xs text-ink-muted">
+              Sin responder hace {event.reminderDaysAfter}+ día(s). También se envían solos todos
+              los días (recordatorios automáticos activados en Configuración).
+            </p>
+          </div>
+          <form action={sendRemindersNow.bind(null, event.id)}>
+            <button
+              type="submit"
+              disabled={reminderEligible.length === 0}
+              className="rounded-lg border border-gold/30 bg-white/70 px-4 py-2 text-sm font-medium text-gold-dark hover:bg-warm disabled:opacity-50"
+            >
+              Enviar recordatorio ahora
+            </button>
+          </form>
+        </div>
+      )}
 
       {notSent.length === 0 ? (
         <p className="text-sm text-ink-muted">Ya se contactó a todos los invitados.</p>

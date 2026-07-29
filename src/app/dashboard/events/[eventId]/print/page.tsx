@@ -79,6 +79,7 @@ export default async function PrintConfirmationsPage({
             <th className="py-2 pr-2">Mesa</th>
             <th className="py-2 pr-2">Estado</th>
             <th className="py-2 pr-2">Personas</th>
+            <th className="py-2 pr-2">Restricción alimentaria</th>
             <th className="py-2">Mensaje</th>
           </tr>
         </thead>
@@ -97,6 +98,7 @@ export default async function PrintConfirmationsPage({
               <td className="py-2 pr-2">
                 {guest.status === "CONFIRMED" ? 1 + (guest.companionsConfirmed ?? 0) : "—"}
               </td>
+              <td className="py-2 pr-2 text-ink-muted">{guest.dietaryNotes || ""}</td>
               <td className="py-2 text-ink-muted">{guest.messageFromGuest || ""}</td>
             </tr>
           ))}

@@ -96,9 +96,24 @@ export async function updateEventSettings(eventId: string, formData: FormData) {
     generalMaxCompanions = Number.isFinite(parsedMax) && parsedMax >= 0 ? parsedMax : 0;
   }
 
+  const reminderDaysRaw = (formData.get("reminderDaysAfter") as string | null)?.trim();
+  const parsedReminderDays = reminderDaysRaw ? parseInt(reminderDaysRaw, 10) : NaN;
+  const reminderDaysAfter =
+    Number.isFinite(parsedReminderDays) && parsedReminderDays > 0 ? parsedReminderDays : null;
+
+  const dressCode = (formData.get("dressCode") as string | null)?.trim() || null;
+  const mapUrl = (formData.get("mapUrl") as string | null)?.trim() || null;
+
   await prisma.event.updateMany({
     where: { id: eventId, organizerId },
-    data: { messageTemplate, showTableOnRsvp, generalMaxCompanions },
+    data: {
+      messageTemplate,
+      showTableOnRsvp,
+      generalMaxCompanions,
+      reminderDaysAfter,
+      dressCode,
+      mapUrl,
+    },
   });
 
   revalidatePath(`/dashboard/events/${eventId}`);

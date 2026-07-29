@@ -32,6 +32,53 @@ export function SettingsPanel({ event, baseUrl }: { event: Event; baseUrl: strin
 
         <GeneralPassesInput initialValue={event.generalMaxCompanions} />
 
+        <div className="border-t border-gold/15 pt-4">
+          <h3 className="font-serif text-base font-medium text-ink">Recordatorios automáticos</h3>
+          <p className="text-xs text-ink-muted">
+            Envía un recordatorio por email a quienes aún no respondieron. Déjalo vacío para
+            desactivarlo.
+          </p>
+          <label className="mt-2 flex items-center gap-2 text-sm">
+            Recordar a los
+            <input
+              type="number"
+              name="reminderDaysAfter"
+              min={1}
+              defaultValue={event.reminderDaysAfter ?? ""}
+              className="w-16 rounded-lg border border-gold/25 bg-white/70 px-2 py-1 text-sm"
+            />
+            día(s) de enviada la invitación
+          </label>
+        </div>
+
+        <div className="border-t border-gold/15 pt-4">
+          <h3 className="font-serif text-base font-medium text-ink">Página del evento</h3>
+          <p className="text-xs text-ink-muted">
+            Se muestran en la página pública del evento (código de vestimenta, link al mapa).
+          </p>
+          <div className="mt-2 flex flex-wrap gap-3">
+            <div>
+              <label className="mb-1 block text-xs font-medium">Código de vestimenta</label>
+              <input
+                name="dressCode"
+                defaultValue={event.dressCode ?? ""}
+                placeholder="Ej. Formal"
+                className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="mb-1 block text-xs font-medium">Link del mapa (opcional)</label>
+              <input
+                name="mapUrl"
+                type="url"
+                defaultValue={event.mapUrl ?? ""}
+                placeholder="https://maps.google.com/..."
+                className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+              />
+            </div>
+          </div>
+        </div>
+
         <button
           type="submit"
           className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2 text-sm font-medium text-white hover:shadow-lg"
@@ -39,6 +86,16 @@ export function SettingsPanel({ event, baseUrl }: { event: Event; baseUrl: strin
           Guardar
         </button>
       </form>
+
+      <div className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
+        <h2 className="font-serif text-lg font-medium text-ink">Página pública del evento</h2>
+        <p className="mt-1 text-xs text-ink-muted">
+          Página informativa para compartir ampliamente (fecha, ubicación, código de vestimenta).
+        </p>
+        <div className="mt-3 flex items-center gap-4">
+          <CopyLinkButton url={`${baseUrl}/e/${event.slug}`} />
+        </div>
+      </div>
 
       <div className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
         <h2 className="font-serif text-lg font-medium text-ink">Formulario general</h2>

@@ -1,7 +1,12 @@
+import type { AccountType } from "@prisma/client";
+import { hasFeature, type FeatureKey } from "@/lib/features";
+
 const TABS = [
   { key: "invitados", label: "Invitados" },
   { key: "confirmaciones", label: "Confirmaciones" },
   { key: "mesas", label: "Mesas" },
+  { key: "tareas", label: "Tareas", feature: "checklist" as FeatureKey },
+  { key: "presupuesto", label: "Presupuesto", feature: "budget_basic" as FeatureKey },
   { key: "accesos", label: "Accesos" },
   { key: "envios", label: "Envíos" },
   { key: "configuracion", label: "Configuración" },
@@ -9,10 +14,18 @@ const TABS = [
 
 export type TabKey = (typeof TABS)[number]["key"];
 
-export function EventTabsNav({ activeTab }: { activeTab: string }) {
+export function EventTabsNav({
+  activeTab,
+  accountType,
+}: {
+  activeTab: string;
+  accountType: AccountType;
+}) {
+  const visibleTabs = TABS.filter((tab) => !("feature" in tab) || hasFeature(accountType, tab.feature));
+
   return (
     <nav className="flex gap-1 overflow-x-auto rounded-xl border border-gold/20 bg-white/50 px-2 shadow-sm backdrop-blur-xl">
-      {TABS.map((tab) => (
+      {visibleTabs.map((tab) => (
         <a
           key={tab.key}
           href={`?tab=${tab.key}`}
