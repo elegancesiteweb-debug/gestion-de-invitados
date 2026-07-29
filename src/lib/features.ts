@@ -5,7 +5,7 @@ export const PARTICULAR_FEATURES = [
   "checklist",
   "budget_basic",
   "dietary_preferences",
-  "auto_reminders",
+  "reminders",
   "event_page",
 ] as const;
 

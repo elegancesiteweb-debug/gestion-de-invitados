@@ -33,10 +33,11 @@ export function SettingsPanel({ event, baseUrl }: { event: Event; baseUrl: strin
         <GeneralPassesInput initialValue={event.generalMaxCompanions} />
 
         <div className="border-t border-gold/15 pt-4">
-          <h3 className="font-serif text-base font-medium text-ink">Recordatorios automáticos</h3>
+          <h3 className="font-serif text-base font-medium text-ink">Recordatorios</h3>
           <p className="text-xs text-ink-muted">
-            Envía un recordatorio por email a quienes aún no respondieron. Déjalo vacío para
-            desactivarlo.
+            Define a partir de cuántos días sin responder un invitado queda listo para
+            recordatorio. El envío se dispara manualmente con el botón en la pestaña Envíos.
+            Déjalo vacío para desactivarlo.
           </p>
           <label className="mt-2 flex items-center gap-2 text-sm">
             Recordar a los

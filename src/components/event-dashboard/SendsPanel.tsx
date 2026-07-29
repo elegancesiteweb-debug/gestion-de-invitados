@@ -42,8 +42,8 @@ export function SendsPanel({
           <div>
             <p className="font-medium">{reminderEligible.length} invitado(s) listos para recordatorio</p>
             <p className="text-xs text-ink-muted">
-              Sin responder hace {event.reminderDaysAfter}+ día(s). También se envían solos todos
-              los días (recordatorios automáticos activados en Configuración).
+              Sin responder hace {event.reminderDaysAfter}+ día(s) desde la invitación o el último
+              recordatorio.
             </p>
           </div>
           <form action={sendRemindersNow.bind(null, event.id)}>

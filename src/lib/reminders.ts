@@ -52,17 +52,3 @@ export async function sendEventReminders(eventId: string): Promise<number> {
 
   return results.filter((r) => r.status === "fulfilled").length;
 }
-
-export async function sendRemindersForAllEvents(): Promise<{ eventsProcessed: number; remindersSent: number }> {
-  const events = await prisma.event.findMany({
-    where: { reminderDaysAfter: { not: null } },
-    select: { id: true },
-  });
-
-  let remindersSent = 0;
-  for (const event of events) {
-    remindersSent += await sendEventReminders(event.id);
-  }
-
-  return { eventsProcessed: events.length, remindersSent };
-}
