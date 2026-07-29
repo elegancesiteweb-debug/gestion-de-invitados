@@ -45,7 +45,7 @@ export default async function AdminPage({
         </div>
       )}
 
-      <section className="mt-6 rounded-lg border border-gold/20 bg-white p-4">
+      <section className="mt-6 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
         <h2 className="font-serif text-lg font-medium text-ink">Generar código nuevo</h2>
         <form action={createAccessCode} className="mt-3 flex flex-wrap items-end gap-3">
           <div>
@@ -83,7 +83,7 @@ export default async function AdminPage({
         <h2 className="mb-3 font-serif text-lg font-medium text-ink">
           Códigos generados ({codes.length})
         </h2>
-        <div className="overflow-x-auto rounded-lg border border-gold/20 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-gold/20 bg-white/60 shadow-md backdrop-blur-xl">
           <table className="w-full text-sm">
             <thead className="bg-warm text-left text-xs uppercase text-ink-muted">
               <tr>

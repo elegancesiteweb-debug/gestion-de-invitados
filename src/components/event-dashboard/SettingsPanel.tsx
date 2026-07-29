@@ -13,7 +13,7 @@ export function SettingsPanel({ event, baseUrl }: { event: Event; baseUrl: strin
     <div className="space-y-6 py-6">
       <form
         action={updateEventSettings.bind(null, event.id)}
-        className="space-y-4 rounded-lg border border-gold/20 bg-white p-4"
+        className="space-y-4 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
       >
         <div>
           <h2 className="font-serif text-lg font-medium text-ink">Mensaje de invitación</h2>
@@ -40,7 +40,7 @@ export function SettingsPanel({ event, baseUrl }: { event: Event; baseUrl: strin
         </button>
       </form>
 
-      <div className="rounded-lg border border-gold/20 bg-white p-4">
+      <div className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
         <h2 className="font-serif text-lg font-medium text-ink">Formulario general</h2>
         <p className="mt-1 text-xs text-ink-muted">
           A diferencia del formulario por invitado, este no está ligado a nadie en particular:

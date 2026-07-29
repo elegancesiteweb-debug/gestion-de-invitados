@@ -30,7 +30,7 @@ export default async function ConfirmAttendancePage({
       }`}
     >
       {isEmbed && <EmbedTransparentBackground />}
-      <div className={isEmbed ? "" : "rounded-2xl border border-gold/20 bg-white/70 p-7 shadow-lg backdrop-blur-xl"}>
+      <div className="rounded-2xl border border-gold/20 bg-warm/90 p-7 shadow-lg backdrop-blur-xl">
         <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">
           Confirmación de asistencia
         </p>

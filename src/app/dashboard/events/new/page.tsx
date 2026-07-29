@@ -9,7 +9,10 @@ export default function NewEventPage() {
       </Link>
       <h1 className="mt-2 font-serif text-2xl font-medium text-ink">Nuevo evento</h1>
 
-      <form action={createEvent} className="mt-6 space-y-4">
+      <form
+        action={createEvent}
+        className="mt-6 space-y-4 rounded-2xl border border-gold/20 bg-white/60 p-6 shadow-lg backdrop-blur-xl"
+      >
         <div>
           <label className="block text-sm font-medium mb-1">Título</label>
           <input

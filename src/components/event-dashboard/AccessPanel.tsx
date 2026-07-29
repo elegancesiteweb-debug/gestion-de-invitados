@@ -10,15 +10,15 @@ export function AccessPanel({ guests }: { guests: Guest[] }) {
   return (
     <div className="space-y-6 py-6">
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg border border-gold/20 bg-white p-4 text-center">
+        <div className="rounded-lg border border-gold/20 bg-white/60 p-4 text-center shadow-md backdrop-blur-xl">
           <p className="font-serif text-3xl font-medium text-success">{arrived.length}</p>
           <p className="text-xs text-ink-muted">Registrados</p>
         </div>
-        <div className="rounded-lg border border-gold/20 bg-white p-4 text-center">
+        <div className="rounded-lg border border-gold/20 bg-white/60 p-4 text-center shadow-md backdrop-blur-xl">
           <p className="font-serif text-3xl font-medium text-gold-dark">{totalPasses}</p>
           <p className="text-xs text-ink-muted">Pases usados</p>
         </div>
-        <div className="rounded-lg border border-gold/20 bg-white p-4 text-center">
+        <div className="rounded-lg border border-gold/20 bg-white/60 p-4 text-center shadow-md backdrop-blur-xl">
           <p className="font-serif text-3xl font-medium text-warning">{notArrived.length}</p>
           <p className="text-xs text-ink-muted">Sin ingresar</p>
         </div>

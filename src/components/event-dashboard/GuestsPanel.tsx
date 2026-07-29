@@ -36,7 +36,7 @@ export function GuestsPanel({
             Enviar email a pendientes
           </button>
         </form>
-        <details className="rounded-lg border border-gold/20 bg-white px-4 py-2">
+        <details className="rounded-lg border border-gold/20 bg-white/60 px-4 py-2 shadow-sm backdrop-blur-xl">
           <summary className="cursor-pointer text-sm font-medium">Importar CSV</summary>
           <form action={importGuestsCsv.bind(null, event.id)} className="mt-3 space-y-2">
             <p className="text-xs text-ink-muted">Columnas: name, email, phone, maxCompanions, mesa</p>
@@ -55,7 +55,7 @@ export function GuestsPanel({
         <h2 className="mb-3 font-serif text-lg font-medium text-ink">Agregar invitado</h2>
         <form
           action={createGuest.bind(null, event.id)}
-          className="flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white p-4"
+          className="flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
         >
           <div>
             <label className="block text-xs font-medium mb-1">Nombre</label>
@@ -108,7 +108,7 @@ export function GuestsPanel({
 
       <section>
         <h2 className="mb-3 font-serif text-lg font-medium text-ink">Invitados ({guests.length})</h2>
-        <div className="overflow-x-auto rounded-lg border border-gold/20 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-gold/20 bg-white/60 shadow-md backdrop-blur-xl">
           <table className="w-full text-sm">
             <thead className="bg-warm text-left text-xs uppercase text-ink-muted">
               <tr>

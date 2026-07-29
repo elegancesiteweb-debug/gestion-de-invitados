@@ -26,7 +26,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10">
-      <header className="mb-8 flex items-center justify-between">
+      <header className="mb-8 flex items-center justify-between rounded-2xl border border-gold/20 bg-white/60 p-5 shadow-lg backdrop-blur-xl">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">Panel de organizador</p>
           <h1 className="mt-1 font-serif text-2xl font-medium text-ink">Tus eventos</h1>
@@ -69,7 +69,7 @@ export default async function DashboardPage() {
               <li key={event.id}>
                 <Link
                   href={`/dashboard/events/${event.id}`}
-                  className="block rounded-xl border border-gold/20 bg-white p-4 shadow-sm transition hover:border-gold/40 hover:shadow-md"
+                  className="block rounded-xl border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl transition hover:border-gold/40 hover:shadow-lg"
                 >
                   <div className="flex items-center justify-between">
                     <div>

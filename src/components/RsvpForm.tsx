@@ -65,7 +65,7 @@ export function RsvpForm({
         </label>
       </div>
 
-      {status === "CONFIRMED" && maxCompanions > 0 && (
+      {status === "CONFIRMED" && (
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
             Acompañantes (máx. {maxCompanions})
@@ -76,7 +76,8 @@ export function RsvpForm({
             min={0}
             max={maxCompanions}
             defaultValue={currentCompanions ?? 0}
-            className="w-24 rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+            disabled={maxCompanions === 0}
+            className="w-24 rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 disabled:opacity-50"
           />
         </div>
       )}

@@ -17,7 +17,7 @@ export function SendsPanel({
 
   return (
     <div className="space-y-6 py-6">
-      <div className="flex items-center justify-between rounded-lg border border-gold/20 bg-white p-4">
+      <div className="flex items-center justify-between rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
         <div>
           <p className="font-medium">{notSent.length} invitado(s) sin contactar</p>
           <p className="text-xs text-ink-muted">
@@ -37,7 +37,7 @@ export function SendsPanel({
       {notSent.length === 0 ? (
         <p className="text-sm text-ink-muted">Ya se contactó a todos los invitados.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gold/20 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-gold/20 bg-white/60 shadow-md backdrop-blur-xl">
           <table className="w-full text-sm">
             <thead className="bg-warm text-left text-xs uppercase text-ink-muted">
               <tr>

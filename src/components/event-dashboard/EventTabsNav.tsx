@@ -11,7 +11,7 @@ export type TabKey = (typeof TABS)[number]["key"];
 
 export function EventTabsNav({ activeTab }: { activeTab: string }) {
   return (
-    <nav className="flex gap-1 overflow-x-auto border-b border-gold/20">
+    <nav className="flex gap-1 overflow-x-auto rounded-xl border border-gold/20 bg-white/50 px-2 shadow-sm backdrop-blur-xl">
       {TABS.map((tab) => (
         <a
           key={tab.key}

@@ -29,7 +29,7 @@ export function TablesPanel({ guests }: { guests: Guest[] }) {
         const confirmed = table.guests.filter((g) => g.status === "CONFIRMED").length;
         const pending = table.guests.filter((g) => g.status === "PENDING").length;
         return (
-          <div key={table.label} className="rounded-lg border border-gold/20 bg-white p-4">
+          <div key={table.label} className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
             <p className="font-medium">{table.label}</p>
             <p className="mt-1 text-xs text-ink-muted">
               {table.guests.length} invitado{table.guests.length !== 1 ? "s" : ""}

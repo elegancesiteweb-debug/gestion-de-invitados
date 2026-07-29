@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Guest } from "@prisma/client";
 import { StatusBadge } from "@/components/StatusBadge";
+import { deleteGuest } from "@/lib/actions/guests";
 
 export function ConfirmationsPanel({ eventId, guests }: { eventId: string; guests: Guest[] }) {
   const responded = guests
@@ -44,7 +45,14 @@ export function ConfirmationsPanel({ eventId, guests }: { eventId: string; guest
                   })}`}
               </p>
             </div>
-            <StatusBadge status={guest.status} />
+            <div className="flex items-center gap-3">
+              <StatusBadge status={guest.status} />
+              <form action={deleteGuest.bind(null, eventId, guest.id)}>
+                <button type="submit" className="text-sm text-danger hover:underline">
+                  Eliminar
+                </button>
+              </form>
+            </div>
           </div>
           {guest.messageFromGuest && (
             <p className="mt-2 border-l-2 border-gold/30 pl-3 text-sm italic text-ink-muted">
