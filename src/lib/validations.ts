@@ -24,6 +24,7 @@ export const guestSchema = z.object({
   email: z.string().email("Email inválido").optional().or(z.literal("")),
   phone: z.string().optional(),
   maxCompanions: z.coerce.number().int().min(0).default(0),
+  tableName: z.string().optional(),
 });
 
 export const rsvpSchema = z.object({

@@ -36,13 +36,14 @@ export async function createGuest(eventId: string, formData: FormData) {
     email: formData.get("email") || undefined,
     phone: formData.get("phone") || undefined,
     maxCompanions: formData.get("maxCompanions") || 0,
+    tableName: formData.get("tableName") || undefined,
   });
 
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Datos inválidos");
   }
 
-  const { name, email, phone, maxCompanions } = parsed.data;
+  const { name, email, phone, maxCompanions, tableName } = parsed.data;
 
   await prisma.guest.create({
     data: {
@@ -51,6 +52,7 @@ export async function createGuest(eventId: string, formData: FormData) {
       email: email || null,
       phone: phone || null,
       maxCompanions,
+      tableName: tableName || null,
       token: nanoid(12),
       checkinToken: nanoid(12),
     },
@@ -92,6 +94,7 @@ export async function importGuestsCsv(eventId: string, formData: FormData) {
       email: (row.email || "").trim(),
       phone: (row.phone || row.telefono || row.teléfono || "").trim(),
       maxCompanions: parseInt(row.maxcompanions || row.acompanantes || row.acompañantes || "0", 10) || 0,
+      tableName: (row.tablename || row.mesa || "").trim(),
     }))
     .filter((row) => row.name.length > 0);
 
@@ -106,6 +109,7 @@ export async function importGuestsCsv(eventId: string, formData: FormData) {
       email: row.email || null,
       phone: row.phone || null,
       maxCompanions: row.maxCompanions,
+      tableName: row.tableName || null,
       token: nanoid(12),
       checkinToken: nanoid(12),
     })),
