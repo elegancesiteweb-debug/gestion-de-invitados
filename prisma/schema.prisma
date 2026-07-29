@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum AccountType {
+  INDIVIDUAL
+  PLANNER
+}
+
 model Organizer {
   id           String   @id @default(cuid())
   name         String
@@ -14,7 +19,24 @@ model Organizer {
   passwordHash String
   createdAt    DateTime @default(now())
 
-  events Event[]
+  accountType        AccountType @default(INDIVIDUAL)
+  eventsCreatedCount Int         @default(0)
+  isAdmin            Boolean     @default(false)
+
+  events       Event[]
+  redeemedCode AccessCode?
+}
+
+model AccessCode {
+  id          String      @id @default(cuid())
+  code        String      @unique
+  accountType AccountType
+  label       String?
+  createdAt   DateTime    @default(now())
+
+  usedAt            DateTime?
+  usedByOrganizerId String?    @unique
+  usedByOrganizer   Organizer? @relation(fields: [usedByOrganizerId], references: [id])
 }
 
 model Event {

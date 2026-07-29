@@ -22,7 +22,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const isValid = await bcrypt.compare(password, organizer.passwordHash);
         if (!isValid) return null;
 
-        return { id: organizer.id, name: organizer.name, email: organizer.email };
+        return {
+          id: organizer.id,
+          name: organizer.name,
+          email: organizer.email,
+          accountType: organizer.accountType,
+          isAdmin: organizer.isAdmin,
+        };
       },
     }),
   ],
@@ -36,12 +42,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.accountType = (user as { accountType: string }).accountType;
+        token.isAdmin = (user as { isAdmin: boolean }).isAdmin;
       }
       return token;
     },
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.accountType = token.accountType as "INDIVIDUAL" | "PLANNER";
+        session.user.isAdmin = token.isAdmin as boolean;
       }
       return session;
     },

@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, password, accessCode } = parsed.data;
 
   const existing = await prisma.organizer.findUnique({ where: { email } });
   if (existing) {
@@ -25,10 +25,40 @@ export async function POST(request: Request) {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
+  const normalizedCode = accessCode.trim().toUpperCase();
 
-  await prisma.organizer.create({
-    data: { name, email, passwordHash },
-  });
+  try {
+    await prisma.$transaction(async (tx) => {
+      const claim = await tx.accessCode.updateMany({
+        where: { code: normalizedCode, usedAt: null },
+        data: { usedAt: new Date() },
+      });
+      if (claim.count === 0) {
+        throw new Error("INVALID_CODE");
+      }
+
+      const codeRow = await tx.accessCode.findUniqueOrThrow({
+        where: { code: normalizedCode },
+      });
+
+      const organizer = await tx.organizer.create({
+        data: { name, email, passwordHash, accountType: codeRow.accountType },
+      });
+
+      await tx.accessCode.update({
+        where: { code: normalizedCode },
+        data: { usedByOrganizerId: organizer.id },
+      });
+    });
+  } catch (err) {
+    if (err instanceof Error && err.message === "INVALID_CODE") {
+      return NextResponse.json(
+        { error: "Código de acceso inválido o ya utilizado" },
+        { status: 400 }
+      );
+    }
+    throw err;
+  }
 
   return NextResponse.json({ ok: true });
 }

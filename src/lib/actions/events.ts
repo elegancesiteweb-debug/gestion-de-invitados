@@ -15,6 +15,8 @@ async function requireOrganizerId() {
   return session.user.id;
 }
 
+const INDIVIDUAL_EVENT_LIMIT = 1;
+
 export async function createEvent(formData: FormData) {
   const organizerId = await requireOrganizerId();
 
@@ -31,6 +33,25 @@ export async function createEvent(formData: FormData) {
   }
 
   const { title, description, eventDate, location, notes } = parsed.data;
+
+  const organizer = await prisma.organizer.findUniqueOrThrow({ where: { id: organizerId } });
+
+  if (organizer.accountType === "INDIVIDUAL") {
+    const claim = await prisma.organizer.updateMany({
+      where: { id: organizerId, eventsCreatedCount: { lt: INDIVIDUAL_EVENT_LIMIT } },
+      data: { eventsCreatedCount: { increment: 1 } },
+    });
+    if (claim.count === 0) {
+      throw new Error(
+        "Tu plan permite un solo evento. Contáctanos para pasar a plan Wedding Planner."
+      );
+    }
+  } else {
+    await prisma.organizer.update({
+      where: { id: organizerId },
+      data: { eventsCreatedCount: { increment: 1 } },
+    });
+  }
 
   const event = await prisma.event.create({
     data: {

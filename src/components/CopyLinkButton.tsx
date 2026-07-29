@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export function CopyLinkButton({ url }: { url: string }) {
+export function CopyLinkButton({ url, label = "Copiar link" }: { url: string; label?: string }) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -17,7 +17,7 @@ export function CopyLinkButton({ url }: { url: string }) {
       type="button"
       className="text-sm text-gold-dark hover:underline"
     >
-      {copied ? "¡Copiado!" : "Copiar link"}
+      {copied ? "¡Copiado!" : label}
     </button>
   );
 }
