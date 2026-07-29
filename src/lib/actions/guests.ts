@@ -52,6 +52,7 @@ export async function createGuest(eventId: string, formData: FormData) {
       phone: phone || null,
       maxCompanions,
       token: nanoid(12),
+      checkinToken: nanoid(12),
     },
   });
 
@@ -106,6 +107,7 @@ export async function importGuestsCsv(eventId: string, formData: FormData) {
       phone: row.phone || null,
       maxCompanions: row.maxCompanions,
       token: nanoid(12),
+      checkinToken: nanoid(12),
     })),
   });
 

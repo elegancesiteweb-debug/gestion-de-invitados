@@ -30,6 +30,9 @@ model Event {
   notes       String?
   createdAt   DateTime @default(now())
 
+  messageTemplate String?
+  showTableOnRsvp Boolean @default(true)
+
   guests Guest[]
 
   @@index([organizerId])
@@ -58,6 +61,12 @@ model Guest {
   messageFromGuest    String?
   respondedAt         DateTime?
   invitationSentAt    DateTime?
+
+  tableName String?
+
+  checkinToken    String    @unique
+  checkedInAt     DateTime?
+  checkedInPasses Int?
 
   createdAt DateTime @default(now())
 
