@@ -55,18 +55,18 @@ export default async function EventDetailPage({
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl gap-6 px-4 py-10">
-      <aside className="w-48 flex-none">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 md:flex-row">
+      <aside className="w-full md:w-48 md:flex-none">
         <Link href="/dashboard" className="text-sm text-gold-dark hover:underline">
           ← Tus eventos
         </Link>
-        <div className="sticky top-6 mt-4">
+        <div className="mt-4 md:sticky md:top-6">
           <EventTabsNav activeTab={activeTab} accountType={session.user.accountType} />
         </div>
       </aside>
 
       <main className="min-w-0 flex-1">
-        <div className="flex items-start justify-between">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
             <p className="text-sm text-ink-muted">

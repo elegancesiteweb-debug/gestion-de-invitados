@@ -64,9 +64,28 @@ export function SeatingCanvas({
   const [drag, setDrag] = useState<DragState | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const unassigned = guests.filter((g) => g.tableId == null);
+  const selectedGuest = guests.find((g) => g.id === selectedGuestId) ?? null;
+
+  function toggleSelectGuest(e: { stopPropagation: () => void }, guestId: string) {
+    e.stopPropagation();
+    setSelectedGuestId((prev) => (prev === guestId ? null : guestId));
+  }
+
+  function handleTableTap(tableId: string) {
+    if (!selectedGuestId) return;
+    assignGuest(selectedGuestId, tableId);
+    setSelectedGuestId(null);
+  }
+
+  function handleSidebarTap() {
+    if (!selectedGuestId) return;
+    assignGuest(selectedGuestId, null);
+    setSelectedGuestId(null);
+  }
 
   function handlePointerDown(e: PointerEvent<HTMLDivElement>, table: TableModel) {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -142,6 +161,20 @@ export function SeatingCanvas({
         </p>
       )}
 
+      {selectedGuest && (
+        <p className="flex flex-wrap items-center gap-2 rounded-lg border border-gold/30 bg-warm px-3 py-2 text-sm text-ink">
+          Invitado seleccionado: <span className="font-medium">{selectedGuest.name}</span> — tocá
+          una mesa para asignarlo (o el panel &quot;Sin mesa&quot; para quitarlo).
+          <button
+            type="button"
+            onClick={() => setSelectedGuestId(null)}
+            className="text-gold-dark hover:underline"
+          >
+            Cancelar
+          </button>
+        </p>
+      )}
+
       <details className="rounded-lg border border-gold/20 bg-white/60 px-4 py-2 shadow-sm backdrop-blur-xl">
         <summary className="cursor-pointer text-sm font-medium">+ Agregar mesa</summary>
         <form
@@ -214,6 +247,7 @@ export function SeatingCanvas({
                 }}
                 className="absolute z-10 flex flex-col gap-1 rounded-lg border border-gold/20 bg-white p-2 shadow-lg"
                 style={{ left: 0, top: table.shape === "RECT" ? height + 4 : width + 2 * SEAT_MARGIN }}
+                onClick={(e) => e.stopPropagation()}
               >
                 <input
                   name="name"
@@ -260,6 +294,7 @@ export function SeatingCanvas({
                   }}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => handleDropOnTable(e, table.id)}
+                  onClick={() => handleTableTap(table.id)}
                 >
                   <div
                     className={`absolute flex cursor-move select-none flex-col items-center justify-center rounded-full border-2 bg-warm/95 text-center shadow-md ${
@@ -277,14 +312,20 @@ export function SeatingCanvas({
                     <div className="mt-1 flex gap-2 text-[10px]">
                       <button
                         type="button"
-                        onClick={() => setEditingId(editingId === table.id ? null : table.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingId(editingId === table.id ? null : table.id);
+                        }}
                         className="text-gold-dark hover:underline"
                       >
                         Editar
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDeleteTable(table.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTable(table.id);
+                        }}
                         className="text-danger hover:underline"
                       >
                         Eliminar
@@ -316,12 +357,18 @@ export function SeatingCanvas({
                         key={guest.id}
                         draggable
                         onDragStart={(e) => handleDragStartGuest(e, guest.id)}
-                        className="flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[11px] text-ink shadow-sm"
+                        onClick={(e) => toggleSelectGuest(e, guest.id)}
+                        className={`flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[11px] text-ink shadow-sm ${
+                          selectedGuestId === guest.id ? "ring-2 ring-gold" : ""
+                        }`}
                       >
                         {guestLabel(guest)}
                         <button
                           type="button"
-                          onClick={() => assignGuest(guest.id, null)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            assignGuest(guest.id, null);
+                          }}
                           className="text-ink-muted hover:text-danger"
                           aria-label={`Quitar a ${guest.name} de la mesa`}
                         >
@@ -345,6 +392,7 @@ export function SeatingCanvas({
                 style={{ left: table.x - width / 2, top: table.y - height / 2, width, height }}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDropOnTable(e, table.id)}
+                onClick={() => handleTableTap(table.id)}
               >
                 <div
                   className="w-full cursor-move select-none"
@@ -364,12 +412,18 @@ export function SeatingCanvas({
                       key={guest.id}
                       draggable
                       onDragStart={(e) => handleDragStartGuest(e, guest.id)}
-                      className="flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[11px] text-ink shadow-sm"
+                      onClick={(e) => toggleSelectGuest(e, guest.id)}
+                      className={`flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[11px] text-ink shadow-sm ${
+                        selectedGuestId === guest.id ? "ring-2 ring-gold" : ""
+                      }`}
                     >
                       {guestLabel(guest)}
                       <button
                         type="button"
-                        onClick={() => assignGuest(guest.id, null)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          assignGuest(guest.id, null);
+                        }}
                         className="text-ink-muted hover:text-danger"
                         aria-label={`Quitar a ${guest.name} de la mesa`}
                       >
@@ -382,14 +436,20 @@ export function SeatingCanvas({
                 <div className="flex gap-2 text-[11px]">
                   <button
                     type="button"
-                    onClick={() => setEditingId(editingId === table.id ? null : table.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingId(editingId === table.id ? null : table.id);
+                    }}
                     className="text-gold-dark hover:underline"
                   >
                     Editar
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDeleteTable(table.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTable(table.id);
+                    }}
                     className="text-danger hover:underline"
                   >
                     Eliminar
@@ -406,6 +466,7 @@ export function SeatingCanvas({
           className="w-full flex-none rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl lg:w-64"
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDropOnSidebar}
+          onClick={handleSidebarTap}
         >
           <h3 className="mb-2 font-serif text-base font-medium text-ink">
             Sin mesa ({unassigned.length})
@@ -416,7 +477,10 @@ export function SeatingCanvas({
                 key={guest.id}
                 draggable
                 onDragStart={(e) => handleDragStartGuest(e, guest.id)}
-                className="cursor-grab rounded-lg border border-gold/20 bg-white px-3 py-2 text-sm shadow-sm"
+                onClick={(e) => toggleSelectGuest(e, guest.id)}
+                className={`cursor-grab rounded-lg border border-gold/20 bg-white px-3 py-2 text-sm shadow-sm ${
+                  selectedGuestId === guest.id ? "ring-2 ring-gold" : ""
+                }`}
               >
                 {guestLabel(guest)}
                 {guest.tableName && (

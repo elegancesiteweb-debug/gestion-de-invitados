@@ -68,6 +68,48 @@ export async function createGuest(eventId: string, formData: FormData) {
   revalidatePath(`/dashboard/events/${eventId}`);
 }
 
+export async function updateGuest(eventId: string, guestId: string, formData: FormData) {
+  const organizerId = await requireOrganizerId();
+  await requireEventOwnedByOrganizer(eventId, organizerId);
+
+  const existing = await prisma.guest.findFirst({ where: { id: guestId, eventId } });
+  if (!existing) {
+    throw new Error("Invitado no encontrado");
+  }
+
+  const parsed = guestSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email") || undefined,
+    phone: formData.get("phone") || undefined,
+    maxCompanions: formData.get("maxCompanions") || 0,
+    tableName: formData.get("tableName") || undefined,
+    invitationLinkUrl: formData.get("invitationLinkUrl") || undefined,
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Datos inválidos");
+  }
+
+  const { name, email, phone, maxCompanions, tableName, invitationLinkUrl } = parsed.data;
+
+  const table = tableName ? await findOrCreateTableByName(eventId, tableName) : null;
+
+  await prisma.guest.update({
+    where: { id: guestId },
+    data: {
+      name,
+      email: email || null,
+      phone: phone || null,
+      maxCompanions,
+      tableId: table?.id ?? null,
+      tableName: table?.name ?? null,
+      invitationLinkUrl: invitationLinkUrl || null,
+    },
+  });
+
+  revalidatePath(`/dashboard/events/${eventId}`);
+}
+
 export async function deleteGuest(eventId: string, guestId: string) {
   const organizerId = await requireOrganizerId();
   await requireEventOwnedByOrganizer(eventId, organizerId);

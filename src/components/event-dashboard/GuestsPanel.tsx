@@ -1,6 +1,7 @@
 import type { Event, Guest, Table } from "@prisma/client";
 import {
   createGuest,
+  updateGuest,
   deleteGuest,
   importGuestsCsv,
   sendAllPendingEmails,
@@ -12,6 +13,79 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { GuestQrButton } from "@/components/GuestQrButton";
 import { EmbedCodeButton } from "@/components/EmbedCodeButton";
+
+function GuestEditForm({ eventId, guest }: { eventId: string; guest: Guest }) {
+  return (
+    <details className="mt-2">
+      <summary className="cursor-pointer text-sm text-gold-dark hover:underline">Editar</summary>
+      <form
+        action={updateGuest.bind(null, eventId, guest.id)}
+        className="mt-2 flex flex-wrap items-end gap-2 rounded-lg border border-gold/20 bg-white p-3"
+      >
+        <div>
+          <label className="block text-xs font-medium mb-1">Nombre</label>
+          <input
+            name="name"
+            required
+            defaultValue={guest.name}
+            className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium mb-1">Email</label>
+          <input
+            name="email"
+            type="email"
+            defaultValue={guest.email ?? ""}
+            className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium mb-1">Teléfono</label>
+          <input
+            name="phone"
+            defaultValue={guest.phone ?? ""}
+            className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium mb-1">Mesa</label>
+          <input
+            name="tableName"
+            list="table-names"
+            defaultValue={guest.tableName ?? ""}
+            className="w-28 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium mb-1">Acompañantes</label>
+          <input
+            name="maxCompanions"
+            type="number"
+            min={0}
+            defaultValue={guest.maxCompanions}
+            className="w-20 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium mb-1">Link de invitación</label>
+          <input
+            name="invitationLinkUrl"
+            type="url"
+            defaultValue={guest.invitationLinkUrl ?? ""}
+            className="w-48 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+          />
+        </div>
+        <button
+          type="submit"
+          className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm font-medium text-white hover:shadow-lg"
+        >
+          Guardar
+        </button>
+      </form>
+    </details>
+  );
+}
 
 export function GuestsPanel({
   event,
@@ -26,6 +100,27 @@ export function GuestsPanel({
 }) {
   const tableNames = tables.map((t) => t.name);
   const template = event.messageTemplate || DEFAULT_MESSAGE_TEMPLATE;
+
+  const guestViews = guests.map((guest) => {
+    const confirmUrl = `${baseUrl}/c/${guest.token}`;
+    const whatsappLink = guest.phone
+      ? buildWhatsAppLink(
+          guest.phone,
+          buildRsvpMessage({
+            template,
+            guestName: guest.name,
+            eventTitle: event.title,
+            eventDate: event.eventDate.toLocaleDateString("es-ES", { dateStyle: "long" }),
+            location: event.location,
+            tableName: guest.tableName,
+            maxCompanions: guest.maxCompanions,
+            confirmUrl,
+            invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
+          })
+        )
+      : null;
+    return { guest, confirmUrl, whatsappLink };
+  });
 
   return (
     <div className="space-y-8 py-6">
@@ -52,6 +147,12 @@ export function GuestsPanel({
           </form>
         </details>
       </div>
+
+      <datalist id="table-names">
+        {tableNames.map((t) => (
+          <option key={t} value={t} />
+        ))}
+      </datalist>
 
       <section>
         <h2 className="mb-3 font-serif text-lg font-medium text-ink">Agregar invitado</h2>
@@ -83,11 +184,6 @@ export function GuestsPanel({
               placeholder="Mesa 1"
               className="w-28 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
             />
-            <datalist id="table-names">
-              {tableNames.map((t) => (
-                <option key={t} value={t} />
-              ))}
-            </datalist>
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Acompañantes</label>
@@ -119,7 +215,8 @@ export function GuestsPanel({
 
       <section>
         <h2 className="mb-3 font-serif text-lg font-medium text-ink">Invitados ({guests.length})</h2>
-        <div className="overflow-x-auto rounded-lg border border-gold/20 bg-white/60 shadow-md backdrop-blur-xl">
+
+        <div className="hidden overflow-x-auto rounded-lg border border-gold/20 bg-white/60 shadow-md backdrop-blur-xl md:block">
           <table className="w-full text-sm">
             <thead className="bg-warm text-left text-xs uppercase text-ink-muted">
               <tr>
@@ -133,90 +230,135 @@ export function GuestsPanel({
               </tr>
             </thead>
             <tbody>
-              {guests.map((guest) => {
-                const confirmUrl = `${baseUrl}/c/${guest.token}`;
-                const whatsappLink = guest.phone
-                  ? buildWhatsAppLink(
-                      guest.phone,
-                      buildRsvpMessage({
-                        template,
-                        guestName: guest.name,
-                        eventTitle: event.title,
-                        eventDate: event.eventDate.toLocaleDateString("es-ES", {
-                          dateStyle: "long",
-                        }),
-                        location: event.location,
-                        tableName: guest.tableName,
-                        maxCompanions: guest.maxCompanions,
-                        confirmUrl,
-                        invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
-                      })
-                    )
-                  : null;
-
-                return (
-                  <tr key={guest.id} className="border-t border-gold/15">
-                    <td className="px-4 py-2">
-                      <p className="font-medium">{guest.name}</p>
-                      <p className="text-xs text-ink-muted">
-                        {guest.email || ""} {guest.phone ? `· ${guest.phone}` : ""}
-                      </p>
-                    </td>
-                    <td className="px-4 py-2 text-ink-muted">{guest.tableName || "—"}</td>
-                    <td className="px-4 py-2">
-                      <StatusBadge status={guest.status} />
-                    </td>
-                    <td className="px-4 py-2">
-                      {guest.status === "CONFIRMED"
-                        ? `${guest.companionsConfirmed ?? 0}/${guest.maxCompanions}`
-                        : `máx. ${guest.maxCompanions}`}
-                    </td>
-                    <td className="px-4 py-2 space-x-3 whitespace-nowrap">
-                      <CopyLinkButton url={confirmUrl} />
-                      <GuestQrButton
-                        guestName={guest.name}
-                        rsvpUrl={confirmUrl}
-                        checkinUrl={`${baseUrl}/checkin/${guest.checkinToken}`}
-                      />
-                      <EmbedCodeButton
-                        url={confirmUrl}
-                        title={`Confirmar asistencia - ${guest.name}`}
-                      />
-                    </td>
-                    <td className="px-4 py-2 space-x-3 whitespace-nowrap">
-                      {guest.email && (
-                        <form action={sendGuestEmail.bind(null, event.id, guest.id)} className="inline">
-                          <button type="submit" className="text-sm text-gold-dark hover:underline">
-                            Email
-                          </button>
-                        </form>
-                      )}
-                      {whatsappLink && (
-                        <a
-                          href={whatsappLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-success hover:underline"
-                        >
-                          WhatsApp
-                        </a>
-                      )}
-                      {guest.invitationSentAt && (
-                        <span className="block text-xs text-ink-light">Enviado</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2">
-                      <form action={deleteGuest.bind(null, event.id, guest.id)}>
-                        <button type="submit" className="text-sm text-danger hover:underline">
-                          Eliminar
+              {guestViews.map(({ guest, confirmUrl, whatsappLink }) => (
+                <tr key={guest.id} className="border-t border-gold/15 align-top">
+                  <td className="px-4 py-2">
+                    <p className="font-medium">{guest.name}</p>
+                    <p className="text-xs text-ink-muted">
+                      {guest.email || ""} {guest.phone ? `· ${guest.phone}` : ""}
+                    </p>
+                  </td>
+                  <td className="px-4 py-2 text-ink-muted">{guest.tableName || "—"}</td>
+                  <td className="px-4 py-2">
+                    <StatusBadge status={guest.status} />
+                  </td>
+                  <td className="px-4 py-2">
+                    {guest.status === "CONFIRMED"
+                      ? `${guest.companionsConfirmed ?? 0}/${guest.maxCompanions}`
+                      : `máx. ${guest.maxCompanions}`}
+                  </td>
+                  <td className="px-4 py-2 space-x-3 whitespace-nowrap">
+                    <CopyLinkButton url={confirmUrl} />
+                    <GuestQrButton
+                      guestName={guest.name}
+                      rsvpUrl={confirmUrl}
+                      checkinUrl={`${baseUrl}/checkin/${guest.checkinToken}`}
+                    />
+                    <EmbedCodeButton
+                      url={confirmUrl}
+                      title={`Confirmar asistencia - ${guest.name}`}
+                    />
+                  </td>
+                  <td className="px-4 py-2 space-x-3 whitespace-nowrap">
+                    {guest.email && (
+                      <form action={sendGuestEmail.bind(null, event.id, guest.id)} className="inline">
+                        <button type="submit" className="text-sm text-gold-dark hover:underline">
+                          Email
                         </button>
                       </form>
-                    </td>
-                  </tr>
-                );
-              })}
+                    )}
+                    {whatsappLink && (
+                      <a
+                        href={whatsappLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-success hover:underline"
+                      >
+                        WhatsApp
+                      </a>
+                    )}
+                    {guest.invitationSentAt && (
+                      <span className="block text-xs text-ink-light">Enviado</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2">
+                    <form action={deleteGuest.bind(null, event.id, guest.id)}>
+                      <button type="submit" className="text-sm text-danger hover:underline">
+                        Eliminar
+                      </button>
+                    </form>
+                    <GuestEditForm eventId={event.id} guest={guest} />
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="space-y-3 md:hidden">
+          {guestViews.map(({ guest, confirmUrl, whatsappLink }) => (
+            <div
+              key={guest.id}
+              className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-medium">{guest.name}</p>
+                  <p className="text-xs text-ink-muted">
+                    {guest.email || ""} {guest.phone ? `· ${guest.phone}` : ""}
+                  </p>
+                </div>
+                <StatusBadge status={guest.status} />
+              </div>
+
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
+                <span>Mesa: {guest.tableName || "—"}</span>
+                <span>
+                  {guest.status === "CONFIRMED"
+                    ? `${guest.companionsConfirmed ?? 0}/${guest.maxCompanions} acompañantes`
+                    : `máx. ${guest.maxCompanions} acompañantes`}
+                </span>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <CopyLinkButton url={confirmUrl} />
+                <GuestQrButton
+                  guestName={guest.name}
+                  rsvpUrl={confirmUrl}
+                  checkinUrl={`${baseUrl}/checkin/${guest.checkinToken}`}
+                />
+                <EmbedCodeButton url={confirmUrl} title={`Confirmar asistencia - ${guest.name}`} />
+              </div>
+
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                {guest.email && (
+                  <form action={sendGuestEmail.bind(null, event.id, guest.id)}>
+                    <button type="submit" className="text-sm text-gold-dark hover:underline">
+                      Email
+                    </button>
+                  </form>
+                )}
+                {whatsappLink && (
+                  <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-success hover:underline"
+                  >
+                    WhatsApp
+                  </a>
+                )}
+                {guest.invitationSentAt && <span className="text-xs text-ink-light">Enviado</span>}
+                <form action={deleteGuest.bind(null, event.id, guest.id)}>
+                  <button type="submit" className="text-sm text-danger hover:underline">
+                    Eliminar
+                  </button>
+                </form>
+              </div>
+
+              <GuestEditForm eventId={event.id} guest={guest} />
+            </div>
+          ))}
         </div>
       </section>
     </div>
