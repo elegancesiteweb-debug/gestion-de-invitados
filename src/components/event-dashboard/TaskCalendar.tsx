@@ -10,6 +10,10 @@ function dateKey(date: Date): string {
   return date.toLocaleDateString("en-CA", { timeZone: APP_TIMEZONE });
 }
 
+function isOverdue(task: Task, todayKey: string): boolean {
+  return !task.done && !!task.dueDate && dateKey(new Date(task.dueDate)) < todayKey;
+}
+
 const MONTH_NAMES = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
   "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
@@ -100,7 +104,11 @@ export function TaskCalendar({ eventId, tasks }: { eventId: string; tasks: Task[
                     type="button"
                     onClick={() => setSelected(task)}
                     className={`block w-full truncate rounded px-1 py-0.5 text-left text-[11px] ${
-                      task.done ? "bg-success-bg text-success line-through" : "bg-gold/15 text-ink"
+                      task.done
+                        ? "bg-success-bg text-success line-through"
+                        : isOverdue(task, todayKey)
+                          ? "bg-danger-bg text-danger"
+                          : "bg-gold/15 text-ink"
                     }`}
                   >
                     {task.title}
@@ -133,8 +141,16 @@ export function TaskCalendar({ eventId, tasks }: { eventId: string; tasks: Task[
               </p>
               <p className="mt-3 text-sm">
                 Estado:{" "}
-                <span className={selected.done ? "text-success" : "text-warning"}>
-                  {selected.done ? "Completada" : "Pendiente"}
+                <span
+                  className={
+                    selected.done
+                      ? "text-success"
+                      : isOverdue(selected, todayKey)
+                        ? "text-danger"
+                        : "text-warning"
+                  }
+                >
+                  {selected.done ? "Completada" : isOverdue(selected, todayKey) ? "Vencida" : "Pendiente"}
                 </span>
               </p>
               <div className="mt-5 flex gap-2">

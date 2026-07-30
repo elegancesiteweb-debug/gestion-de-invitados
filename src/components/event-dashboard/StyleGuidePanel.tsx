@@ -10,7 +10,7 @@ export function StyleGuidePanel({
   images,
 }: {
   event: Event;
-  images: { id: string; imageType: string }[];
+  images: { id: string; imageType: string; uploadedBy: "ORGANIZER" | "CLIENT" }[];
 }) {
   const colors = (event.colorPalette ?? "")
     .split(",")
@@ -98,6 +98,11 @@ export function StyleGuidePanel({
                   alt=""
                   className="h-32 w-full object-cover"
                 />
+                {image.uploadedBy === "CLIENT" && (
+                  <span className="absolute left-1 top-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+                    Subida por la pareja
+                  </span>
+                )}
                 <form
                   action={deleteStyleGuideImage.bind(null, event.id, image.id)}
                   className="absolute inset-x-0 bottom-0 bg-black/50 p-1 text-center opacity-0 transition group-hover:opacity-100"

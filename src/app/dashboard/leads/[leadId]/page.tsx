@@ -7,6 +7,7 @@ import { updateLead, updateLeadStage, deleteLead } from "@/lib/actions/leads";
 import { createProposal, deleteProposal, addProposalItem, deleteProposalItem } from "@/lib/actions/proposals";
 import { createContract, deleteContract } from "@/lib/actions/contracts";
 import { createInvoice, createPaymentPlan, deleteInvoice, sendInvoiceReminder } from "@/lib/actions/invoices";
+import { addPackageToProposal } from "@/lib/actions/packages";
 import { PROVIDER_LABELS } from "@/lib/payments";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { formatDateTime } from "@/lib/dates";
@@ -49,6 +50,11 @@ export default async function LeadDetailPage({
   const showProposals = hasFeature(session.user.accountType, "crm_proposals");
   const showContracts = hasFeature(session.user.accountType, "crm_contracts");
   const showInvoices = hasFeature(session.user.accountType, "crm_invoicing");
+  const showPackages = hasFeature(session.user.accountType, "crm_packages");
+
+  const packages = showProposals && showPackages
+    ? await prisma.package.findMany({ where: { organizerId: session.user.id }, orderBy: { name: "asc" } })
+    : [];
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10">
@@ -278,6 +284,33 @@ export default async function LeadDetailPage({
                       + Ítem
                     </button>
                   </form>
+
+                  {showPackages && packages.length > 0 && (
+                    <form
+                      action={addPackageToProposal.bind(null, lead.id, proposal.id)}
+                      className="mt-2 flex flex-wrap items-end gap-2"
+                    >
+                      <div className="flex-1">
+                        <select
+                          name="packageId"
+                          required
+                          className="w-full rounded-lg border border-gold/25 px-2 py-1 text-sm"
+                        >
+                          {packages.map((pkg) => (
+                            <option key={pkg.id} value={pkg.id}>
+                              {pkg.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <button
+                        type="submit"
+                        className="rounded-lg border border-gold/25 px-3 py-1 text-sm hover:bg-warm"
+                      >
+                        + Agregar paquete
+                      </button>
+                    </form>
+                  )}
                 </div>
               );
             })}

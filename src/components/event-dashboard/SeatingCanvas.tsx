@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition, type DragEvent, type PointerEvent } from "react";
-import type { Companion, Guest, Table as TableModel, TableShape } from "@prisma/client";
+import type { Companion, Guest, Table as TableModel } from "@prisma/client";
 import {
   createTable,
   updateTableDetails,
@@ -9,7 +9,13 @@ import {
   deleteTable,
   assignGuestToTable,
 } from "@/lib/actions/tables";
-import { calcTableOccupancy, buildSeatOccupants } from "@/lib/tables";
+import {
+  calcTableOccupancy,
+  buildSeatOccupants,
+  shapeDimensions,
+  rectSeatPosition,
+  roundSeatPosition,
+} from "@/lib/tables";
 
 type GuestWithCompanions = Guest & { companions: Companion[] };
 
@@ -24,35 +30,6 @@ type DragState = {
 
 const SEAT_MARGIN = 26;
 const PARTY_ROW_HEIGHT = 32;
-
-function shapeDimensions(shape: TableShape, seats: number): { width: number; height: number } {
-  if (shape === "RECT") {
-    return { width: Math.min(260, 140 + seats * 8), height: 110 };
-  }
-  const size = Math.min(180, 90 + seats * 5);
-  return { width: size, height: size };
-}
-
-// Posición de un asiento sobre el perímetro de un rectángulo (sentido horario
-// desde la esquina superior izquierda), desplazado `margin` px hacia afuera del borde.
-function rectSeatPosition(
-  width: number,
-  height: number,
-  margin: number,
-  index: number,
-  count: number
-): { x: number; y: number } {
-  const perimeter = 2 * (width + height);
-  let dist = (perimeter * index) / count;
-
-  if (dist < width) return { x: dist, y: -margin };
-  dist -= width;
-  if (dist < height) return { x: width + margin, y: dist };
-  dist -= height;
-  if (dist < width) return { x: width - dist, y: height + margin };
-  dist -= width;
-  return { x: -margin, y: height - dist };
-}
 
 function guestLabel(guest: Guest): string {
   const extra = guest.status === "CONFIRMED" ? guest.companionsConfirmed ?? 0 : guest.maxCompanions;
@@ -377,14 +354,12 @@ export function SeatingCanvas({
                   </div>
 
                   {Array.from({ length: table.seats }, (_, i) => {
-                    const angle = (2 * Math.PI * i) / table.seats - Math.PI / 2;
-                    const seatX = circleCenter + seatRadius * Math.cos(angle);
-                    const seatY = circleCenter + seatRadius * Math.sin(angle);
+                    const seat = roundSeatPosition(seatRadius, circleCenter, i, table.seats);
                     return (
                       <div
                         key={i}
                         className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] text-ink shadow-sm"
-                        style={{ left: seatX, top: seatY }}
+                        style={{ left: seat.x, top: seat.y }}
                       >
                         {occupants[i] ?? ""}
                       </div>

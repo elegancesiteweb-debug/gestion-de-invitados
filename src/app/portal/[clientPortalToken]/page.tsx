@@ -5,7 +5,12 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { BrandHeader } from "@/components/BrandHeader";
 import { BrandFooter } from "@/components/BrandFooter";
 import { formatDateTime } from "@/lib/dates";
-import { submitClientComment, setVendorApproval } from "@/lib/actions/portal";
+import {
+  submitClientComment,
+  setVendorApproval,
+  uploadInspirationImage,
+  deleteInspirationImage,
+} from "@/lib/actions/portal";
 
 export default async function ClientPortalPage({
   params,
@@ -23,6 +28,7 @@ export default async function ClientPortalPage({
       timelineItems: { orderBy: { time: "asc" } },
       eventVendors: { orderBy: { createdAt: "asc" }, include: { vendor: true } },
       clientComments: { orderBy: { createdAt: "desc" } },
+      styleGuideImages: { orderBy: { createdAt: "desc" } },
     },
   });
 
@@ -30,6 +36,14 @@ export default async function ClientPortalPage({
     notFound();
   }
 
+  // Lead.convertedEventId no es una relación real de Prisma, solo un string —
+  // hay que buscar el lead de origen manualmente para encontrar sus contratos.
+  const lead = await prisma.lead.findFirst({
+    where: { convertedEventId: event.id },
+    include: { contracts: { orderBy: { createdAt: "asc" } } },
+  });
+
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const confirmed = event.guests.filter((g) => g.status === "CONFIRMED");
   const declined = event.guests.filter((g) => g.status === "DECLINED");
   const pending = event.guests.filter((g) => g.status === "PENDING");
@@ -57,6 +71,16 @@ export default async function ClientPortalPage({
           {formatDateTime(event.eventDate)}
           {event.location ? ` · ${event.location}` : ""}
         </p>
+        {event.calendarToken && (
+          <p className="mt-2 text-center">
+            <a
+              href={`${baseUrl}/api/calendar/${event.calendarToken}`}
+              className="text-sm text-gold-dark hover:underline"
+            >
+              Agregar a tu calendario →
+            </a>
+          </p>
+        )}
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard label="Confirmados" value={confirmed.length} />
@@ -179,6 +203,81 @@ export default async function ClientPortalPage({
                       </form>
                     </div>
                   )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="mt-8">
+          <h2 className="mb-3 font-serif text-lg font-medium text-ink">Moodboard de inspiración</h2>
+          <form
+            action={uploadInspirationImage.bind(null, clientPortalToken)}
+            className="flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-3"
+          >
+            <input type="file" name="image" accept="image/*" required className="text-sm" />
+            <button
+              type="submit"
+              className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
+            >
+              Subir
+            </button>
+          </form>
+
+          {event.styleGuideImages.length > 0 && (
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              {event.styleGuideImages.map((image) => (
+                <div key={image.id} className="group relative overflow-hidden rounded-lg shadow-sm">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/api/style-guide-images/${image.id}`}
+                    alt=""
+                    className="h-32 w-full object-cover"
+                  />
+                  {image.uploadedBy === "CLIENT" && (
+                    <span className="absolute left-1 top-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+                      Subida por ustedes
+                    </span>
+                  )}
+                  {image.uploadedBy === "CLIENT" && (
+                    <form
+                      action={deleteInspirationImage.bind(null, clientPortalToken, image.id)}
+                      className="absolute inset-x-0 bottom-0 bg-black/50 p-1 text-center opacity-0 transition group-hover:opacity-100"
+                    >
+                      <button type="submit" className="text-xs text-white hover:underline">
+                        Eliminar
+                      </button>
+                    </form>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {lead && lead.contracts.length > 0 && (
+          <section className="mt-8">
+            <h2 className="mb-3 font-serif text-lg font-medium text-ink">Contrato</h2>
+            <div className="space-y-2">
+              {lead.contracts.map((contract) => (
+                <div
+                  key={contract.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-gold/20 bg-white/60 p-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-ink">{contract.title}</p>
+                    <p className="text-xs text-ink-muted">
+                      {contract.signedAt
+                        ? `Firmado el ${formatDateTime(contract.signedAt)}`
+                        : "Pendiente de firma"}
+                    </p>
+                  </div>
+                  <a
+                    href={`/sign/${contract.token}`}
+                    className="text-sm text-gold-dark hover:underline"
+                  >
+                    Ver / descargar →
+                  </a>
                 </div>
               ))}
             </div>

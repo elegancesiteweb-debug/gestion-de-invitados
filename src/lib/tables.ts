@@ -1,4 +1,4 @@
-import type { Companion, Guest } from "@prisma/client";
+import type { Companion, Guest, TableShape } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 type GuestWithCompanions = Guest & { companions: Companion[] };
@@ -29,6 +29,52 @@ export async function findOrCreateTableByName(
   const { x, y } = nextGridPosition(existingCount);
 
   return prisma.table.create({ data: { eventId, name, x, y } });
+}
+
+// Geometría pura de una mesa, compartida por el editor interactivo (SeatingCanvas)
+// y el plano imprimible (sin interactividad, ambos deben verse iguales).
+export function shapeDimensions(shape: TableShape, seats: number): { width: number; height: number } {
+  if (shape === "RECT") {
+    return { width: Math.min(260, 140 + seats * 8), height: 110 };
+  }
+  const size = Math.min(180, 90 + seats * 5);
+  return { width: size, height: size };
+}
+
+// Posición de un asiento sobre el perímetro de un rectángulo (sentido horario
+// desde la esquina superior izquierda), desplazado `margin` px hacia afuera del borde.
+export function rectSeatPosition(
+  width: number,
+  height: number,
+  margin: number,
+  index: number,
+  count: number
+): { x: number; y: number } {
+  const perimeter = 2 * (width + height);
+  let dist = (perimeter * index) / count;
+
+  if (dist < width) return { x: dist, y: -margin };
+  dist -= width;
+  if (dist < height) return { x: width + margin, y: dist };
+  dist -= height;
+  if (dist < width) return { x: width - dist, y: height + margin };
+  dist -= width;
+  return { x: -margin, y: height - dist };
+}
+
+// Posición de un asiento alrededor de una mesa redonda de radio `seatRadius`,
+// centrada en (circleCenter, circleCenter).
+export function roundSeatPosition(
+  seatRadius: number,
+  circleCenter: number,
+  index: number,
+  count: number
+): { x: number; y: number } {
+  const angle = (2 * Math.PI * index) / count - Math.PI / 2;
+  return {
+    x: circleCenter + seatRadius * Math.cos(angle),
+    y: circleCenter + seatRadius * Math.sin(angle),
+  };
 }
 
 export function calcGuestOccupancy(guest: Guest): number {

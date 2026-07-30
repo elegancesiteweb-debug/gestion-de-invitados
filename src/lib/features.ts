@@ -25,6 +25,7 @@ export const PLANNER_FEATURES = [
   "own_branding",
   "team_accounts",
   "business_reports",
+  "crm_packages",
 ] as const;
 
 export type FeatureKey =

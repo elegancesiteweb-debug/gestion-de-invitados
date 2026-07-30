@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { SignOutButton } from "@/components/SignOutButton";
 import { formatDate } from "@/lib/dates";
 import { hasFeature } from "@/lib/features";
+import { EventStatusBadge } from "@/components/EventStatusBadge";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -149,9 +150,12 @@ export default async function DashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <p className="flex-none text-sm text-ink-muted">
-                      {confirmed}/{total} confirmados
-                    </p>
+                    <div className="flex flex-none items-center gap-3">
+                      <p className="text-sm text-ink-muted">
+                        {confirmed}/{total} confirmados
+                      </p>
+                      <EventStatusBadge status={event.status} />
+                    </div>
                   </div>
 
                   {showMultiEventStats && (

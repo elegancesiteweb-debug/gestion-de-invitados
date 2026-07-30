@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { eventSchema } from "@/lib/validations";
 import { slugify } from "@/lib/slug";
 import { requireWriteAccess } from "@/lib/actions/authz";
+import type { EventStatus } from "@prisma/client";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -18,6 +19,7 @@ async function requireOrganizerId() {
 }
 
 const INDIVIDUAL_EVENT_LIMIT = 1;
+const EVENT_STATUSES: EventStatus[] = ["PLANNING", "CONFIRMED", "COMPLETED", "CANCELLED"];
 
 export async function createEvent(formData: FormData) {
   const organizerId = await requireOrganizerId();
@@ -238,4 +240,36 @@ export async function toggleClientPortal(eventId: string, formData: FormData) {
   });
 
   revalidatePath(`/dashboard/events/${eventId}`);
+}
+
+export async function toggleEventCalendar(eventId: string, formData: FormData) {
+  const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
+
+  const enable = formData.get("enable") === "true";
+
+  await prisma.event.updateMany({
+    where: { id: eventId, organizerId },
+    data: { calendarToken: enable ? nanoid(12) : null },
+  });
+
+  revalidatePath(`/dashboard/events/${eventId}`);
+}
+
+export async function updateEventStatus(eventId: string, formData: FormData) {
+  const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
+
+  const status = formData.get("status") as EventStatus | null;
+  if (!status || !EVENT_STATUSES.includes(status)) {
+    throw new Error("Estado inválido");
+  }
+
+  await prisma.event.updateMany({
+    where: { id: eventId, organizerId },
+    data: { status },
+  });
+
+  revalidatePath(`/dashboard/events/${eventId}`);
+  revalidatePath("/dashboard");
 }

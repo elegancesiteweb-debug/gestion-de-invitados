@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/dates";
 import { signContract } from "@/lib/actions/contracts";
+import { PrintButton } from "@/components/PrintButton";
 
 export default async function SignContractPage({
   params,
@@ -16,9 +17,12 @@ export default async function SignContractPage({
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-10">
-      <div className="rounded-2xl border border-gold/20 bg-white/60 p-6 shadow-lg backdrop-blur-xl">
-        <h1 className="font-serif text-2xl font-medium text-ink">{contract.title}</h1>
+    <div className="mx-auto w-full max-w-2xl px-4 py-10 print:px-0 print:py-0">
+      <div className="rounded-2xl border border-gold/20 bg-white/60 p-6 shadow-lg backdrop-blur-xl print:border-0 print:shadow-none">
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="font-serif text-2xl font-medium text-ink">{contract.title}</h1>
+          {contract.signedAt && <PrintButton />}
+        </div>
 
         <div className="mt-4 whitespace-pre-wrap rounded-lg border border-gold/15 bg-white/70 p-4 text-sm text-ink">
           {contract.content}

@@ -41,11 +41,18 @@ export default async function LeadsPage() {
         ← Tus eventos
       </Link>
 
-      <div className="mt-2 flex items-center justify-between gap-3">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-serif text-2xl font-medium text-ink">Leads</h1>
-        <Link href="/dashboard/leads/questions" className="text-sm text-gold-dark hover:underline">
-          Cuestionario de cotización →
-        </Link>
+        <div className="flex gap-4">
+          {hasFeature(session.user.accountType, "crm_packages") && (
+            <Link href="/dashboard/packages" className="text-sm text-gold-dark hover:underline">
+              Paquetes →
+            </Link>
+          )}
+          <Link href="/dashboard/leads/questions" className="text-sm text-gold-dark hover:underline">
+            Cuestionario de cotización →
+          </Link>
+        </div>
       </div>
       <p className="mt-1 text-sm text-ink-muted">
         Prospectos y clientes potenciales, con su etapa en el proceso de venta.

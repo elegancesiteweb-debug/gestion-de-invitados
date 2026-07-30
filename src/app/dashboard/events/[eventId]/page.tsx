@@ -17,6 +17,7 @@ import { TimelinePanel } from "@/components/event-dashboard/TimelinePanel";
 import { StyleGuidePanel } from "@/components/event-dashboard/StyleGuidePanel";
 import { EventVendorsPanel } from "@/components/event-dashboard/EventVendorsPanel";
 import { ClientMessagesPanel } from "@/components/event-dashboard/ClientMessagesPanel";
+import { EventStatusBadge } from "@/components/EventStatusBadge";
 import { formatDateTime } from "@/lib/dates";
 
 export default async function EventDetailPage({
@@ -43,7 +44,10 @@ export default async function EventDetailPage({
       budgetItems: { orderBy: { createdAt: "asc" } },
       tables: { orderBy: { createdAt: "asc" } },
       timelineItems: { orderBy: { time: "asc" } },
-      styleGuideImages: { orderBy: { createdAt: "asc" }, select: { id: true, imageType: true } },
+      styleGuideImages: {
+        orderBy: { createdAt: "asc" },
+        select: { id: true, imageType: true, uploadedBy: true },
+      },
       eventVendors: { orderBy: { createdAt: "asc" }, include: { vendor: true } },
       clientComments: { orderBy: { createdAt: "desc" } },
     },
@@ -93,9 +97,12 @@ export default async function EventDetailPage({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-4">
-              <h1 className="font-serif text-2xl font-medium text-white drop-shadow-sm">
-                {event.title}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="font-serif text-2xl font-medium text-white drop-shadow-sm">
+                  {event.title}
+                </h1>
+                <EventStatusBadge status={event.status} />
+              </div>
               <p className="text-sm text-white/90 drop-shadow-sm">
                 {formatDateTime(event.eventDate)}
                 {event.location ? ` · ${event.location}` : ""}
@@ -109,7 +116,10 @@ export default async function EventDetailPage({
         >
           {!event.logoImageType && (
             <div>
-              <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
+                <EventStatusBadge status={event.status} />
+              </div>
               <p className="text-sm text-ink-muted">
                 {formatDateTime(event.eventDate)}
                 {event.location ? ` · ${event.location}` : ""}

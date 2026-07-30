@@ -47,6 +47,7 @@ model Organizer {
   leads         Lead[]
   teamMembers   TeamMember[]
   leadQuestions LeadQuestion[]
+  packages      Package[]
 }
 
 enum TeamRole {
@@ -126,6 +127,30 @@ model ClientComment {
   @@index([eventId])
 }
 
+model Package {
+  id          String   @id @default(cuid())
+  organizerId String
+  organizer   Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  items PackageItem[]
+
+  @@index([organizerId])
+}
+
+model PackageItem {
+  id          String   @id @default(cuid())
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  description String
+  amount      Float
+  createdAt   DateTime @default(now())
+
+  @@index([packageId])
+}
+
 model AccessCode {
   id          String      @id @default(cuid())
   code        String      @unique
@@ -136,6 +161,13 @@ model AccessCode {
   usedAt            DateTime?
   usedByOrganizerId String?    @unique
   usedByOrganizer   Organizer? @relation(fields: [usedByOrganizerId], references: [id])
+}
+
+enum EventStatus {
+  PLANNING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
 }
 
 model Event {
@@ -149,6 +181,7 @@ model Event {
   eventDate   DateTime
   location    String?
   notes       String?
+  status      EventStatus @default(PLANNING)
   createdAt   DateTime @default(now())
 
   messageTemplate String?
@@ -166,6 +199,7 @@ model Event {
 
   publicRsvpToken   String? @unique
   clientPortalToken String? @unique
+  calendarToken     String? @unique
 
   generalMaxCompanions Int?    @default(5) // null = sin límite de acompañantes
 
@@ -198,13 +232,19 @@ model TimelineItem {
   @@index([eventId])
 }
 
+enum ImageSource {
+  ORGANIZER
+  CLIENT
+}
+
 model StyleGuideImage {
-  id        String   @id @default(cuid())
-  eventId   String
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  image     Bytes
-  imageType String
-  createdAt DateTime @default(now())
+  id         String      @id @default(cuid())
+  eventId    String
+  event      Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  image      Bytes
+  imageType  String
+  uploadedBy ImageSource @default(ORGANIZER)
+  createdAt  DateTime    @default(now())
 
   @@index([eventId])
 }

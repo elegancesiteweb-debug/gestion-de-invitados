@@ -3,6 +3,8 @@ import {
   updateEventSettings,
   toggleGeneralRsvp,
   toggleClientPortal,
+  toggleEventCalendar,
+  updateEventStatus,
   uploadEventLogo,
   removeEventLogo,
 } from "@/lib/actions/events";
@@ -12,6 +14,13 @@ import { GeneralPassesInput } from "@/components/event-dashboard/GeneralPassesIn
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { EmbedCodeButton } from "@/components/EmbedCodeButton";
 import { hasFeature } from "@/lib/features";
+
+const STATUS_LABELS: Record<string, string> = {
+  PLANNING: "Planeación",
+  CONFIRMED: "Confirmado",
+  COMPLETED: "Completado",
+  CANCELLED: "Cancelado",
+};
 
 export function SettingsPanel({
   event,
@@ -24,9 +33,39 @@ export function SettingsPanel({
 }) {
   const generalUrl = event.publicRsvpToken ? `${baseUrl}/g/${event.publicRsvpToken}` : null;
   const portalUrl = event.clientPortalToken ? `${baseUrl}/portal/${event.clientPortalToken}` : null;
+  const calendarUrl = event.calendarToken ? `${baseUrl}/api/calendar/${event.calendarToken}` : null;
+  const webcalUrl = event.calendarToken
+    ? `webcal://${baseUrl.replace(/^https?:\/\//, "")}/api/calendar/${event.calendarToken}`
+    : null;
 
   return (
     <div className="space-y-6 py-6">
+      <div className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
+        <h2 className="font-serif text-lg font-medium text-ink">Estado del evento</h2>
+        <form
+          action={updateEventStatus.bind(null, event.id)}
+          className="mt-2 flex flex-wrap items-center gap-3"
+        >
+          <select
+            name="status"
+            defaultValue={event.status}
+            className="rounded-lg border border-gold/25 bg-white/70 px-3 py-1.5 text-sm"
+          >
+            {Object.entries(STATUS_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            className="rounded-lg border border-gold/25 px-3 py-1.5 text-sm hover:bg-warm"
+          >
+            Actualizar estado
+          </button>
+        </form>
+      </div>
+
       <form
         action={updateEventSettings.bind(null, event.id)}
         className="space-y-4 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
@@ -200,9 +239,9 @@ export function SettingsPanel({
         <div className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
           <h2 className="font-serif text-lg font-medium text-ink">Portal de cliente</h2>
           <p className="mt-1 text-xs text-ink-muted">
-            Link de solo lectura para compartir con la pareja/cliente: ve estadísticas de
-            confirmaciones, la lista de invitados, tareas y la agenda del día, sin poder editar
-            nada.
+            Link para compartir con la pareja/cliente: ve estadísticas de confirmaciones, la lista
+            de invitados, tareas y la agenda del día, aprueba proveedores, deja mensajes, sube
+            fotos de inspiración y ve su contrato.
           </p>
 
           <div className="mt-3 flex items-center gap-3">
@@ -236,6 +275,50 @@ export function SettingsPanel({
           )}
         </div>
       )}
+
+      <div className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
+        <h2 className="font-serif text-lg font-medium text-ink">Calendario del dispositivo</h2>
+        <p className="mt-1 text-xs text-ink-muted">
+          Conecta la fecha del evento, la agenda del día y las tareas con fecha límite a tu
+          Google/Apple/Outlook Calendar.
+        </p>
+
+        <div className="mt-3 flex items-center gap-3">
+          {event.calendarToken ? (
+            <form action={toggleEventCalendar.bind(null, event.id)}>
+              <input type="hidden" name="enable" value="false" />
+              <button
+                type="submit"
+                className="rounded-lg border border-danger/30 bg-danger-bg px-3 py-1.5 text-sm text-danger hover:bg-danger-bg/80"
+              >
+                Desactivar calendario
+              </button>
+            </form>
+          ) : (
+            <form action={toggleEventCalendar.bind(null, event.id)}>
+              <input type="hidden" name="enable" value="true" />
+              <button
+                type="submit"
+                className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm text-white hover:shadow-lg"
+              >
+                Activar calendario
+              </button>
+            </form>
+          )}
+        </div>
+
+        {calendarUrl && webcalUrl && (
+          <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-gold/15 pt-4">
+            <a href={calendarUrl} className="text-sm text-gold-dark hover:underline">
+              Descargar .ics
+            </a>
+            <a href={webcalUrl} className="text-sm text-gold-dark hover:underline">
+              Suscribirse (webcal)
+            </a>
+            <CopyLinkButton url={calendarUrl} label="Copiar link" />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
