@@ -16,6 +16,7 @@ import { BudgetPanel } from "@/components/event-dashboard/BudgetPanel";
 import { TimelinePanel } from "@/components/event-dashboard/TimelinePanel";
 import { StyleGuidePanel } from "@/components/event-dashboard/StyleGuidePanel";
 import { EventVendorsPanel } from "@/components/event-dashboard/EventVendorsPanel";
+import { ClientMessagesPanel } from "@/components/event-dashboard/ClientMessagesPanel";
 import { formatDateTime } from "@/lib/dates";
 
 export default async function EventDetailPage({
@@ -44,6 +45,7 @@ export default async function EventDetailPage({
       timelineItems: { orderBy: { time: "asc" } },
       styleGuideImages: { orderBy: { createdAt: "asc" }, select: { id: true, imageType: true } },
       eventVendors: { orderBy: { createdAt: "asc" }, include: { vendor: true } },
+      clientComments: { orderBy: { createdAt: "desc" } },
     },
   });
 
@@ -114,11 +116,13 @@ export default async function EventDetailPage({
               </p>
             </div>
           )}
-          <form action={deleteEvent.bind(null, event.id)}>
-            <button type="submit" className="text-sm text-danger hover:underline">
-              Eliminar evento
-            </button>
-          </form>
+          {session.user.teamRole !== "COLLABORATOR" && (
+            <form action={deleteEvent.bind(null, event.id)}>
+              <button type="submit" className="text-sm text-danger hover:underline">
+                Eliminar evento
+              </button>
+            </form>
+          )}
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -146,6 +150,8 @@ export default async function EventDetailPage({
           />
         ) : activeTab === "estilo" ? (
           <StyleGuidePanel event={event} images={event.styleGuideImages} />
+        ) : activeTab === "mensajes" ? (
+          <ClientMessagesPanel comments={event.clientComments} />
         ) : activeTab === "accesos" ? (
           <AccessPanel guests={event.guests} />
         ) : activeTab === "envios" ? (

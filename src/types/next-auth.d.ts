@@ -6,6 +6,8 @@ declare module "next-auth" {
       id: string;
       accountType: "INDIVIDUAL" | "PLANNER";
       isAdmin: boolean;
+      teamRole: "OWNER" | "ADMIN" | "COLLABORATOR";
+      teamMemberName: string | null;
     } & DefaultSession["user"];
   }
 }

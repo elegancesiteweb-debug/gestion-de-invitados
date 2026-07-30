@@ -1,4 +1,4 @@
-export function StatCard({ label, value }: { label: string; value: number }) {
+export function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded-xl border border-gold/20 bg-white/60 p-4 text-center shadow-md backdrop-blur-xl">
       <p className="font-serif text-3xl font-medium">{value}</p>

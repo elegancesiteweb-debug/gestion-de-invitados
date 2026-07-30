@@ -25,11 +25,15 @@ export default async function DashboardPage() {
     },
   });
 
+  const isCollaborator = session.user.teamRole === "COLLABORATOR";
   const canCreateEvent =
-    organizer.accountType === "PLANNER" || organizer.eventsCreatedCount < 1;
+    !isCollaborator &&
+    (organizer.accountType === "PLANNER" || organizer.eventsCreatedCount < 1);
   const showVendorsLink = hasFeature(session.user.accountType, "vendor_directory");
   const showLeadsLink = hasFeature(session.user.accountType, "crm_leads");
-  const showIntegrationsLink = hasFeature(session.user.accountType, "own_integrations");
+  const showSettingsLink = !isCollaborator;
+  const showTeamLink = hasFeature(session.user.accountType, "team_accounts") && !isCollaborator;
+  const showReportsLink = hasFeature(session.user.accountType, "business_reports");
   const showMultiEventStats = hasFeature(session.user.accountType, "multi_event_dashboard");
 
   return (
@@ -43,7 +47,16 @@ export default async function DashboardPage() {
               Elegance Site · Panel de organizador
             </p>
             <h1 className="mt-1 font-serif text-2xl font-medium text-ink">Tus eventos</h1>
-            <p className="text-sm text-ink-muted">Hola, {session.user.name}</p>
+            <p className="text-sm text-ink-muted">
+              Hola, {session.user.name}
+              {session.user.teamMemberName && (
+                <span className="text-ink-light">
+                  {" "}
+                  (conectado como {session.user.teamMemberName}
+                  {isCollaborator ? ", solo lectura" : ""})
+                </span>
+              )}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -57,9 +70,19 @@ export default async function DashboardPage() {
               Leads
             </Link>
           )}
-          {showIntegrationsLink && (
+          {showReportsLink && (
+            <Link href="/dashboard/reports" className="text-sm text-gold-dark hover:underline">
+              Reportes
+            </Link>
+          )}
+          {showTeamLink && (
+            <Link href="/dashboard/team" className="text-sm text-gold-dark hover:underline">
+              Equipo
+            </Link>
+          )}
+          {showSettingsLink && (
             <Link href="/dashboard/settings" className="text-sm text-gold-dark hover:underline">
-              Integraciones
+              Configuración
             </Link>
           )}
           {session.user.isAdmin && (

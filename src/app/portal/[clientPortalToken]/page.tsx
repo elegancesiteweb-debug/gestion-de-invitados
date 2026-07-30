@@ -2,7 +2,10 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/event-dashboard/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
+import { BrandHeader } from "@/components/BrandHeader";
+import { BrandFooter } from "@/components/BrandFooter";
 import { formatDateTime } from "@/lib/dates";
+import { submitClientComment, setVendorApproval } from "@/lib/actions/portal";
 
 export default async function ClientPortalPage({
   params,
@@ -14,9 +17,12 @@ export default async function ClientPortalPage({
   const event = await prisma.event.findUnique({
     where: { clientPortalToken },
     include: {
+      organizer: true,
       guests: { orderBy: { name: "asc" } },
       tasks: { orderBy: { createdAt: "asc" } },
       timelineItems: { orderBy: { time: "asc" } },
+      eventVendors: { orderBy: { createdAt: "asc" }, include: { vendor: true } },
+      clientComments: { orderBy: { createdAt: "desc" } },
     },
   });
 
@@ -32,6 +38,7 @@ export default async function ClientPortalPage({
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
       <div className="rounded-2xl border border-gold/20 bg-white/60 p-6 shadow-lg backdrop-blur-xl">
+        <BrandHeader organizer={event.organizer} />
         {event.logoImageType && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -41,7 +48,7 @@ export default async function ClientPortalPage({
           />
         )}
         <p className="text-center text-xs uppercase tracking-[0.2em] text-gold-dark">
-          Portal del cliente · solo lectura
+          Portal del cliente
         </p>
         <h1 className="mt-1 text-center font-serif text-2xl font-medium text-ink">
           {event.title}
@@ -124,6 +131,95 @@ export default async function ClientPortalPage({
             </ol>
           </section>
         )}
+
+        {event.eventVendors.length > 0 && (
+          <section className="mt-8">
+            <h2 className="mb-3 font-serif text-lg font-medium text-ink">Proveedores</h2>
+            <div className="space-y-2">
+              {event.eventVendors.map((ev) => (
+                <div
+                  key={ev.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-gold/20 bg-white/60 p-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-ink">
+                      {ev.vendor.name}
+                      {ev.vendor.category && (
+                        <span className="ml-2 rounded-full bg-warm px-2 py-0.5 text-xs text-ink-muted">
+                          {ev.vendor.category}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  {ev.clientApproved === true ? (
+                    <span className="rounded-full bg-success-bg px-2.5 py-1 text-xs font-medium text-success">
+                      Aprobado
+                    </span>
+                  ) : ev.clientApproved === false ? (
+                    <span className="rounded-full bg-danger-bg px-2.5 py-1 text-xs font-medium text-danger">
+                      Rechazado
+                    </span>
+                  ) : (
+                    <div className="flex flex-none gap-2">
+                      <form action={setVendorApproval.bind(null, clientPortalToken, ev.id, true)}>
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-success/30 px-2.5 py-1 text-xs font-medium text-success hover:bg-success-bg"
+                        >
+                          Aprobar
+                        </button>
+                      </form>
+                      <form action={setVendorApproval.bind(null, clientPortalToken, ev.id, false)}>
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-danger/30 px-2.5 py-1 text-xs font-medium text-danger hover:bg-danger-bg"
+                        >
+                          Rechazar
+                        </button>
+                      </form>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="mt-8">
+          <h2 className="mb-3 font-serif text-lg font-medium text-ink">Mensajes</h2>
+          <form
+            action={submitClientComment.bind(null, clientPortalToken)}
+            className="flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-3"
+          >
+            <div className="flex-1">
+              <textarea
+                name="body"
+                required
+                rows={2}
+                placeholder="Escribe un mensaje para el organizador..."
+                className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+              />
+            </div>
+            <button
+              type="submit"
+              className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
+            >
+              Enviar
+            </button>
+          </form>
+          {event.clientComments.length > 0 && (
+            <ul className="mt-3 space-y-2">
+              {event.clientComments.map((comment) => (
+                <li key={comment.id} className="rounded-lg border border-gold/15 bg-white/50 p-3 text-sm">
+                  <p className="text-ink">{comment.body}</p>
+                  <p className="mt-1 text-xs text-ink-muted">{formatDateTime(comment.createdAt)}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <BrandFooter />
       </div>
     </div>
   );

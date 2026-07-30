@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { nanoid } from "nanoid";
 import { prisma } from "@/lib/prisma";
 import { rsvpSchema, generalRsvpSchema } from "@/lib/validations";
+import { notifyOrganizer } from "@/lib/email";
 
 function parseCompanionRows(
   formData: FormData,
@@ -23,7 +24,10 @@ function parseCompanionRows(
 }
 
 export async function submitRsvp(token: string, formData: FormData) {
-  const guest = await prisma.guest.findUnique({ where: { token }, include: { event: true } });
+  const guest = await prisma.guest.findUnique({
+    where: { token },
+    include: { event: { include: { organizer: true } } },
+  });
   if (!guest) {
     return { error: "Invitación no encontrada" };
   }
@@ -76,11 +80,21 @@ export async function submitRsvp(token: string, formData: FormData) {
   ]);
 
   revalidatePath(`/c/${token}`);
+
+  await notifyOrganizer(
+    guest.event.organizer,
+    `Nueva respuesta: ${guest.event.title}`,
+    `${guest.name} ${status === "CONFIRMED" ? "confirmó su asistencia" : "no asistirá"} a ${guest.event.title}.`
+  );
+
   return { ok: true };
 }
 
 export async function submitGeneralRsvp(publicRsvpToken: string, formData: FormData) {
-  const event = await prisma.event.findUnique({ where: { publicRsvpToken } });
+  const event = await prisma.event.findUnique({
+    where: { publicRsvpToken },
+    include: { organizer: true },
+  });
   if (!event) {
     return { error: "Formulario no encontrado" };
   }
@@ -134,6 +148,12 @@ export async function submitGeneralRsvp(publicRsvpToken: string, formData: FormD
   });
 
   revalidatePath(`/g/${publicRsvpToken}`);
+
+  await notifyOrganizer(
+    event.organizer,
+    `Nueva respuesta: ${event.title}`,
+    `${name} ${status === "CONFIRMED" ? "confirmó su asistencia" : "no asistirá"} a ${event.title}.`
+  );
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   return { ok: true, checkinUrl: `${baseUrl}/checkin/${newGuest.checkinToken}` };

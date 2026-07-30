@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireWriteAccess } from "@/lib/actions/authz";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -25,6 +26,7 @@ async function requireEventOwnedByOrganizer(eventId: string, organizerId: string
 
 export async function createBudgetItem(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const category = (formData.get("category") as string | null)?.trim();
@@ -51,6 +53,7 @@ export async function createBudgetItem(eventId: string, formData: FormData) {
 
 export async function updateBudgetItemActual(eventId: string, itemId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const actualRaw = (formData.get("actualAmount") as string | null)?.trim();
@@ -69,6 +72,7 @@ export async function updateBudgetItemActual(eventId: string, itemId: string, fo
 
 export async function deleteBudgetItem(eventId: string, itemId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   await prisma.budgetItem.deleteMany({

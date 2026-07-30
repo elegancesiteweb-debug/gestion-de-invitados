@@ -6,6 +6,8 @@ import { headers } from "next/headers";
 import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireWriteAccess } from "@/lib/actions/authz";
+import { notifyOrganizer } from "@/lib/email";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -25,6 +27,7 @@ async function requireLeadOwnedByOrganizer(leadId: string, organizerId: string) 
 
 export async function createContract(leadId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireLeadOwnedByOrganizer(leadId, organizerId);
 
   const title = (formData.get("title") as string | null)?.trim();
@@ -42,6 +45,7 @@ export async function createContract(leadId: string, formData: FormData) {
 
 export async function deleteContract(leadId: string, contractId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireLeadOwnedByOrganizer(leadId, organizerId);
 
   await prisma.contract.deleteMany({ where: { id: contractId, leadId } });
@@ -56,7 +60,10 @@ export async function signContract(token: string, formData: FormData) {
     throw new Error("Escribe tu nombre completo y marca la casilla de firma electrónica");
   }
 
-  const contract = await prisma.contract.findUnique({ where: { token } });
+  const contract = await prisma.contract.findUnique({
+    where: { token },
+    include: { lead: { include: { organizer: true } } },
+  });
   if (!contract) {
     throw new Error("Contrato no encontrado");
   }
@@ -76,4 +83,10 @@ export async function signContract(token: string, formData: FormData) {
   });
 
   revalidatePath(`/sign/${token}`);
+
+  await notifyOrganizer(
+    contract.lead.organizer,
+    `Contrato firmado: ${contract.title}`,
+    `${signerName} firmó el contrato "${contract.title}" de ${contract.lead.name}.`
+  );
 }

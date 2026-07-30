@@ -45,6 +45,16 @@ export function EventVendorsPanel({
                         {ev.vendor.category}
                       </span>
                     )}
+                    {ev.clientApproved === true && (
+                      <span className="ml-2 rounded-full bg-success-bg px-2 py-0.5 text-xs text-success">
+                        Aprobado por el cliente
+                      </span>
+                    )}
+                    {ev.clientApproved === false && (
+                      <span className="ml-2 rounded-full bg-danger-bg px-2 py-0.5 text-xs text-danger">
+                        Rechazado por el cliente
+                      </span>
+                    )}
                   </p>
                   <p className="text-xs text-ink-muted">
                     {ev.vendor.phone || ""} {ev.vendor.email ? `· ${ev.vendor.email}` : ""}

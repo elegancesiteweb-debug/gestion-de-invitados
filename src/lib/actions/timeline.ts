@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireWriteAccess } from "@/lib/actions/authz";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -25,6 +26,7 @@ async function requireEventOwnedByOrganizer(eventId: string, organizerId: string
 
 export async function createTimelineItem(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const time = (formData.get("time") as string | null)?.trim();
@@ -47,6 +49,7 @@ export async function createTimelineItem(eventId: string, formData: FormData) {
 
 export async function deleteTimelineItem(eventId: string, itemId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   await prisma.timelineItem.deleteMany({

@@ -79,3 +79,68 @@ export async function sendRsvpEmail(params: {
     `,
   });
 }
+
+export async function sendOrganizerNotificationEmail(params: {
+  apiKey: string;
+  fromEmail: string;
+  to: string;
+  subject: string;
+  body: string;
+}) {
+  const resend = new Resend(params.apiKey);
+  return resend.emails.send({
+    from: params.fromEmail,
+    to: params.to,
+    subject: params.subject,
+    html: `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;"><p>${params.body}</p></div>`,
+  });
+}
+
+export async function sendPaymentReminderEmail(params: {
+  apiKey: string;
+  fromEmail: string;
+  to: string;
+  description: string;
+  amount: number;
+  currency: string;
+  payUrl: string;
+}) {
+  const resend = new Resend(params.apiKey);
+  const formattedAmount = params.amount.toLocaleString("es-MX", {
+    style: "currency",
+    currency: params.currency,
+  });
+  return resend.emails.send({
+    from: params.fromEmail,
+    to: params.to,
+    subject: `Recordatorio de pago: ${params.description}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+        <p>Tienes un pago pendiente de ${formattedAmount} por "${params.description}".</p>
+        <p>
+          <a href="${params.payUrl}" style="display:inline-block;background:#4f46e5;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;">
+            Pagar ahora
+          </a>
+        </p>
+        <p style="color:#666;font-size:12px;">Si el botón no funciona, copia y pega este link: ${params.payUrl}</p>
+      </div>
+    `,
+  });
+}
+
+// Notificación al organizador, best-effort: nunca debe tumbar el flujo principal
+// (confirmación de invitado, firma de contrato, pago de factura), así que cualquier
+// error (credenciales faltantes, fallo de Resend) se ignora silenciosamente.
+export async function notifyOrganizer(
+  organizer: Pick<Organizer, "notifyByEmail" | "email" | "resendApiKey" | "resendFromEmail">,
+  subject: string,
+  body: string
+) {
+  if (!organizer.notifyByEmail) return;
+  try {
+    const { apiKey, fromEmail } = resolveResendCredentials(organizer);
+    await sendOrganizerNotificationEmail({ apiKey, fromEmail, to: organizer.email, subject, body });
+  } catch {
+    // best-effort, sin credenciales configuradas simplemente no se notifica
+  }
+}

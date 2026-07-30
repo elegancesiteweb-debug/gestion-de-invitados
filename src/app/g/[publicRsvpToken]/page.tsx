@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { GeneralRsvpForm } from "@/components/GeneralRsvpForm";
 import { EmbedTransparentBackground } from "@/components/EmbedTransparentBackground";
+import { BrandHeader } from "@/components/BrandHeader";
+import { BrandFooter } from "@/components/BrandFooter";
 import { formatDateTime } from "@/lib/dates";
 
 export default async function GeneralConfirmAttendancePage({
@@ -15,7 +17,10 @@ export default async function GeneralConfirmAttendancePage({
   const { embed } = await searchParams;
   const isEmbed = embed === "1";
 
-  const event = await prisma.event.findUnique({ where: { publicRsvpToken } });
+  const event = await prisma.event.findUnique({
+    where: { publicRsvpToken },
+    include: { organizer: true },
+  });
 
   if (!event) {
     notFound();
@@ -29,6 +34,7 @@ export default async function GeneralConfirmAttendancePage({
     >
       {isEmbed && <EmbedTransparentBackground />}
       <div className="rounded-2xl border border-gold/20 bg-warm/90 p-7 shadow-lg backdrop-blur-xl">
+        <BrandHeader organizer={event.organizer} />
         {event.logoImageType && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -37,7 +43,10 @@ export default async function GeneralConfirmAttendancePage({
             className="mx-auto mb-3 h-20 w-20 rounded-full object-cover"
           />
         )}
-        <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">
+        <p
+          className="text-xs uppercase tracking-[0.2em] text-gold-dark"
+          style={event.organizer.brandColor ? { color: event.organizer.brandColor } : undefined}
+        >
           Confirmación de asistencia
         </p>
         <h1 className="mt-1 font-serif text-2xl font-medium text-ink">{event.title}</h1>
@@ -69,6 +78,7 @@ export default async function GeneralConfirmAttendancePage({
           askCompanionNames={event.askCompanionNamesOnRsvp}
           showQr={event.showQrOnConfirmation}
         />
+        <BrandFooter />
       </div>
     </div>
   );

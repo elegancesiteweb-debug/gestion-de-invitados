@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { sendEventReminders } from "@/lib/reminders";
 import { requireWriteAccess } from "@/lib/actions/authz";
 
 async function requireOrganizerId() {
@@ -15,16 +14,13 @@ async function requireOrganizerId() {
   return session.user.id;
 }
 
-export async function sendRemindersNow(eventId: string) {
+export async function updateNotificationSettings(formData: FormData) {
   const organizerId = await requireOrganizerId();
   await requireWriteAccess();
 
-  const event = await prisma.event.findFirst({ where: { id: eventId, organizerId } });
-  if (!event) {
-    throw new Error("Evento no encontrado");
-  }
+  const notifyByEmail = formData.get("notifyByEmail") === "on";
 
-  await sendEventReminders(eventId);
+  await prisma.organizer.update({ where: { id: organizerId }, data: { notifyByEmail } });
 
-  revalidatePath(`/dashboard/events/${eventId}`);
+  revalidatePath("/dashboard/settings");
 }

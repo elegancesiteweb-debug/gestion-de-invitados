@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireWriteAccess } from "@/lib/actions/authz";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -33,6 +34,7 @@ async function requireProposalOwnedByOrganizer(proposalId: string, organizerId: 
 
 export async function createProposal(leadId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireLeadOwnedByOrganizer(leadId, organizerId);
 
   const title = (formData.get("title") as string | null)?.trim();
@@ -48,6 +50,7 @@ export async function createProposal(leadId: string, formData: FormData) {
 
 export async function deleteProposal(leadId: string, proposalId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireProposalOwnedByOrganizer(proposalId, organizerId);
 
   await prisma.proposal.delete({ where: { id: proposalId } });
@@ -57,6 +60,7 @@ export async function deleteProposal(leadId: string, proposalId: string) {
 
 export async function addProposalItem(leadId: string, proposalId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireProposalOwnedByOrganizer(proposalId, organizerId);
 
   const description = (formData.get("description") as string | null)?.trim();
@@ -75,6 +79,7 @@ export async function addProposalItem(leadId: string, proposalId: string, formDa
 
 export async function deleteProposalItem(leadId: string, itemId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const item = await prisma.proposalItem.findFirst({
     where: { id: itemId, proposal: { lead: { organizerId } } },

@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { RsvpForm } from "@/components/RsvpForm";
 import { EmbedTransparentBackground } from "@/components/EmbedTransparentBackground";
+import { BrandHeader } from "@/components/BrandHeader";
+import { BrandFooter } from "@/components/BrandFooter";
 import { formatDateTime } from "@/lib/dates";
 
 export default async function ConfirmAttendancePage({
@@ -17,7 +19,7 @@ export default async function ConfirmAttendancePage({
 
   const guest = await prisma.guest.findUnique({
     where: { token },
-    include: { event: true, companions: true },
+    include: { event: { include: { organizer: true } }, companions: true },
   });
 
   if (!guest) {
@@ -35,6 +37,7 @@ export default async function ConfirmAttendancePage({
     >
       {isEmbed && <EmbedTransparentBackground />}
       <div className="rounded-2xl border border-gold/20 bg-warm/90 p-7 shadow-lg backdrop-blur-xl">
+        <BrandHeader organizer={guest.event.organizer} />
         {guest.event.logoImageType && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -43,7 +46,10 @@ export default async function ConfirmAttendancePage({
             className="mx-auto mb-3 h-20 w-20 rounded-full object-cover"
           />
         )}
-        <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">
+        <p
+          className="text-xs uppercase tracking-[0.2em] text-gold-dark"
+          style={guest.event.organizer.brandColor ? { color: guest.event.organizer.brandColor } : undefined}
+        >
           Confirmación de asistencia
         </p>
         <h1 className="mt-1 font-serif text-2xl font-medium text-ink">{guest.event.title}</h1>
@@ -87,6 +93,7 @@ export default async function ConfirmAttendancePage({
           checkinUrl={`${baseUrl}/checkin/${guest.checkinToken}`}
           showQr={guest.event.showQrOnConfirmation}
         />
+        <BrandFooter />
       </div>
     </div>
   );

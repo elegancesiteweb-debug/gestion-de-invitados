@@ -7,6 +7,8 @@ import type { PaymentProvider } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getGateway, resolvePaymentCredential } from "@/lib/payments";
+import { requireWriteAccess } from "@/lib/actions/authz";
+import { sendPaymentReminderEmail, resolveResendCredentials } from "@/lib/email";
 
 const PROVIDERS: PaymentProvider[] = ["STRIPE", "MERCADOPAGO", "CLIP"];
 
@@ -28,6 +30,7 @@ async function requireLeadOwnedByOrganizer(leadId: string, organizerId: string) 
 
 export async function createInvoice(leadId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireLeadOwnedByOrganizer(leadId, organizerId);
 
   const description = (formData.get("description") as string | null)?.trim();
@@ -43,16 +46,96 @@ export async function createInvoice(leadId: string, formData: FormData) {
   if (!provider || !PROVIDERS.includes(provider)) {
     throw new Error("Pasarela inválida");
   }
+  const dueDateRaw = (formData.get("dueDate") as string | null)?.trim();
+  const dueDate = dueDateRaw ? new Date(`${dueDateRaw}T12:00:00`) : null;
+  const label = (formData.get("label") as string | null)?.trim() || null;
 
   await prisma.invoice.create({
-    data: { leadId, description, amount, currency, provider, token: nanoid(16) },
+    data: { leadId, description, amount, currency, provider, dueDate, label, token: nanoid(16) },
   });
 
   revalidatePath(`/dashboard/leads/${leadId}`);
 }
 
+export async function createPaymentPlan(leadId: string, formData: FormData) {
+  const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
+  await requireLeadOwnedByOrganizer(leadId, organizerId);
+
+  const description = (formData.get("description") as string | null)?.trim();
+  if (!description) {
+    throw new Error("La descripción es requerida");
+  }
+  const totalAmount = parseFloat((formData.get("totalAmount") as string | null) ?? "");
+  if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
+    throw new Error("Monto total inválido");
+  }
+  const installments = parseInt((formData.get("installments") as string | null) ?? "", 10);
+  if (!Number.isFinite(installments) || installments < 2 || installments > 4) {
+    throw new Error("El número de cuotas debe ser entre 2 y 4");
+  }
+  const currency = (formData.get("currency") as string | null)?.trim().toLowerCase() || "mxn";
+  const provider = formData.get("provider") as PaymentProvider | null;
+  if (!provider || !PROVIDERS.includes(provider)) {
+    throw new Error("Pasarela inválida");
+  }
+  const firstDueDateRaw = (formData.get("firstDueDate") as string | null)?.trim();
+  const firstDueDate = firstDueDateRaw ? new Date(`${firstDueDateRaw}T12:00:00`) : new Date();
+
+  const baseAmount = Math.floor((totalAmount / installments) * 100) / 100;
+  const lastAmount = Math.round((totalAmount - baseAmount * (installments - 1)) * 100) / 100;
+
+  const rows = Array.from({ length: installments }, (_, i) => {
+    const dueDate = new Date(firstDueDate);
+    dueDate.setMonth(dueDate.getMonth() + i);
+    return {
+      leadId,
+      description,
+      amount: i === installments - 1 ? lastAmount : baseAmount,
+      currency,
+      provider,
+      dueDate,
+      label: i === 0 ? "Anticipo" : `Pago ${i + 1} de ${installments}`,
+      token: nanoid(16),
+    };
+  });
+
+  await prisma.invoice.createMany({ data: rows });
+
+  revalidatePath(`/dashboard/leads/${leadId}`);
+}
+
+export async function sendInvoiceReminder(leadId: string, invoiceId: string) {
+  const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
+  await requireLeadOwnedByOrganizer(leadId, organizerId);
+
+  const invoice = await prisma.invoice.findFirst({ where: { id: invoiceId, leadId }, include: { lead: true } });
+  if (!invoice) {
+    throw new Error("Factura no encontrada");
+  }
+  if (!invoice.lead.email) {
+    throw new Error("Este lead no tiene email registrado");
+  }
+
+  const organizer = await prisma.organizer.findUniqueOrThrow({ where: { id: organizerId } });
+  const { apiKey, fromEmail } = resolveResendCredentials(organizer);
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+
+  await sendPaymentReminderEmail({
+    apiKey,
+    fromEmail,
+    to: invoice.lead.email,
+    description: invoice.description,
+    amount: invoice.amount,
+    currency: invoice.currency,
+    payUrl: `${baseUrl}/pay/${invoice.token}`,
+  });
+}
+
 export async function deleteInvoice(leadId: string, invoiceId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireLeadOwnedByOrganizer(leadId, organizerId);
 
   await prisma.invoice.deleteMany({ where: { id: invoiceId, leadId } });

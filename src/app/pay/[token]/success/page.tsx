@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getGateway, resolvePaymentCredential } from "@/lib/payments";
+import { notifyOrganizer } from "@/lib/email";
 
 export default async function PaySuccessPage({
   params,
@@ -41,6 +42,15 @@ export default async function PaySuccessPage({
         where: { token },
         data: { status: "paid", paidAt: new Date() },
       });
+
+      await notifyOrganizer(
+        invoice.lead.organizer,
+        `Pago recibido: ${invoice.description}`,
+        `Se recibió el pago de ${invoice.amount.toLocaleString("es-MX", {
+          style: "currency",
+          currency: invoice.currency,
+        })} de ${invoice.lead.name} (${invoice.description}).`
+      );
     }
   }
 

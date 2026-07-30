@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireWriteAccess } from "@/lib/actions/authz";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -23,6 +24,7 @@ async function requireEventOwnedByOrganizer(eventId: string, organizerId: string
 
 export async function updateStyleGuide(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const colorPalette = (formData.get("colorPalette") as string | null)?.trim() || null;
@@ -40,6 +42,7 @@ const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 
 export async function uploadStyleGuideImage(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const file = formData.get("image");
@@ -64,6 +67,7 @@ export async function uploadStyleGuideImage(eventId: string, formData: FormData)
 
 export async function deleteStyleGuideImage(eventId: string, imageId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   await prisma.styleGuideImage.deleteMany({

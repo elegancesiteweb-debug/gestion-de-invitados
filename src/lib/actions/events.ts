@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { eventSchema } from "@/lib/validations";
 import { slugify } from "@/lib/slug";
+import { requireWriteAccess } from "@/lib/actions/authz";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -20,6 +21,7 @@ const INDIVIDUAL_EVENT_LIMIT = 1;
 
 export async function createEvent(formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const parsed = eventSchema.safeParse({
     title: formData.get("title"),
@@ -114,6 +116,7 @@ export async function createEvent(formData: FormData) {
 
 export async function deleteEvent(eventId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   await prisma.event.deleteMany({
     where: { id: eventId, organizerId },
@@ -125,6 +128,7 @@ export async function deleteEvent(eventId: string) {
 
 export async function updateEventSettings(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const messageTemplate = (formData.get("messageTemplate") as string | null)?.trim() || null;
   const showTableOnRsvp = formData.get("showTableOnRsvp") === "on";
@@ -170,6 +174,7 @@ const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 
 export async function uploadEventLogo(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const file = formData.get("logo");
   if (!(file instanceof File) || file.size === 0) {
@@ -197,6 +202,7 @@ export async function uploadEventLogo(eventId: string, formData: FormData) {
 
 export async function removeEventLogo(eventId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   await prisma.event.updateMany({
     where: { id: eventId, organizerId },
@@ -208,6 +214,7 @@ export async function removeEventLogo(eventId: string) {
 
 export async function toggleGeneralRsvp(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const enable = formData.get("enable") === "true";
 
@@ -221,6 +228,7 @@ export async function toggleGeneralRsvp(eventId: string, formData: FormData) {
 
 export async function toggleClientPortal(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const enable = formData.get("enable") === "true";
 

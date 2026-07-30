@@ -41,7 +41,12 @@ export default async function LeadsPage() {
         ← Tus eventos
       </Link>
 
-      <h1 className="mt-2 font-serif text-2xl font-medium text-ink">Leads</h1>
+      <div className="mt-2 flex items-center justify-between gap-3">
+        <h1 className="font-serif text-2xl font-medium text-ink">Leads</h1>
+        <Link href="/dashboard/leads/questions" className="text-sm text-gold-dark hover:underline">
+          Cuestionario de cotización →
+        </Link>
+      </div>
       <p className="mt-1 text-sm text-ink-muted">
         Prospectos y clientes potenciales, con su etapa en el proceso de venta.
       </p>

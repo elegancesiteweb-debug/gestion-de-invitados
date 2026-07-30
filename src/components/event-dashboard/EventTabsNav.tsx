@@ -10,6 +10,7 @@ const TABS = [
   { key: "timeline", label: "Agenda", feature: "day_timeline" as FeatureKey },
   { key: "proveedores", label: "Proveedores", feature: "vendor_directory" as FeatureKey },
   { key: "estilo", label: "Estilo", feature: "style_guide" as FeatureKey },
+  { key: "mensajes", label: "Mensajes", feature: "client_portal" as FeatureKey },
   { key: "accesos", label: "Accesos" },
   { key: "envios", label: "Envíos" },
   { key: "configuracion", label: "Configuración" },

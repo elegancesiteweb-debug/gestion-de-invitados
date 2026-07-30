@@ -6,6 +6,7 @@ import type { TableShape } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { nextGridPosition } from "@/lib/tables";
+import { requireWriteAccess } from "@/lib/actions/authz";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -44,6 +45,7 @@ function parseSeats(value: FormDataEntryValue | null): number {
 
 export async function createTable(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const name = (formData.get("name") as string | null)?.trim();
@@ -70,6 +72,7 @@ export async function createTable(eventId: string, formData: FormData) {
 
 export async function updateTableDetails(tableId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   const table = await requireTableOwnedByOrganizer(tableId, organizerId);
 
   const name = (formData.get("name") as string | null)?.trim();
@@ -94,6 +97,7 @@ export async function updateTableDetails(tableId: string, formData: FormData) {
 
 export async function updateTablePosition(tableId: string, x: number, y: number) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   const table = await requireTableOwnedByOrganizer(tableId, organizerId);
 
   await prisma.table.update({ where: { id: tableId }, data: { x, y } });
@@ -103,6 +107,7 @@ export async function updateTablePosition(tableId: string, x: number, y: number)
 
 export async function deleteTable(tableId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   const table = await requireTableOwnedByOrganizer(tableId, organizerId);
 
   await prisma.$transaction([
@@ -115,6 +120,7 @@ export async function deleteTable(tableId: string) {
 
 export async function assignGuestToTable(guestId: string, tableId: string | null) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const guest = await prisma.guest.findFirst({
     where: { id: guestId, event: { organizerId } },

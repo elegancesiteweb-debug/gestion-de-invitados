@@ -11,6 +11,7 @@ import { sendRsvpEmail, resolveResendCredentials } from "@/lib/email";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { findOrCreateTableByName } from "@/lib/tables";
 import { formatDate } from "@/lib/dates";
+import { requireWriteAccess } from "@/lib/actions/authz";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -32,6 +33,7 @@ async function requireEventOwnedByOrganizer(eventId: string, organizerId: string
 
 export async function createGuest(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const parsed = guestSchema.safeParse({
@@ -71,6 +73,7 @@ export async function createGuest(eventId: string, formData: FormData) {
 
 export async function updateGuest(eventId: string, guestId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const existing = await prisma.guest.findFirst({ where: { id: guestId, eventId } });
@@ -113,6 +116,7 @@ export async function updateGuest(eventId: string, guestId: string, formData: Fo
 
 export async function deleteGuest(eventId: string, guestId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   await prisma.guest.deleteMany({
@@ -124,6 +128,7 @@ export async function deleteGuest(eventId: string, guestId: string) {
 
 export async function importGuestsCsv(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const file = formData.get("file");
@@ -183,6 +188,7 @@ export async function importGuestsCsv(eventId: string, formData: FormData) {
 
 export async function sendGuestEmail(eventId: string, guestId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   const event = await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const guest = await prisma.guest.findFirst({ where: { id: guestId, eventId } });
@@ -223,6 +229,7 @@ export async function sendGuestEmail(eventId: string, guestId: string) {
 
 export async function sendAllPendingEmails(eventId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   const event = await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const pendingGuests = await prisma.guest.findMany({

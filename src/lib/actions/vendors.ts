@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireWriteAccess } from "@/lib/actions/authz";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -23,6 +24,7 @@ async function requireEventOwnedByOrganizer(eventId: string, organizerId: string
 
 export async function assignVendorToEvent(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const vendorId = (formData.get("vendorId") as string | null)?.trim();
@@ -46,6 +48,7 @@ export async function assignVendorToEvent(eventId: string, formData: FormData) {
 
 export async function unassignVendorFromEvent(eventId: string, vendorId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   await prisma.eventVendor.deleteMany({ where: { eventId, vendorId } });
@@ -55,6 +58,7 @@ export async function unassignVendorFromEvent(eventId: string, vendorId: string)
 
 export async function createVendorForEvent(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
   const name = (formData.get("name") as string | null)?.trim();
@@ -77,6 +81,7 @@ export async function createVendorForEvent(eventId: string, formData: FormData) 
 
 export async function createVendor(formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const name = (formData.get("name") as string | null)?.trim();
   if (!name) {
@@ -96,6 +101,7 @@ export async function createVendor(formData: FormData) {
 
 export async function deleteVendor(vendorId: string) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   await prisma.vendor.deleteMany({
     where: { id: vendorId, organizerId },

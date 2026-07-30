@@ -30,11 +30,60 @@ model Organizer {
   stripeSecretKey        String?
   mercadoPagoAccessToken String?
   clipApiKey             String?
+  notifyByEmail          Boolean @default(true)
 
-  events       Event[]
-  redeemedCode AccessCode?
-  vendors      Vendor[]
-  leads        Lead[]
+  // Marca propia del negocio (se muestra en páginas de cara al invitado/cliente).
+  brandName     String?
+  brandColor    String?
+  brandLogo     Bytes?
+  brandLogoType String?
+
+  // Link público de "solicitar cotización" (cuestionario de onboarding).
+  leadIntakeToken String? @unique
+
+  events        Event[]
+  redeemedCode  AccessCode?
+  vendors       Vendor[]
+  leads         Lead[]
+  teamMembers   TeamMember[]
+  leadQuestions LeadQuestion[]
+}
+
+enum TeamRole {
+  ADMIN
+  COLLABORATOR
+}
+
+model TeamMember {
+  id           String    @id @default(cuid())
+  organizerId  String
+  organizer    Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         TeamRole  @default(COLLABORATOR)
+  createdAt    DateTime  @default(now())
+
+  @@index([organizerId])
+}
+
+enum LeadQuestionType {
+  TEXT
+  TEXTAREA
+  NUMBER
+}
+
+model LeadQuestion {
+  id          String           @id @default(cuid())
+  organizerId String
+  organizer   Organizer        @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  label       String
+  fieldType   LeadQuestionType @default(TEXT)
+  required    Boolean          @default(false)
+  order       Int              @default(0)
+  createdAt   DateTime         @default(now())
+
+  @@index([organizerId])
 }
 
 model Vendor {
@@ -54,16 +103,27 @@ model Vendor {
 }
 
 model EventVendor {
-  id        String   @id @default(cuid())
-  eventId   String
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  vendorId  String
-  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id             String   @id @default(cuid())
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  vendorId       String
+  vendor         Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  clientApproved Boolean?
+  createdAt      DateTime @default(now())
 
   @@unique([eventId, vendorId])
   @@index([eventId])
   @@index([vendorId])
+}
+
+model ClientComment {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
 }
 
 model AccessCode {
@@ -121,6 +181,7 @@ model Event {
   timelineItems    TimelineItem[]
   styleGuideImages StyleGuideImage[]
   eventVendors     EventVendor[]
+  clientComments   ClientComment[]
 
   @@index([organizerId])
 }
@@ -265,6 +326,7 @@ model Lead {
   notes            String?
   stage            LeadStage @default(NEW)
   convertedEventId String?
+  intakeAnswers    Json?
   createdAt        DateTime  @default(now())
 
   proposals Proposal[]
@@ -330,6 +392,8 @@ model Invoice {
   status            String          @default("pending") // pending | paid
   token             String          @unique
   providerSessionId String?
+  dueDate           DateTime?
+  label             String?
   paidAt            DateTime?
   createdAt         DateTime        @default(now())
 

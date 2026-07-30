@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { encryptSecret } from "@/lib/crypto";
+import { requireWriteAccess } from "@/lib/actions/authz";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -16,6 +17,7 @@ async function requireOrganizerId() {
 
 export async function updateResendCredentials(formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const apiKey = (formData.get("apiKey") as string | null)?.trim();
   const fromEmail = (formData.get("fromEmail") as string | null)?.trim() || null;
@@ -33,6 +35,7 @@ export async function updateResendCredentials(formData: FormData) {
 
 export async function removeResendCredentials() {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   await prisma.organizer.update({
     where: { id: organizerId },
@@ -44,6 +47,7 @@ export async function removeResendCredentials() {
 
 export async function updateStripeCredentials(formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const secretKey = (formData.get("secretKey") as string | null)?.trim();
   if (secretKey) {
@@ -58,6 +62,7 @@ export async function updateStripeCredentials(formData: FormData) {
 
 export async function removeStripeCredentials() {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   await prisma.organizer.update({ where: { id: organizerId }, data: { stripeSecretKey: null } });
 
@@ -66,6 +71,7 @@ export async function removeStripeCredentials() {
 
 export async function updateMercadoPagoCredentials(formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const accessToken = (formData.get("accessToken") as string | null)?.trim();
   if (accessToken) {
@@ -80,6 +86,7 @@ export async function updateMercadoPagoCredentials(formData: FormData) {
 
 export async function removeMercadoPagoCredentials() {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   await prisma.organizer.update({
     where: { id: organizerId },
@@ -91,6 +98,7 @@ export async function removeMercadoPagoCredentials() {
 
 export async function updateClipCredentials(formData: FormData) {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   const apiKey = (formData.get("apiKey") as string | null)?.trim();
   if (apiKey) {
@@ -105,6 +113,7 @@ export async function updateClipCredentials(formData: FormData) {
 
 export async function removeClipCredentials() {
   const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
 
   await prisma.organizer.update({ where: { id: organizerId }, data: { clipApiKey: null } });
 

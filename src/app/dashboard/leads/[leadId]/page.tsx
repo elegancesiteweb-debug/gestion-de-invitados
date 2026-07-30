@@ -6,7 +6,7 @@ import { hasFeature } from "@/lib/features";
 import { updateLead, updateLeadStage, deleteLead } from "@/lib/actions/leads";
 import { createProposal, deleteProposal, addProposalItem, deleteProposalItem } from "@/lib/actions/proposals";
 import { createContract, deleteContract } from "@/lib/actions/contracts";
-import { createInvoice, deleteInvoice } from "@/lib/actions/invoices";
+import { createInvoice, createPaymentPlan, deleteInvoice, sendInvoiceReminder } from "@/lib/actions/invoices";
 import { PROVIDER_LABELS } from "@/lib/payments";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { formatDateTime } from "@/lib/dates";
@@ -159,6 +159,22 @@ export default async function LeadDetailPage({
           </div>
         </div>
       </section>
+
+      {Array.isArray(lead.intakeAnswers) && lead.intakeAnswers.length > 0 && (
+        <section className="mt-4 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
+          <p className="font-medium text-ink">Respuestas del cuestionario</p>
+          <dl className="mt-2 space-y-2">
+            {(lead.intakeAnswers as unknown as { questionId: string; label: string; value: string }[]).map(
+              (answer) => (
+                <div key={answer.questionId}>
+                  <dt className="text-xs font-medium text-ink-muted">{answer.label}</dt>
+                  <dd className="text-sm text-ink">{answer.value}</dd>
+                </div>
+              )
+            )}
+          </dl>
+        </section>
+      )}
 
       {showProposals && (
         <section className="mt-8">
@@ -380,6 +396,72 @@ export default async function LeadDetailPage({
             </button>
           </form>
 
+          <form
+            action={createPaymentPlan.bind(null, lead.id)}
+            className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
+          >
+            <p className="w-full text-sm font-medium text-ink">Crear plan de pagos</p>
+            <div className="flex-1">
+              <label className="block text-xs font-medium mb-1">Descripción</label>
+              <input
+                name="description"
+                required
+                className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+              />
+            </div>
+            <div className="w-28">
+              <label className="block text-xs font-medium mb-1">Monto total</label>
+              <input
+                name="totalAmount"
+                type="number"
+                step="0.01"
+                min="0"
+                required
+                className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+              />
+            </div>
+            <div className="w-24">
+              <label className="block text-xs font-medium mb-1">Cuotas</label>
+              <select name="installments" defaultValue="2" className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">1ra cuota</label>
+              <input
+                name="firstDueDate"
+                type="date"
+                className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+              />
+            </div>
+            <div className="w-20">
+              <label className="block text-xs font-medium mb-1">Moneda</label>
+              <input
+                name="currency"
+                defaultValue="mxn"
+                className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Pasarela</label>
+              <select name="provider" className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm">
+                {Object.entries(PROVIDER_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="rounded-lg border border-gold/25 px-4 py-1.5 text-sm font-medium hover:bg-warm"
+            >
+              Crear plan
+            </button>
+          </form>
+
           <div className="space-y-2">
             {lead.invoices.map((invoice) => (
               <div
@@ -388,6 +470,11 @@ export default async function LeadDetailPage({
               >
                 <div>
                   <p className="font-medium text-ink">
+                    {invoice.label && (
+                      <span className="mr-2 rounded-full bg-warm px-2 py-0.5 text-xs text-ink-muted">
+                        {invoice.label}
+                      </span>
+                    )}
                     {invoice.description}{" "}
                     <span className="text-ink-muted">
                       ·{" "}
@@ -401,11 +488,20 @@ export default async function LeadDetailPage({
                     {PROVIDER_LABELS[invoice.provider]} ·{" "}
                     {invoice.status === "paid"
                       ? `Pagada${invoice.paidAt ? ` el ${formatDateTime(invoice.paidAt)}` : ""}`
-                      : "Pendiente de pago"}
+                      : invoice.dueDate
+                        ? `Vence el ${formatDateTime(invoice.dueDate)}`
+                        : "Pendiente de pago"}
                   </p>
                 </div>
                 <div className="flex flex-none items-center gap-3">
                   <CopyLinkButton url={`${baseUrl}/pay/${invoice.token}`} label="Copiar link de pago" />
+                  {invoice.status !== "paid" && lead.email && (
+                    <form action={sendInvoiceReminder.bind(null, lead.id, invoice.id)}>
+                      <button type="submit" className="text-sm text-gold-dark hover:underline">
+                        Enviar recordatorio
+                      </button>
+                    </form>
+                  )}
                   <form action={deleteInvoice.bind(null, lead.id, invoice.id)}>
                     <button type="submit" className="text-sm text-danger hover:underline">
                       Eliminar
