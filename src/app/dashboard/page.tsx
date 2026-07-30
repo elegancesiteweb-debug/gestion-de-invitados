@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { SignOutButton } from "@/components/SignOutButton";
 import { formatDate } from "@/lib/dates";
 import { hasFeature } from "@/lib/features";
 import { EventStatusBadge } from "@/components/EventStatusBadge";
@@ -30,11 +29,6 @@ export default async function DashboardPage() {
   const canCreateEvent =
     !isCollaborator &&
     (organizer.accountType === "PLANNER" || organizer.eventsCreatedCount < 1);
-  const showVendorsLink = hasFeature(session.user.accountType, "vendor_directory");
-  const showLeadsLink = hasFeature(session.user.accountType, "crm_leads");
-  const showSettingsLink = !isCollaborator;
-  const showTeamLink = hasFeature(session.user.accountType, "team_accounts") && !isCollaborator;
-  const showReportsLink = hasFeature(session.user.accountType, "business_reports");
   const showMultiEventStats = hasFeature(session.user.accountType, "multi_event_dashboard");
 
   return (
@@ -61,36 +55,6 @@ export default async function DashboardPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          {showVendorsLink && (
-            <Link href="/dashboard/vendors" className="text-sm text-gold-dark hover:underline">
-              Proveedores
-            </Link>
-          )}
-          {showLeadsLink && (
-            <Link href="/dashboard/leads" className="text-sm text-gold-dark hover:underline">
-              Leads
-            </Link>
-          )}
-          {showReportsLink && (
-            <Link href="/dashboard/reports" className="text-sm text-gold-dark hover:underline">
-              Reportes
-            </Link>
-          )}
-          {showTeamLink && (
-            <Link href="/dashboard/team" className="text-sm text-gold-dark hover:underline">
-              Equipo
-            </Link>
-          )}
-          {showSettingsLink && (
-            <Link href="/dashboard/settings" className="text-sm text-gold-dark hover:underline">
-              Configuración
-            </Link>
-          )}
-          {session.user.isAdmin && (
-            <Link href="/dashboard/admin" className="text-sm text-gold-dark hover:underline">
-              Admin
-            </Link>
-          )}
           {canCreateEvent ? (
             <Link
               href="/dashboard/events/new"
@@ -105,7 +69,6 @@ export default async function DashboardPage() {
               Contáctanos para pasar a Wedding Planner.
             </p>
           )}
-          <SignOutButton />
         </div>
       </header>
 
