@@ -41,13 +41,28 @@ model Organizer {
   // Link público de "solicitar cotización" (cuestionario de onboarding).
   leadIntakeToken String? @unique
 
-  events        Event[]
-  redeemedCode  AccessCode?
-  vendors       Vendor[]
-  leads         Lead[]
-  teamMembers   TeamMember[]
-  leadQuestions LeadQuestion[]
-  packages      Package[]
+  // Link público de calendario maestro (todos los eventos en un solo .ics).
+  masterCalendarToken String? @unique
+
+  events            Event[]
+  redeemedCode      AccessCode?
+  vendors           Vendor[]
+  leads             Lead[]
+  teamMembers       TeamMember[]
+  leadQuestions     LeadQuestion[]
+  packages          Package[]
+  contractTemplates ContractTemplate[]
+}
+
+model ContractTemplate {
+  id          String    @id @default(cuid())
+  organizerId String
+  organizer   Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  name        String
+  content     String
+  createdAt   DateTime  @default(now())
+
+  @@index([organizerId])
 }
 
 enum TeamRole {
@@ -208,6 +223,12 @@ model Event {
   colorPalette String? // hex separados por coma, ej. "#c9a84c,#2a2118"
   styleNotes   String?
 
+  // Plano del salón: imagen de fondo (subida directa o PDF convertido en el navegador)
+  // + formas dibujadas (líneas libres, rectángulos, círculos, texto) como JSON.
+  floorPlanImage     Bytes?
+  floorPlanImageType String?
+  floorPlanData      Json?
+
   guests           Guest[]
   tasks            Task[]
   budgetItems      BudgetItem[]
@@ -216,8 +237,20 @@ model Event {
   styleGuideImages StyleGuideImage[]
   eventVendors     EventVendor[]
   clientComments   ClientComment[]
+  activityLog      ActivityLogEntry[]
 
   @@index([organizerId])
+}
+
+model ActivityLogEntry {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  actorName String
+  action    String
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
 }
 
 model TimelineItem {

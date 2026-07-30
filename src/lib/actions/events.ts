@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { eventSchema } from "@/lib/validations";
 import { slugify } from "@/lib/slug";
 import { requireWriteAccess } from "@/lib/actions/authz";
+import { logActivity } from "@/lib/activityLog";
 import type { EventStatus } from "@prisma/client";
 
 async function requireOrganizerId() {
@@ -168,6 +169,7 @@ export async function updateEventSettings(eventId: string, formData: FormData) {
       reminderDaysAfter,
     },
   });
+  await logActivity(eventId, "Actualizó la configuración del evento");
 
   revalidatePath(`/dashboard/events/${eventId}`);
 }

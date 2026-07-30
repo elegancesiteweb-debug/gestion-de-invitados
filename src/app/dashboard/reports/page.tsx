@@ -68,7 +68,17 @@ export default async function ReportsPage() {
         ← Tus eventos
       </Link>
 
-      <h1 className="mt-2 font-serif text-2xl font-medium text-ink">Reportes</h1>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-serif text-2xl font-medium text-ink">Reportes</h1>
+        <div className="flex gap-4">
+          <Link href="/dashboard/reports/print" className="text-sm text-gold-dark hover:underline">
+            Imprimir →
+          </Link>
+          <a href="/api/reports/export-csv" className="text-sm text-gold-dark hover:underline">
+            Exportar CSV →
+          </a>
+        </div>
+      </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard

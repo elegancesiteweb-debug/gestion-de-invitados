@@ -36,20 +36,16 @@ function buildEvent(
   return lines;
 }
 
-export function buildEventCalendar(
+function buildEventVEvents(
   event: Pick<Event, "id" | "title" | "eventDate">,
   tasks: Pick<Task, "id" | "title" | "dueDate" | "done">[],
-  timelineItems: Pick<TimelineItem, "id" | "title" | "time" | "responsible">[]
-): string {
-  const lines: string[] = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Elegance Site//Gestion Invitados//ES",
-    "CALSCALE:GREGORIAN",
-  ];
+  timelineItems: Pick<TimelineItem, "id" | "title" | "time" | "responsible">[],
+  titlePrefix = ""
+): string[] {
+  const lines: string[] = [];
 
   lines.push(
-    ...buildEvent(`event-${event.id}@eleganciasite`, event.title, {
+    ...buildEvent(`event-${event.id}@eleganciasite`, `${titlePrefix}${event.title}`, {
       allDay: dateOnlyInAppTimezone(event.eventDate),
     })
   );
@@ -57,9 +53,11 @@ export function buildEventCalendar(
   for (const task of tasks) {
     if (!task.dueDate || task.done) continue;
     lines.push(
-      ...buildEvent(`task-${task.id}@eleganciasite`, `Fecha límite: ${task.title}`, {
-        allDay: dateOnlyInAppTimezone(task.dueDate),
-      })
+      ...buildEvent(
+        `task-${task.id}@eleganciasite`,
+        `${titlePrefix}Fecha límite: ${task.title}`,
+        { allDay: dateOnlyInAppTimezone(task.dueDate) }
+      )
     );
   }
 
@@ -70,11 +68,47 @@ export function buildEventCalendar(
       ? `${timeMatch[1].padStart(2, "0")}${timeMatch[2]}00`
       : "000000";
     lines.push(
-      ...buildEvent(`timeline-${item.id}@eleganciasite`, item.title, {
+      ...buildEvent(`timeline-${item.id}@eleganciasite`, `${titlePrefix}${item.title}`, {
         floatingDateTime: `${eventDay}T${hhmmss}`,
         description: item.responsible ? `Responsable: ${item.responsible}` : undefined,
       })
     );
+  }
+
+  return lines;
+}
+
+export function buildEventCalendar(
+  event: Pick<Event, "id" | "title" | "eventDate">,
+  tasks: Pick<Task, "id" | "title" | "dueDate" | "done">[],
+  timelineItems: Pick<TimelineItem, "id" | "title" | "time" | "responsible">[]
+): string {
+  const lines: string[] = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Elegance Site//Gestion Invitados//ES",
+    "CALSCALE:GREGORIAN",
+    ...buildEventVEvents(event, tasks, timelineItems),
+    "END:VCALENDAR",
+  ];
+  return lines.join("\r\n");
+}
+
+export function buildOrganizerCalendar(
+  events: (Pick<Event, "id" | "title" | "eventDate"> & {
+    tasks: Pick<Task, "id" | "title" | "dueDate" | "done">[];
+    timelineItems: Pick<TimelineItem, "id" | "title" | "time" | "responsible">[];
+  })[]
+): string {
+  const lines: string[] = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Elegance Site//Gestion Invitados//ES",
+    "CALSCALE:GREGORIAN",
+  ];
+
+  for (const event of events) {
+    lines.push(...buildEventVEvents(event, event.tasks, event.timelineItems, `${event.title} · `));
   }
 
   lines.push("END:VCALENDAR");

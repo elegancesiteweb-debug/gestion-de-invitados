@@ -17,6 +17,8 @@ import { TimelinePanel } from "@/components/event-dashboard/TimelinePanel";
 import { StyleGuidePanel } from "@/components/event-dashboard/StyleGuidePanel";
 import { EventVendorsPanel } from "@/components/event-dashboard/EventVendorsPanel";
 import { ClientMessagesPanel } from "@/components/event-dashboard/ClientMessagesPanel";
+import { ActivityLogPanel } from "@/components/event-dashboard/ActivityLogPanel";
+import { FloorPlanPanel } from "@/components/event-dashboard/FloorPlanPanel";
 import { EventStatusBadge } from "@/components/EventStatusBadge";
 import { formatDateTime } from "@/lib/dates";
 
@@ -62,6 +64,15 @@ export default async function EventDetailPage({
       ? await prisma.vendor.findMany({
           where: { organizerId: session.user.id },
           orderBy: { createdAt: "asc" },
+        })
+      : [];
+
+  const activityLog =
+    activeTab === "actividad"
+      ? await prisma.activityLogEntry.findMany({
+          where: { eventId: event.id },
+          orderBy: { createdAt: "desc" },
+          take: 100,
         })
       : [];
 
@@ -146,6 +157,12 @@ export default async function EventDetailPage({
           <ConfirmationsPanel eventId={event.id} guests={event.guests} />
         ) : activeTab === "mesas" ? (
           <TablesPanel eventId={event.id} tables={event.tables} guests={event.guests} />
+        ) : activeTab === "plano" ? (
+          <FloorPlanPanel
+            eventId={event.id}
+            hasImage={Boolean(event.floorPlanImageType)}
+            floorPlanData={event.floorPlanData}
+          />
         ) : activeTab === "tareas" ? (
           <TasksPanel eventId={event.id} tasks={event.tasks} />
         ) : activeTab === "presupuesto" ? (
@@ -162,6 +179,8 @@ export default async function EventDetailPage({
           <StyleGuidePanel event={event} images={event.styleGuideImages} />
         ) : activeTab === "mensajes" ? (
           <ClientMessagesPanel comments={event.clientComments} />
+        ) : activeTab === "actividad" ? (
+          <ActivityLogPanel entries={activityLog} />
         ) : activeTab === "accesos" ? (
           <AccessPanel guests={event.guests} />
         ) : activeTab === "envios" ? (

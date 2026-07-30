@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeature } from "@/lib/features";
-import { createLead } from "@/lib/actions/leads";
+import { createLead, importLeadsCsv } from "@/lib/actions/leads";
 
 const STAGE_LABELS: Record<string, string> = {
   NEW: "Nuevo",
@@ -49,6 +49,11 @@ export default async function LeadsPage() {
               Paquetes →
             </Link>
           )}
+          {hasFeature(session.user.accountType, "crm_contracts") && (
+            <Link href="/dashboard/contract-templates" className="text-sm text-gold-dark hover:underline">
+              Plantillas de contrato →
+            </Link>
+          )}
           <Link href="/dashboard/leads/questions" className="text-sm text-gold-dark hover:underline">
             Cuestionario de cotización →
           </Link>
@@ -85,6 +90,24 @@ export default async function LeadsPage() {
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
           >
             Agregar
+          </button>
+        </form>
+        <form
+          action={importLeadsCsv}
+          className="mt-3 flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-sm backdrop-blur-xl"
+        >
+          <div className="flex-1">
+            <label className="block text-xs font-medium mb-1">Importar leads por CSV</label>
+            <input type="file" name="file" accept=".csv" required className="text-sm" />
+            <p className="mt-1 text-xs text-ink-muted">
+              Columnas: nombre (o name), email, telefono, notas.
+            </p>
+          </div>
+          <button
+            type="submit"
+            className="rounded-lg border border-gold/25 px-4 py-1.5 text-sm font-medium hover:bg-warm"
+          >
+            Importar
           </button>
         </form>
       </section>

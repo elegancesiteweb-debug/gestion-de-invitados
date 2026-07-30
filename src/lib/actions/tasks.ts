@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireWriteAccess } from "@/lib/actions/authz";
+import { logActivity } from "@/lib/activityLog";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -39,6 +40,7 @@ export async function createTask(eventId: string, formData: FormData) {
   await prisma.task.create({
     data: { eventId, title, dueDate },
   });
+  await logActivity(eventId, `Agregó la tarea "${title}"`);
 
   revalidatePath(`/dashboard/events/${eventId}`);
 }
@@ -66,9 +68,14 @@ export async function deleteTask(eventId: string, taskId: string) {
   await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
+  const task = await prisma.task.findFirst({ where: { id: taskId, eventId } });
+
   await prisma.task.deleteMany({
     where: { id: taskId, eventId },
   });
+  if (task) {
+    await logActivity(eventId, `Eliminó la tarea "${task.title}"`);
+  }
 
   revalidatePath(`/dashboard/events/${eventId}`);
 }

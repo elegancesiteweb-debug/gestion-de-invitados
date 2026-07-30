@@ -40,7 +40,10 @@ export default async function ClientPortalPage({
   // hay que buscar el lead de origen manualmente para encontrar sus contratos.
   const lead = await prisma.lead.findFirst({
     where: { convertedEventId: event.id },
-    include: { contracts: { orderBy: { createdAt: "asc" } } },
+    include: {
+      contracts: { orderBy: { createdAt: "asc" } },
+      invoices: { orderBy: { createdAt: "asc" } },
+    },
   });
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -254,6 +257,46 @@ export default async function ClientPortalPage({
             </div>
           )}
         </section>
+
+        {lead && lead.invoices.length > 0 && (
+          <section className="mt-8">
+            <h2 className="mb-3 font-serif text-lg font-medium text-ink">Facturas</h2>
+            <div className="space-y-2">
+              {lead.invoices.map((invoice) => (
+                <div
+                  key={invoice.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-gold/20 bg-white/60 p-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-ink">
+                      {invoice.description}{" "}
+                      <span className="text-ink-muted">
+                        ·{" "}
+                        {invoice.amount.toLocaleString("es-MX", {
+                          style: "currency",
+                          currency: invoice.currency,
+                        })}
+                      </span>
+                    </p>
+                    <p className="text-xs text-ink-muted">
+                      {invoice.status === "paid"
+                        ? `Pagada${invoice.paidAt ? ` el ${formatDateTime(invoice.paidAt)}` : ""}`
+                        : "Pendiente de pago"}
+                    </p>
+                  </div>
+                  {invoice.status !== "paid" && (
+                    <a
+                      href={`/pay/${invoice.token}`}
+                      className="text-sm text-gold-dark hover:underline"
+                    >
+                      Pagar ahora →
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {lead && lead.contracts.length > 0 && (
           <section className="mt-8">

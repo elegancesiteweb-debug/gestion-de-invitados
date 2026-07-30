@@ -6,6 +6,7 @@ import { hasFeature } from "@/lib/features";
 import { updateLead, updateLeadStage, deleteLead } from "@/lib/actions/leads";
 import { createProposal, deleteProposal, addProposalItem, deleteProposalItem } from "@/lib/actions/proposals";
 import { createContract, deleteContract } from "@/lib/actions/contracts";
+import { ContractTemplatePicker } from "@/components/event-dashboard/ContractTemplatePicker";
 import { createInvoice, createPaymentPlan, deleteInvoice, sendInvoiceReminder } from "@/lib/actions/invoices";
 import { addPackageToProposal } from "@/lib/actions/packages";
 import { PROVIDER_LABELS } from "@/lib/payments";
@@ -54,6 +55,9 @@ export default async function LeadDetailPage({
 
   const packages = showProposals && showPackages
     ? await prisma.package.findMany({ where: { organizerId: session.user.id }, orderBy: { name: "asc" } })
+    : [];
+  const contractTemplates = showContracts
+    ? await prisma.contractTemplate.findMany({ where: { organizerId: session.user.id }, orderBy: { name: "asc" } })
     : [];
 
   return (
@@ -325,19 +329,7 @@ export default async function LeadDetailPage({
             action={createContract.bind(null, lead.id)}
             className="mb-4 space-y-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
           >
-            <div>
-              <label className="block text-xs font-medium mb-1">Título</label>
-              <input name="title" required className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Contenido</label>
-              <textarea
-                name="content"
-                required
-                rows={4}
-                className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
-              />
-            </div>
+            <ContractTemplatePicker templates={contractTemplates} />
             <button
               type="submit"
               className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"

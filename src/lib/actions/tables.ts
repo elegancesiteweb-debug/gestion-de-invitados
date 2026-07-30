@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { nextGridPosition } from "@/lib/tables";
 import { requireWriteAccess } from "@/lib/actions/authz";
+import { logActivity } from "@/lib/activityLog";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -66,6 +67,7 @@ export async function createTable(eventId: string, formData: FormData) {
       y,
     },
   });
+  await logActivity(eventId, `Agregó la mesa "${name}"`);
 
   revalidatePath(`/dashboard/events/${eventId}`);
 }
@@ -114,6 +116,7 @@ export async function deleteTable(tableId: string) {
     prisma.guest.updateMany({ where: { tableId }, data: { tableId: null, tableName: null } }),
     prisma.table.delete({ where: { id: tableId } }),
   ]);
+  await logActivity(table.eventId, `Eliminó la mesa "${table.name}"`);
 
   revalidatePath(`/dashboard/events/${table.eventId}`);
 }

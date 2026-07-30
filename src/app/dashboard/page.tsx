@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/dates";
 import { hasFeature } from "@/lib/features";
 import { EventStatusBadge } from "@/components/EventStatusBadge";
+import { CopyLinkButton } from "@/components/CopyLinkButton";
+import { toggleMasterCalendar } from "@/lib/actions/calendar";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -30,6 +32,10 @@ export default async function DashboardPage() {
     !isCollaborator &&
     (organizer.accountType === "PLANNER" || organizer.eventsCreatedCount < 1);
   const showMultiEventStats = hasFeature(session.user.accountType, "multi_event_dashboard");
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const masterCalendarUrl = organizer.masterCalendarToken
+    ? `${baseUrl}/api/calendar/organizer/${organizer.masterCalendarToken}`
+    : null;
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10">
@@ -71,6 +77,39 @@ export default async function DashboardPage() {
           )}
         </div>
       </header>
+
+      {showMultiEventStats && (
+        <div className="mb-6 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-sm backdrop-blur-xl">
+          <p className="font-medium text-ink">Calendario maestro (todos tus eventos)</p>
+          <p className="mt-1 text-xs text-ink-muted">
+            Un solo link con las fechas límite y agendas de todos tus eventos activos.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            {organizer.masterCalendarToken ? (
+              <form action={toggleMasterCalendar}>
+                <input type="hidden" name="enable" value="false" />
+                <button
+                  type="submit"
+                  className="rounded-lg border border-danger/30 bg-danger-bg px-3 py-1.5 text-sm text-danger hover:bg-danger-bg/80"
+                >
+                  Desactivar
+                </button>
+              </form>
+            ) : (
+              <form action={toggleMasterCalendar}>
+                <input type="hidden" name="enable" value="true" />
+                <button
+                  type="submit"
+                  className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm text-white hover:shadow-lg"
+                >
+                  Activar
+                </button>
+              </form>
+            )}
+            {masterCalendarUrl && <CopyLinkButton url={masterCalendarUrl} label="Copiar link" />}
+          </div>
+        </div>
+      )}
 
       {events.length === 0 ? (
         <p className="text-ink-muted">

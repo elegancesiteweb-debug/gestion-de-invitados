@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getGateway, resolvePaymentCredential } from "@/lib/payments";
 import { notifyOrganizer } from "@/lib/email";
+import { logActivity } from "@/lib/activityLog";
 
 export default async function PaySuccessPage({
   params,
@@ -51,6 +52,14 @@ export default async function PaySuccessPage({
           currency: invoice.currency,
         })} de ${invoice.lead.name} (${invoice.description}).`
       );
+
+      if (invoice.lead.convertedEventId) {
+        await logActivity(
+          invoice.lead.convertedEventId,
+          `Se pagó la factura "${invoice.description}"`,
+          invoice.lead.name
+        );
+      }
     }
   }
 

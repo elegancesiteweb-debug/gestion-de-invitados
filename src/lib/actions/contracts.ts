@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireWriteAccess } from "@/lib/actions/authz";
 import { notifyOrganizer } from "@/lib/email";
+import { logActivity } from "@/lib/activityLog";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -28,7 +29,7 @@ async function requireLeadOwnedByOrganizer(leadId: string, organizerId: string) 
 export async function createContract(leadId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
   await requireWriteAccess();
-  await requireLeadOwnedByOrganizer(leadId, organizerId);
+  const lead = await requireLeadOwnedByOrganizer(leadId, organizerId);
 
   const title = (formData.get("title") as string | null)?.trim();
   const content = (formData.get("content") as string | null)?.trim();
@@ -39,6 +40,9 @@ export async function createContract(leadId: string, formData: FormData) {
   await prisma.contract.create({
     data: { leadId, title, content, token: nanoid(16) },
   });
+  if (lead.convertedEventId) {
+    await logActivity(lead.convertedEventId, `Creó el contrato "${title}"`);
+  }
 
   revalidatePath(`/dashboard/leads/${leadId}`);
 }
@@ -89,4 +93,12 @@ export async function signContract(token: string, formData: FormData) {
     `Contrato firmado: ${contract.title}`,
     `${signerName} firmó el contrato "${contract.title}" de ${contract.lead.name}.`
   );
+
+  if (contract.lead.convertedEventId) {
+    await logActivity(
+      contract.lead.convertedEventId,
+      `Se firmó el contrato "${contract.title}"`,
+      signerName
+    );
+  }
 }

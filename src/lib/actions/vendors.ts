@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireWriteAccess } from "@/lib/actions/authz";
+import { logActivity } from "@/lib/activityLog";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -42,6 +43,7 @@ export async function assignVendorToEvent(eventId: string, formData: FormData) {
     create: { eventId, vendorId },
     update: {},
   });
+  await logActivity(eventId, `Agregó al proveedor "${vendor.name}"`);
 
   revalidatePath(`/dashboard/events/${eventId}`);
 }
@@ -51,7 +53,12 @@ export async function unassignVendorFromEvent(eventId: string, vendorId: string)
   await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
+  const vendor = await prisma.vendor.findFirst({ where: { id: vendorId, organizerId } });
+
   await prisma.eventVendor.deleteMany({ where: { eventId, vendorId } });
+  if (vendor) {
+    await logActivity(eventId, `Quitó al proveedor "${vendor.name}"`);
+  }
 
   revalidatePath(`/dashboard/events/${eventId}`);
 }

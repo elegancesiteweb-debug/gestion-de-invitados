@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { getGateway, resolvePaymentCredential } from "@/lib/payments";
 import { requireWriteAccess } from "@/lib/actions/authz";
 import { sendPaymentReminderEmail, resolveResendCredentials } from "@/lib/email";
+import { logActivity } from "@/lib/activityLog";
 
 const PROVIDERS: PaymentProvider[] = ["STRIPE", "MERCADOPAGO", "CLIP"];
 
@@ -31,7 +32,7 @@ async function requireLeadOwnedByOrganizer(leadId: string, organizerId: string) 
 export async function createInvoice(leadId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
   await requireWriteAccess();
-  await requireLeadOwnedByOrganizer(leadId, organizerId);
+  const lead = await requireLeadOwnedByOrganizer(leadId, organizerId);
 
   const description = (formData.get("description") as string | null)?.trim();
   if (!description) {
@@ -53,6 +54,9 @@ export async function createInvoice(leadId: string, formData: FormData) {
   await prisma.invoice.create({
     data: { leadId, description, amount, currency, provider, dueDate, label, token: nanoid(16) },
   });
+  if (lead.convertedEventId) {
+    await logActivity(lead.convertedEventId, `Creó la factura "${description}"`);
+  }
 
   revalidatePath(`/dashboard/leads/${leadId}`);
 }

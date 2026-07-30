@@ -12,6 +12,7 @@ import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { findOrCreateTableByName } from "@/lib/tables";
 import { formatDate } from "@/lib/dates";
 import { requireWriteAccess } from "@/lib/actions/authz";
+import { logActivity } from "@/lib/activityLog";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -67,6 +68,7 @@ export async function createGuest(eventId: string, formData: FormData) {
       checkinToken: nanoid(12),
     },
   });
+  await logActivity(eventId, `Agregó al invitado ${name}`);
 
   revalidatePath(`/dashboard/events/${eventId}`);
 }
@@ -119,9 +121,14 @@ export async function deleteGuest(eventId: string, guestId: string) {
   await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
+  const guest = await prisma.guest.findFirst({ where: { id: guestId, eventId } });
+
   await prisma.guest.deleteMany({
     where: { id: guestId, eventId },
   });
+  if (guest) {
+    await logActivity(eventId, `Eliminó al invitado ${guest.name}`);
+  }
 
   revalidatePath(`/dashboard/events/${eventId}`);
 }

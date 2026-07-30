@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import Papa from "papaparse";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { LeadStage } from "@prisma/client";
@@ -90,6 +91,48 @@ export async function deleteLead(leadId: string) {
 
   revalidatePath("/dashboard/leads");
   redirect("/dashboard/leads");
+}
+
+export async function importLeadsCsv(formData: FormData) {
+  const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    throw new Error("Archivo CSV requerido");
+  }
+
+  const text = await file.text();
+  const { data } = Papa.parse<Record<string, string>>(text, {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim().toLowerCase(),
+  });
+
+  const rows = data
+    .map((row) => ({
+      name: (row.name || row.nombre || "").trim(),
+      email: (row.email || "").trim(),
+      phone: (row.phone || row.telefono || row.teléfono || "").trim(),
+      notes: (row.notes || row.notas || "").trim(),
+    }))
+    .filter((row) => row.name.length > 0);
+
+  if (rows.length === 0) {
+    throw new Error("El CSV no contiene leads válidos (se requiere columna 'name' o 'nombre')");
+  }
+
+  await prisma.lead.createMany({
+    data: rows.map((row) => ({
+      organizerId,
+      name: row.name,
+      email: row.email || null,
+      phone: row.phone || null,
+      notes: row.notes || null,
+    })),
+  });
+
+  revalidatePath("/dashboard/leads");
 }
 
 export async function submitLeadIntake(token: string, formData: FormData) {
