@@ -60,6 +60,11 @@ model Event {
 
   invitationLinkUrl String?
 
+  logoImage     Bytes?
+  logoImageType String?
+
+  showQrOnConfirmation Boolean @default(true)
+
   publicRsvpToken      String? @unique
   generalMaxCompanions Int?    @default(5) // null = sin límite de acompañantes
 

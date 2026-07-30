@@ -28,6 +28,14 @@ export default async function GeneralConfirmAttendancePage({
     >
       {isEmbed && <EmbedTransparentBackground />}
       <div className="rounded-2xl border border-gold/20 bg-warm/90 p-7 shadow-lg backdrop-blur-xl">
+        {event.logoImageType && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/api/events/${event.id}/logo`}
+            alt=""
+            className="mx-auto mb-3 h-20 w-20 rounded-full object-cover"
+          />
+        )}
         <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">
           Confirmación de asistencia
         </p>
@@ -58,6 +66,7 @@ export default async function GeneralConfirmAttendancePage({
           askDietary={event.askDietaryOnRsvp}
           askMessage={event.askMessageOnRsvp}
           askCompanionNames={event.askCompanionNamesOnRsvp}
+          showQr={event.showQrOnConfirmation}
         />
       </div>
     </div>

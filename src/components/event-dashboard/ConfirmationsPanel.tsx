@@ -24,7 +24,13 @@ export function ConfirmationsPanel({
 
   return (
     <div className="space-y-3 py-6">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-4">
+        <a
+          href={`/api/events/${eventId}/export-csv`}
+          className="text-sm text-gold-dark hover:underline"
+        >
+          Descargar CSV
+        </a>
         <Link
           href={`/dashboard/events/${eventId}/print`}
           className="text-sm text-gold-dark hover:underline"

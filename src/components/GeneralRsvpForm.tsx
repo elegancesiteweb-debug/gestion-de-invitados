@@ -2,8 +2,9 @@
 
 import { useActionState, useState } from "react";
 import { submitGeneralRsvp } from "@/lib/actions/rsvp";
+import { RsvpQrReveal } from "@/components/RsvpQrReveal";
 
-type RsvpState = { error?: string; ok?: boolean } | null;
+type RsvpState = { error?: string; ok?: boolean; checkinUrl?: string } | null;
 
 export function GeneralRsvpForm({
   publicRsvpToken,
@@ -11,12 +12,14 @@ export function GeneralRsvpForm({
   askDietary,
   askMessage,
   askCompanionNames,
+  showQr,
 }: {
   publicRsvpToken: string;
   maxCompanions: number | null;
   askDietary: boolean;
   askMessage: boolean;
   askCompanionNames: boolean;
+  showQr: boolean;
 }) {
   const [status, setStatus] = useState<"CONFIRMED" | "DECLINED">("CONFIRMED");
   const [companionRowCount, setCompanionRowCount] = useState(0);
@@ -175,6 +178,9 @@ export function GeneralRsvpForm({
 
       {state?.error && <p className="text-sm text-danger">{state.error}</p>}
       {state?.ok && <p className="text-sm text-success">¡Gracias! Tu respuesta fue registrada.</p>}
+      {state?.ok && status === "CONFIRMED" && showQr && state.checkinUrl && (
+        <RsvpQrReveal url={state.checkinUrl} fileLabel={publicRsvpToken} />
+      )}
 
       <button
         type="submit"

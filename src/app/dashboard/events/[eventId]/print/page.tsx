@@ -45,6 +45,14 @@ export default async function PrintConfirmationsPage({
       </div>
 
       <header className="mb-6 border-b border-gold/20 pb-4 text-center">
+        {event.logoImageType && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/api/events/${event.id}/logo`}
+            alt=""
+            className="mx-auto mb-2 h-16 w-16 rounded-full object-cover"
+          />
+        )}
         <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
         <p className="mt-1 text-sm text-ink-muted">
           Lista de confirmaciones ·{" "}

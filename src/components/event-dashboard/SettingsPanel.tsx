@@ -1,5 +1,10 @@
 import type { Event } from "@prisma/client";
-import { updateEventSettings, toggleGeneralRsvp } from "@/lib/actions/events";
+import {
+  updateEventSettings,
+  toggleGeneralRsvp,
+  uploadEventLogo,
+  removeEventLogo,
+} from "@/lib/actions/events";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { TemplateEditor } from "@/components/event-dashboard/TemplateEditor";
 import { GeneralPassesInput } from "@/components/event-dashboard/GeneralPassesInput";
@@ -45,6 +50,14 @@ export function SettingsPanel({ event, baseUrl }: { event: Event; baseUrl: strin
               defaultChecked={event.askCompanionNamesOnRsvp}
             />
             Pedir el nombre de cada acompañante y que confirmen quién asiste
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="showQrOnConfirmation"
+              defaultChecked={event.showQrOnConfirmation}
+            />
+            Mostrar el QR de acceso al confirmar asistencia (para que el invitado lo guarde)
           </label>
         </div>
 
@@ -93,6 +106,44 @@ export function SettingsPanel({ event, baseUrl }: { event: Event; baseUrl: strin
           Guardar
         </button>
       </form>
+
+      <div className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
+        <h2 className="font-serif text-lg font-medium text-ink">Foto / logo del evento</h2>
+        <p className="mt-1 text-xs text-ink-muted">
+          Foto de los novios o logo de la boda / wedding planner. Se muestra en las páginas de
+          confirmación de los invitados. Máximo 2MB.
+        </p>
+
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          {event.logoImageType && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/api/events/${event.id}/logo`}
+                alt="Foto/logo del evento"
+                className="h-20 w-20 rounded-lg object-cover"
+              />
+              <form action={removeEventLogo.bind(null, event.id)}>
+                <button
+                  type="submit"
+                  className="rounded-lg border border-danger/30 bg-danger-bg px-3 py-1.5 text-sm text-danger hover:bg-danger-bg/80"
+                >
+                  Quitar
+                </button>
+              </form>
+            </>
+          )}
+          <form action={uploadEventLogo.bind(null, event.id)} className="flex items-center gap-2">
+            <input type="file" name="logo" accept="image/*" required className="text-sm" />
+            <button
+              type="submit"
+              className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm font-medium text-white hover:shadow-lg"
+            >
+              Subir
+            </button>
+          </form>
+        </div>
+      </div>
 
       <div className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
         <h2 className="font-serif text-lg font-medium text-ink">Formulario general</h2>

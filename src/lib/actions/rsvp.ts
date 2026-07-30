@@ -114,7 +114,7 @@ export async function submitGeneralRsvp(publicRsvpToken: string, formData: FormD
     };
   }
 
-  await prisma.guest.create({
+  const newGuest = await prisma.guest.create({
     data: {
       eventId: event.id,
       name,
@@ -134,5 +134,7 @@ export async function submitGeneralRsvp(publicRsvpToken: string, formData: FormD
   });
 
   revalidatePath(`/g/${publicRsvpToken}`);
-  return { ok: true };
+
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  return { ok: true, checkinUrl: `${baseUrl}/checkin/${newGuest.checkinToken}` };
 }

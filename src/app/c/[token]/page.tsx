@@ -24,6 +24,7 @@ export default async function ConfirmAttendancePage({
   }
 
   const invitationUrl = guest.invitationLinkUrl ?? guest.event.invitationLinkUrl;
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
   return (
     <div
@@ -33,6 +34,14 @@ export default async function ConfirmAttendancePage({
     >
       {isEmbed && <EmbedTransparentBackground />}
       <div className="rounded-2xl border border-gold/20 bg-warm/90 p-7 shadow-lg backdrop-blur-xl">
+        {guest.event.logoImageType && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/api/events/${guest.event.id}/logo`}
+            alt=""
+            className="mx-auto mb-3 h-20 w-20 rounded-full object-cover"
+          />
+        )}
         <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">
           Confirmación de asistencia
         </p>
@@ -77,6 +86,8 @@ export default async function ConfirmAttendancePage({
           askDietary={guest.event.askDietaryOnRsvp}
           askMessage={guest.event.askMessageOnRsvp}
           askCompanionNames={guest.event.askCompanionNamesOnRsvp}
+          checkinUrl={`${baseUrl}/checkin/${guest.checkinToken}`}
+          showQr={guest.event.showQrOnConfirmation}
         />
       </div>
     </div>

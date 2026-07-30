@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { submitRsvp } from "@/lib/actions/rsvp";
+import { RsvpQrReveal } from "@/components/RsvpQrReveal";
 
 type RsvpState = { error?: string; ok?: boolean } | null;
 
@@ -16,6 +17,8 @@ export function RsvpForm({
   askDietary,
   askMessage,
   askCompanionNames,
+  checkinUrl,
+  showQr,
 }: {
   token: string;
   maxCompanions: number;
@@ -27,6 +30,8 @@ export function RsvpForm({
   askDietary: boolean;
   askMessage: boolean;
   askCompanionNames: boolean;
+  checkinUrl: string;
+  showQr: boolean;
 }) {
   const [status, setStatus] = useState(
     currentStatus === "DECLINED" ? "DECLINED" : "CONFIRMED"
@@ -153,6 +158,9 @@ export function RsvpForm({
 
       {state?.error && <p className="text-sm text-danger">{state.error}</p>}
       {state?.ok && <p className="text-sm text-success">¡Gracias! Tu respuesta fue registrada.</p>}
+      {state?.ok && status === "CONFIRMED" && showQr && (
+        <RsvpQrReveal url={checkinUrl} fileLabel={token} />
+      )}
 
       <button
         type="submit"
