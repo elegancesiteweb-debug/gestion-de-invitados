@@ -11,7 +11,6 @@ export const PARTICULAR_FEATURES = [
 
 // Funciones adicionales que solo se activan con el plan Wedding Planner.
 export const PLANNER_FEATURES = [
-  "seating_chart",
   "day_timeline",
   "vendor_directory",
   "multi_event_dashboard",
