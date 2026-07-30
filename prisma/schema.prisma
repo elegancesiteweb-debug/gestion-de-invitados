@@ -26,6 +26,7 @@ model Organizer {
   events       Event[]
   redeemedCode AccessCode?
   vendors      Vendor[]
+  leads        Lead[]
 }
 
 model Vendor {
@@ -39,7 +40,22 @@ model Vendor {
   notes       String?
   createdAt   DateTime  @default(now())
 
+  eventVendors EventVendor[]
+
   @@index([organizerId])
+}
+
+model EventVendor {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  vendorId  String
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, vendorId])
+  @@index([eventId])
+  @@index([vendorId])
 }
 
 model AccessCode {
@@ -96,6 +112,7 @@ model Event {
   tables           Table[]
   timelineItems    TimelineItem[]
   styleGuideImages StyleGuideImage[]
+  eventVendors     EventVendor[]
 
   @@index([organizerId])
 }
@@ -199,12 +216,13 @@ model Companion {
 }
 
 model Task {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   eventId   String
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
   title     String
-  done      Boolean  @default(false)
-  createdAt DateTime @default(now())
+  done      Boolean   @default(false)
+  dueDate   DateTime?
+  createdAt DateTime  @default(now())
 
   @@index([eventId])
 }
@@ -219,4 +237,93 @@ model BudgetItem {
   createdAt       DateTime @default(now())
 
   @@index([eventId])
+}
+
+enum LeadStage {
+  NEW
+  CONTACTED
+  QUOTED
+  WON
+  LOST
+}
+
+model Lead {
+  id               String    @id @default(cuid())
+  organizerId      String
+  organizer        Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  name             String
+  email            String?
+  phone            String?
+  notes            String?
+  stage            LeadStage @default(NEW)
+  convertedEventId String?
+  createdAt        DateTime  @default(now())
+
+  proposals Proposal[]
+  contracts Contract[]
+  invoices  Invoice[]
+
+  @@index([organizerId])
+}
+
+model Proposal {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  title     String
+  notes     String?
+  createdAt DateTime @default(now())
+
+  items ProposalItem[]
+
+  @@index([leadId])
+}
+
+model ProposalItem {
+  id          String   @id @default(cuid())
+  proposalId  String
+  proposal    Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  description String
+  amount      Float
+  createdAt   DateTime @default(now())
+
+  @@index([proposalId])
+}
+
+model Contract {
+  id         String    @id @default(cuid())
+  leadId     String
+  lead       Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  title      String
+  content    String
+  token      String    @unique
+  signedAt   DateTime?
+  signerName String?
+  signerIp   String?
+  createdAt  DateTime  @default(now())
+
+  @@index([leadId])
+}
+
+enum PaymentProvider {
+  STRIPE
+  MERCADOPAGO
+  CLIP
+}
+
+model Invoice {
+  id                String          @id @default(cuid())
+  leadId            String
+  lead              Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  description       String
+  amount            Float
+  currency          String          @default("mxn")
+  provider          PaymentProvider @default(STRIPE)
+  status            String          @default("pending") // pending | paid
+  token             String          @unique
+  providerSessionId String?
+  paidAt            DateTime?
+  createdAt         DateTime        @default(now())
+
+  @@index([leadId])
 }

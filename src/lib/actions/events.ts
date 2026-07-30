@@ -66,6 +66,14 @@ export async function createEvent(formData: FormData) {
     },
   });
 
+  const leadId = (formData.get("leadId") as string | null)?.trim();
+  if (leadId) {
+    await prisma.lead.updateMany({
+      where: { id: leadId, organizerId },
+      data: { convertedEventId: event.id },
+    });
+  }
+
   const copyFromEventId = (formData.get("copyFromEventId") as string | null)?.trim();
   if (copyFromEventId) {
     const source = await prisma.event.findFirst({

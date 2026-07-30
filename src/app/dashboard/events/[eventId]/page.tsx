@@ -15,6 +15,7 @@ import { TasksPanel } from "@/components/event-dashboard/TasksPanel";
 import { BudgetPanel } from "@/components/event-dashboard/BudgetPanel";
 import { TimelinePanel } from "@/components/event-dashboard/TimelinePanel";
 import { StyleGuidePanel } from "@/components/event-dashboard/StyleGuidePanel";
+import { EventVendorsPanel } from "@/components/event-dashboard/EventVendorsPanel";
 import { formatDateTime } from "@/lib/dates";
 
 export default async function EventDetailPage({
@@ -42,12 +43,21 @@ export default async function EventDetailPage({
       tables: { orderBy: { createdAt: "asc" } },
       timelineItems: { orderBy: { time: "asc" } },
       styleGuideImages: { orderBy: { createdAt: "asc" }, select: { id: true, imageType: true } },
+      eventVendors: { orderBy: { createdAt: "asc" }, include: { vendor: true } },
     },
   });
 
   if (!event) {
     notFound();
   }
+
+  const availableVendors =
+    activeTab === "proveedores"
+      ? await prisma.vendor.findMany({
+          where: { organizerId: session.user.id },
+          orderBy: { createdAt: "asc" },
+        })
+      : [];
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
@@ -128,6 +138,12 @@ export default async function EventDetailPage({
           <BudgetPanel eventId={event.id} items={event.budgetItems} />
         ) : activeTab === "timeline" ? (
           <TimelinePanel eventId={event.id} items={event.timelineItems} />
+        ) : activeTab === "proveedores" ? (
+          <EventVendorsPanel
+            eventId={event.id}
+            eventVendors={event.eventVendors}
+            availableVendors={availableVendors}
+          />
         ) : activeTab === "estilo" ? (
           <StyleGuidePanel event={event} images={event.styleGuideImages} />
         ) : activeTab === "accesos" ? (

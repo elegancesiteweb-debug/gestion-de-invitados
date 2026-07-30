@@ -31,9 +31,11 @@ export async function createTask(eventId: string, formData: FormData) {
   if (!title) {
     throw new Error("El título de la tarea es requerido");
   }
+  const dueDateRaw = (formData.get("dueDate") as string | null)?.trim();
+  const dueDate = dueDateRaw ? new Date(`${dueDateRaw}T12:00:00`) : null;
 
   await prisma.task.create({
-    data: { eventId, title },
+    data: { eventId, title, dueDate },
   });
 
   revalidatePath(`/dashboard/events/${eventId}`);

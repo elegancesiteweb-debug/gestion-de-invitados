@@ -5,7 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { hasFeature } from "@/lib/features";
 import { createEvent } from "@/lib/actions/events";
 
-export default async function NewEventPage() {
+export default async function NewEventPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ leadId?: string; title?: string }>;
+}) {
+  const { leadId, title: prefillTitle } = await searchParams;
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/login");
@@ -31,6 +36,7 @@ export default async function NewEventPage() {
         action={createEvent}
         className="mt-6 space-y-4 rounded-2xl border border-gold/20 bg-white/60 p-6 shadow-lg backdrop-blur-xl"
       >
+        {leadId && <input type="hidden" name="leadId" value={leadId} />}
         {canCopyTemplate && existingEvents.length > 0 && (
           <div>
             <label className="block text-sm font-medium mb-1">
@@ -59,6 +65,7 @@ export default async function NewEventPage() {
           <input
             name="title"
             required
+            defaultValue={prefillTitle || ""}
             placeholder="Boda de Ana y Luis"
             className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
           />

@@ -1,8 +1,11 @@
 import type { Task } from "@prisma/client";
 import { createTask, toggleTask, deleteTask } from "@/lib/actions/tasks";
+import { TaskCalendar } from "@/components/event-dashboard/TaskCalendar";
 
 export function TasksPanel({ eventId, tasks }: { eventId: string; tasks: Task[] }) {
   const done = tasks.filter((t) => t.done).length;
+  const withDate = tasks.filter((t) => t.dueDate);
+  const withoutDate = tasks.filter((t) => !t.dueDate);
 
   return (
     <div className="space-y-6 py-6">
@@ -21,6 +24,14 @@ export function TasksPanel({ eventId, tasks }: { eventId: string; tasks: Task[] 
               className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
             />
           </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Fecha (opcional)</label>
+            <input
+              name="dueDate"
+              type="date"
+              className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+            />
+          </div>
           <button
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
@@ -32,13 +43,18 @@ export function TasksPanel({ eventId, tasks }: { eventId: string; tasks: Task[] 
 
       <section>
         <h2 className="mb-3 font-serif text-lg font-medium text-ink">
-          Tareas ({done}/{tasks.length} completadas)
+          Calendario ({done}/{tasks.length} completadas)
         </h2>
-        {tasks.length === 0 ? (
-          <p className="text-sm text-ink-muted">Todavía no hay tareas para este evento.</p>
+        <TaskCalendar eventId={eventId} tasks={withDate} />
+      </section>
+
+      <section>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Tareas sin fecha</h2>
+        {withoutDate.length === 0 ? (
+          <p className="text-sm text-ink-muted">No hay tareas sin fecha.</p>
         ) : (
           <ul className="space-y-2">
-            {tasks.map((task) => (
+            {withoutDate.map((task) => (
               <li
                 key={task.id}
                 className="flex items-center justify-between gap-3 rounded-lg border border-gold/20 bg-white/60 px-4 py-2.5 shadow-sm backdrop-blur-xl"

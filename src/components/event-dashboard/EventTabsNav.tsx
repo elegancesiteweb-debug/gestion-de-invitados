@@ -8,6 +8,7 @@ const TABS = [
   { key: "tareas", label: "Tareas", feature: "checklist" as FeatureKey },
   { key: "presupuesto", label: "Presupuesto", feature: "budget_basic" as FeatureKey },
   { key: "timeline", label: "Agenda", feature: "day_timeline" as FeatureKey },
+  { key: "proveedores", label: "Proveedores", feature: "vendor_directory" as FeatureKey },
   { key: "estilo", label: "Estilo", feature: "style_guide" as FeatureKey },
   { key: "accesos", label: "Accesos" },
   { key: "envios", label: "Envíos" },
