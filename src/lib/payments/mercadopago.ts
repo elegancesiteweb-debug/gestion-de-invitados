@@ -1,23 +1,11 @@
 import type { PaymentGateway, CheckoutParams, CheckoutResult, VerifyParams, VerifyResult } from "@/lib/payments/types";
 
-function getAccessToken(): string {
-  const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
-  if (!token) {
-    throw new Error(
-      "MERCADOPAGO_ACCESS_TOKEN no está configurada. Agrégala en tus variables de entorno para poder cobrar con Mercado Pago."
-    );
-  }
-  return token;
-}
-
 export const mercadoPagoGateway: PaymentGateway = {
   async createCheckout(params: CheckoutParams): Promise<CheckoutResult> {
-    const accessToken = getAccessToken();
-
     const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${params.apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -54,9 +42,8 @@ export const mercadoPagoGateway: PaymentGateway = {
       return { paid: false, invoiceToken: null };
     }
 
-    const accessToken = getAccessToken();
     const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Authorization: `Bearer ${params.apiKey}` },
     });
     if (!response.ok) {
       return { paid: false, invoiceToken: null };

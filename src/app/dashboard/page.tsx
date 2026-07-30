@@ -29,6 +29,7 @@ export default async function DashboardPage() {
     organizer.accountType === "PLANNER" || organizer.eventsCreatedCount < 1;
   const showVendorsLink = hasFeature(session.user.accountType, "vendor_directory");
   const showLeadsLink = hasFeature(session.user.accountType, "crm_leads");
+  const showIntegrationsLink = hasFeature(session.user.accountType, "own_integrations");
   const showMultiEventStats = hasFeature(session.user.accountType, "multi_event_dashboard");
 
   return (
@@ -54,6 +55,11 @@ export default async function DashboardPage() {
           {showLeadsLink && (
             <Link href="/dashboard/leads" className="text-sm text-gold-dark hover:underline">
               Leads
+            </Link>
+          )}
+          {showIntegrationsLink && (
+            <Link href="/dashboard/settings" className="text-sm text-gold-dark hover:underline">
+              Integraciones
             </Link>
           )}
           {session.user.isAdmin && (

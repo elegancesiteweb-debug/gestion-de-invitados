@@ -1,18 +1,9 @@
 import Stripe from "stripe";
 import type { PaymentGateway, CheckoutParams, CheckoutResult, VerifyParams, VerifyResult } from "@/lib/payments/types";
 
-function getClient(): Stripe {
-  if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error(
-      "STRIPE_SECRET_KEY no está configurada. Agrégala en tus variables de entorno para poder cobrar con Stripe."
-    );
-  }
-  return new Stripe(process.env.STRIPE_SECRET_KEY);
-}
-
 export const stripeGateway: PaymentGateway = {
   async createCheckout(params: CheckoutParams): Promise<CheckoutResult> {
-    const stripe = getClient();
+    const stripe = new Stripe(params.apiKey);
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [
@@ -41,7 +32,7 @@ export const stripeGateway: PaymentGateway = {
     if (!params.providerSessionId) {
       return { paid: false, invoiceToken: null };
     }
-    const stripe = getClient();
+    const stripe = new Stripe(params.apiKey);
     const session = await stripe.checkout.sessions.retrieve(params.providerSessionId);
 
     return {

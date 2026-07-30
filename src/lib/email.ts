@@ -1,7 +1,25 @@
 import { Resend } from "resend";
+import type { Organizer } from "@prisma/client";
 import { renderTemplate } from "@/lib/messageTemplate";
+import { decryptSecret } from "@/lib/crypto";
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+export function resolveResendCredentials(
+  organizer: Pick<Organizer, "resendApiKey" | "resendFromEmail">
+): { apiKey: string; fromEmail: string } {
+  const apiKey = organizer.resendApiKey
+    ? decryptSecret(organizer.resendApiKey)
+    : process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "No hay una API Key de Resend configurada. Agrégala en Integraciones o pide al administrador que configure RESEND_API_KEY."
+    );
+  }
+
+  const fromEmail = organizer.resendFromEmail || process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+
+  return { apiKey, fromEmail };
+}
 
 export async function sendRsvpEmail(params: {
   to: string;
@@ -14,14 +32,24 @@ export async function sendRsvpEmail(params: {
   maxCompanions: number;
   confirmUrl: string;
   invitationUrl?: string | null;
+  apiKey: string;
+  fromEmail: string;
 }) {
-  if (!resend) {
-    throw new Error(
-      "RESEND_API_KEY no está configurada. Agrégala en tus variables de entorno para poder enviar correos."
-    );
-  }
-
-  const { to, template, guestName, eventTitle, eventDate, location, tableName, maxCompanions, confirmUrl, invitationUrl } = params;
+  const {
+    to,
+    template,
+    guestName,
+    eventTitle,
+    eventDate,
+    location,
+    tableName,
+    maxCompanions,
+    confirmUrl,
+    invitationUrl,
+    apiKey,
+    fromEmail,
+  } = params;
+  const resend = new Resend(apiKey);
 
   const bodyText = renderTemplate(template, {
     nombre: guestName,
@@ -35,7 +63,7 @@ export async function sendRsvpEmail(params: {
   });
 
   return resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+    from: fromEmail,
     to,
     subject: `Confirma tu asistencia: ${eventTitle}`,
     html: `

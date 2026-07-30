@@ -23,6 +23,14 @@ model Organizer {
   eventsCreatedCount Int         @default(0)
   isAdmin            Boolean     @default(false)
 
+  // Credenciales propias del organizador para sus integraciones (cifradas, salvo resendFromEmail).
+  // Si están vacías, la app usa las variables de entorno globales como respaldo.
+  resendApiKey           String?
+  resendFromEmail        String?
+  stripeSecretKey        String?
+  mercadoPagoAccessToken String?
+  clipApiKey             String?
+
   events       Event[]
   redeemedCode AccessCode?
   vendors      Vendor[]

@@ -4,24 +4,12 @@ import type { PaymentGateway, CheckoutParams, CheckoutResult, VerifyParams, Veri
 // Sin una cuenta real para probar contra su sandbox, los nombres de campo pueden
 // necesitar ajustes una vez que haya credenciales reales disponibles.
 
-function getApiKey(): string {
-  const key = process.env.CLIP_API_KEY;
-  if (!key) {
-    throw new Error(
-      "CLIP_API_KEY no está configurada. Agrégala en tus variables de entorno para poder cobrar con Clip."
-    );
-  }
-  return key;
-}
-
 export const clipGateway: PaymentGateway = {
   async createCheckout(params: CheckoutParams): Promise<CheckoutResult> {
-    const apiKey = getApiKey();
-
     const response = await fetch("https://api.payclip.com/checkout", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${params.apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -50,9 +38,8 @@ export const clipGateway: PaymentGateway = {
       return { paid: false, invoiceToken: null };
     }
 
-    const apiKey = getApiKey();
     const response = await fetch(`https://api.payclip.com/checkout/${params.providerSessionId}`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
+      headers: { Authorization: `Bearer ${params.apiKey}` },
     });
     if (!response.ok) {
       return { paid: false, invoiceToken: null };

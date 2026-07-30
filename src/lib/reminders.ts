@@ -1,6 +1,6 @@
 import type { Event, Guest } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { sendRsvpEmail } from "@/lib/email";
+import { sendRsvpEmail, resolveResendCredentials } from "@/lib/email";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { formatDate } from "@/lib/dates";
 
@@ -30,6 +30,8 @@ export async function sendEventReminders(eventId: string): Promise<number> {
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const template = event.messageTemplate || DEFAULT_MESSAGE_TEMPLATE;
   const eligible = getReminderEligibleGuests(event, event.guests);
+  const organizer = await prisma.organizer.findUniqueOrThrow({ where: { id: event.organizerId } });
+  const { apiKey, fromEmail } = resolveResendCredentials(organizer);
 
   const results = await Promise.allSettled(
     eligible.map(async (guest) => {
@@ -44,6 +46,8 @@ export async function sendEventReminders(eventId: string): Promise<number> {
         maxCompanions: guest.maxCompanions,
         confirmUrl: `${baseUrl}/c/${guest.token}`,
         invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
+        apiKey,
+        fromEmail,
       });
       await prisma.guest.update({
         where: { id: guest.id },

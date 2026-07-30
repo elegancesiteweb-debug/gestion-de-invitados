@@ -5,6 +5,7 @@ export interface CheckoutParams {
   invoiceToken: string;
   successUrl: string;
   cancelUrl: string;
+  apiKey: string;
 }
 
 export interface CheckoutResult {
@@ -15,6 +16,7 @@ export interface CheckoutResult {
 export interface VerifyParams {
   providerSessionId: string | null;
   searchParams: Record<string, string>;
+  apiKey: string;
 }
 
 export interface VerifyResult {

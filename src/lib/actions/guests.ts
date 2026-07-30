@@ -7,7 +7,7 @@ import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { guestSchema } from "@/lib/validations";
-import { sendRsvpEmail } from "@/lib/email";
+import { sendRsvpEmail, resolveResendCredentials } from "@/lib/email";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { findOrCreateTableByName } from "@/lib/tables";
 import { formatDate } from "@/lib/dates";
@@ -195,6 +195,8 @@ export async function sendGuestEmail(eventId: string, guestId: string) {
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const confirmUrl = `${baseUrl}/c/${guest.token}`;
+  const organizer = await prisma.organizer.findUniqueOrThrow({ where: { id: organizerId } });
+  const { apiKey, fromEmail } = resolveResendCredentials(organizer);
 
   await sendRsvpEmail({
     to: guest.email,
@@ -207,6 +209,8 @@ export async function sendGuestEmail(eventId: string, guestId: string) {
     maxCompanions: guest.maxCompanions,
     confirmUrl,
     invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
+    apiKey,
+    fromEmail,
   });
 
   await prisma.guest.update({
@@ -227,6 +231,8 @@ export async function sendAllPendingEmails(eventId: string) {
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const template = event.messageTemplate || DEFAULT_MESSAGE_TEMPLATE;
+  const organizer = await prisma.organizer.findUniqueOrThrow({ where: { id: organizerId } });
+  const { apiKey, fromEmail } = resolveResendCredentials(organizer);
 
   await Promise.allSettled(
     pendingGuests.map(async (guest) => {
@@ -241,6 +247,8 @@ export async function sendAllPendingEmails(eventId: string) {
         maxCompanions: guest.maxCompanions,
         confirmUrl: `${baseUrl}/c/${guest.token}`,
         invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
+        apiKey,
+        fromEmail,
       });
       await prisma.guest.update({
         where: { id: guest.id },

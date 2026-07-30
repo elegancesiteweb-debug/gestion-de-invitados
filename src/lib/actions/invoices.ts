@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 import type { PaymentProvider } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getGateway } from "@/lib/payments";
+import { getGateway, resolvePaymentCredential } from "@/lib/payments";
 
 const PROVIDERS: PaymentProvider[] = ["STRIPE", "MERCADOPAGO", "CLIP"];
 
@@ -61,7 +61,10 @@ export async function deleteInvoice(leadId: string, invoiceId: string) {
 }
 
 export async function createCheckoutSession(token: string) {
-  const invoice = await prisma.invoice.findUnique({ where: { token } });
+  const invoice = await prisma.invoice.findUnique({
+    where: { token },
+    include: { lead: { include: { organizer: true } } },
+  });
   if (!invoice) {
     throw new Error("Factura no encontrada");
   }
@@ -71,6 +74,7 @@ export async function createCheckoutSession(token: string) {
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const gateway = getGateway(invoice.provider);
+  const apiKey = resolvePaymentCredential(invoice.lead.organizer, invoice.provider);
 
   const result = await gateway.createCheckout({
     amount: invoice.amount,
@@ -79,6 +83,7 @@ export async function createCheckoutSession(token: string) {
     invoiceToken: invoice.token,
     successUrl: `${baseUrl}/pay/${token}/success`,
     cancelUrl: `${baseUrl}/pay/${token}`,
+    apiKey,
   });
 
   await prisma.invoice.update({

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getGateway } from "@/lib/payments";
+import { getGateway, resolvePaymentCredential } from "@/lib/payments";
 
 export default async function PaySuccessPage({
   params,
@@ -12,7 +12,10 @@ export default async function PaySuccessPage({
   const { token } = await params;
   const rawSearchParams = await searchParams;
 
-  const invoice = await prisma.invoice.findUnique({ where: { token } });
+  const invoice = await prisma.invoice.findUnique({
+    where: { token },
+    include: { lead: { include: { organizer: true } } },
+  });
   if (!invoice) {
     notFound();
   }
@@ -26,9 +29,11 @@ export default async function PaySuccessPage({
     }
 
     const gateway = getGateway(invoice.provider);
+    const apiKey = resolvePaymentCredential(invoice.lead.organizer, invoice.provider);
     const result = await gateway.verifyPayment({
       providerSessionId: invoice.providerSessionId,
       searchParams: searchParamsRecord,
+      apiKey,
     });
 
     if (result.paid && (!result.invoiceToken || result.invoiceToken === invoice.token)) {
