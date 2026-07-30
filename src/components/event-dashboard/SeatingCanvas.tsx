@@ -33,6 +33,27 @@ function shapeDimensions(shape: TableShape, seats: number): { width: number; hei
   return { width: size, height: size };
 }
 
+// Posición de un asiento sobre el perímetro de un rectángulo (sentido horario
+// desde la esquina superior izquierda), desplazado `margin` px hacia afuera del borde.
+function rectSeatPosition(
+  width: number,
+  height: number,
+  margin: number,
+  index: number,
+  count: number
+): { x: number; y: number } {
+  const perimeter = 2 * (width + height);
+  let dist = (perimeter * index) / count;
+
+  if (dist < width) return { x: dist, y: -margin };
+  dist -= width;
+  if (dist < height) return { x: width + margin, y: dist };
+  dist -= height;
+  if (dist < width) return { x: width - dist, y: height + margin };
+  dist -= width;
+  return { x: -margin, y: height - dist };
+}
+
 function guestLabel(guest: Guest): string {
   const extra = guest.status === "CONFIRMED" ? guest.companionsConfirmed ?? 0 : guest.maxCompanions;
   return extra > 0 ? `${guest.name} (+${extra})` : guest.name;
@@ -265,7 +286,10 @@ export function SeatingCanvas({
                   }
                 }}
                 className="absolute z-10 flex flex-col gap-1 rounded-lg border border-gold/20 bg-white p-2 shadow-lg"
-                style={{ left: 0, top: table.shape === "RECT" ? height + 4 : width + 2 * SEAT_MARGIN }}
+                style={{
+                  left: 0,
+                  top: 2 * SEAT_MARGIN + (table.shape === "RECT" ? height : width),
+                }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <input
@@ -402,82 +426,109 @@ export function SeatingCanvas({
               );
             }
 
-            return (
-              <div
-                key={table.id}
-                className={`absolute flex flex-col items-center gap-1 rounded-xl border-2 bg-warm/95 p-2 text-center shadow-md ${
-                  overCapacity ? "border-danger/50" : "border-gold/30"
-                }`}
-                style={{ left: table.x - width / 2, top: table.y - height / 2, width, height }}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => handleDropOnTable(e, table.id)}
-                onClick={() => handleTableTap(table.id)}
-              >
-                <div
-                  className="w-full cursor-move select-none"
-                  onPointerDown={(e) => handlePointerDown(e, table)}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={handlePointerUp}
-                >
-                  <p className="text-sm font-medium text-ink">{table.name}</p>
-                  <p className={`text-xs ${overCapacity ? "text-danger" : "text-ink-muted"}`}>
-                    {occupancy}/{table.seats}
-                  </p>
-                </div>
+            {
+              const wrapperWidth = width + 2 * SEAT_MARGIN;
+              const wrapperHeight = height + 2 * SEAT_MARGIN + PARTY_ROW_HEIGHT;
+              const occupants = buildSeatOccupants(table.id, guests);
 
-                <div className="flex flex-wrap justify-center gap-1 overflow-y-auto px-1">
-                  {seated.map((guest) => (
-                    <span
-                      key={guest.id}
-                      draggable
-                      onDragStart={(e) => handleDragStartGuest(e, guest.id)}
-                      onClick={(e) => toggleSelectGuest(e, guest.id)}
-                      className={`flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[11px] text-ink shadow-sm ${
-                        selectedGuestId === guest.id ? "ring-2 ring-gold" : ""
-                      }`}
-                    >
-                      {guestLabel(guest)}
+              return (
+                <div
+                  key={table.id}
+                  className="absolute"
+                  style={{
+                    left: table.x - wrapperWidth / 2,
+                    top: table.y - (height / 2 + SEAT_MARGIN),
+                    width: wrapperWidth,
+                    height: wrapperHeight,
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => handleDropOnTable(e, table.id)}
+                  onClick={() => handleTableTap(table.id)}
+                >
+                  <div
+                    className={`absolute flex cursor-move select-none flex-col items-center justify-center rounded-xl border-2 bg-warm/95 text-center shadow-md ${
+                      overCapacity ? "border-danger/50" : "border-gold/30"
+                    }`}
+                    style={{ left: SEAT_MARGIN, top: SEAT_MARGIN, width, height }}
+                    onPointerDown={(e) => handlePointerDown(e, table)}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                  >
+                    <p className="text-sm font-medium text-ink">{table.name}</p>
+                    <p className={`text-xs ${overCapacity ? "text-danger" : "text-ink-muted"}`}>
+                      {occupancy}/{table.seats}
+                    </p>
+                    <div className="mt-1 flex gap-2 text-[10px]">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          assignGuest(guest.id, null);
+                          setEditingId(editingId === table.id ? null : table.id);
                         }}
-                        className="text-ink-muted hover:text-danger"
-                        aria-label={`Quitar a ${guest.name} de la mesa`}
+                        className="text-gold-dark hover:underline"
                       >
-                        ×
+                        Editar
                       </button>
-                    </span>
-                  ))}
-                </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTable(table.id);
+                        }}
+                        className="text-danger hover:underline"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
 
-                <div className="flex gap-2 text-[11px]">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingId(editingId === table.id ? null : table.id);
-                    }}
-                    className="text-gold-dark hover:underline"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteTable(table.id);
-                    }}
-                    className="text-danger hover:underline"
-                  >
-                    Eliminar
-                  </button>
-                </div>
+                  {Array.from({ length: table.seats }, (_, i) => {
+                    const seat = rectSeatPosition(width, height, 20, i, table.seats);
+                    return (
+                      <div
+                        key={i}
+                        className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] text-ink shadow-sm"
+                        style={{ left: SEAT_MARGIN + seat.x, top: SEAT_MARGIN + seat.y }}
+                      >
+                        {occupants[i] ?? ""}
+                      </div>
+                    );
+                  })}
 
-                {editForm}
-              </div>
-            );
+                  <div
+                    className="absolute flex flex-wrap justify-center gap-1 px-1"
+                    style={{ left: 0, top: 2 * SEAT_MARGIN + height, width: wrapperWidth }}
+                  >
+                    {seated.map((guest) => (
+                      <span
+                        key={guest.id}
+                        draggable
+                        onDragStart={(e) => handleDragStartGuest(e, guest.id)}
+                        onClick={(e) => toggleSelectGuest(e, guest.id)}
+                        className={`flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[11px] text-ink shadow-sm ${
+                          selectedGuestId === guest.id ? "ring-2 ring-gold" : ""
+                        }`}
+                      >
+                        {guestLabel(guest)}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            assignGuest(guest.id, null);
+                          }}
+                          className="text-ink-muted hover:text-danger"
+                          aria-label={`Quitar a ${guest.name} de la mesa`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+
+                  {editForm}
+                </div>
+              );
+            }
           })}
         </div>
 
