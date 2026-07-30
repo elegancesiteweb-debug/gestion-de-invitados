@@ -17,8 +17,12 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Gestión de Invitados",
+  title: "Elegance Site — Gestión de Invitados",
   description: "Organiza tus eventos y confirma la asistencia de tus invitados",
+  icons: {
+    icon: "/icon-bg.png",
+    apple: "/icon-bg.png",
+  },
 };
 
 export default function RootLayout({

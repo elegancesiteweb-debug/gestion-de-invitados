@@ -28,10 +28,16 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10">
       <header className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gold/20 bg-white/60 p-5 shadow-lg backdrop-blur-xl">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">Panel de organizador</p>
-          <h1 className="mt-1 font-serif text-2xl font-medium text-ink">Tus eventos</h1>
-          <p className="text-sm text-ink-muted">Hola, {session.user.name}</p>
+        <div className="flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Elegance Site" className="h-12 w-12 flex-none" />
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">
+              Elegance Site · Panel de organizador
+            </p>
+            <h1 className="mt-1 font-serif text-2xl font-medium text-ink">Tus eventos</h1>
+            <p className="text-sm text-ink-muted">Hola, {session.user.name}</p>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           {session.user.isAdmin && (

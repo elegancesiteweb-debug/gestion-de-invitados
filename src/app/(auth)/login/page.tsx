@@ -40,7 +40,10 @@ export default function LoginPage() {
     <div className="flex flex-1 items-center justify-center px-4 py-16">
       <div className="w-full max-w-sm space-y-6 rounded-2xl border border-gold/20 bg-white/70 p-8 shadow-lg backdrop-blur-xl">
         <div className="text-center">
-          <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">Bienvenido</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Elegance Site" className="mx-auto h-16 w-16" />
+          <p className="mt-2 text-sm font-medium text-ink">Elegance Site</p>
+          <p className="mt-4 text-xs uppercase tracking-[0.2em] text-gold-dark">Bienvenido</p>
           <h1 className="mt-1 font-serif text-2xl font-medium text-ink">Inicia sesión</h1>
           <p className="mt-1 text-sm text-ink-muted">Accede a tu panel de organizador.</p>
         </div>

@@ -3,7 +3,10 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-20 text-center">
-      <p className="text-xs uppercase tracking-[0.25em] text-gold-dark">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logo.png" alt="Elegance Site" className="h-20 w-20" />
+      <p className="mt-2 text-sm font-medium text-ink">Elegance Site</p>
+      <p className="mt-6 text-xs uppercase tracking-[0.25em] text-gold-dark">
         Organización de eventos
       </p>
       <h1 className="mt-2 max-w-2xl font-serif text-4xl font-medium text-ink sm:text-5xl">
