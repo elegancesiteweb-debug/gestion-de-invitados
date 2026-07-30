@@ -25,6 +25,21 @@ model Organizer {
 
   events       Event[]
   redeemedCode AccessCode?
+  vendors      Vendor[]
+}
+
+model Vendor {
+  id          String    @id @default(cuid())
+  organizerId String
+  organizer   Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  name        String
+  category    String?
+  phone       String?
+  email       String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+
+  @@index([organizerId])
 }
 
 model AccessCode {
@@ -65,17 +80,47 @@ model Event {
 
   showQrOnConfirmation Boolean @default(true)
 
-  publicRsvpToken      String? @unique
+  publicRsvpToken   String? @unique
+  clientPortalToken String? @unique
+
   generalMaxCompanions Int?    @default(5) // null = sin límite de acompañantes
 
   reminderDaysAfter Int? @default(3) // null = recordatorios desactivados
 
-  guests      Guest[]
-  tasks       Task[]
-  budgetItems BudgetItem[]
-  tables      Table[]
+  colorPalette String? // hex separados por coma, ej. "#c9a84c,#2a2118"
+  styleNotes   String?
+
+  guests           Guest[]
+  tasks            Task[]
+  budgetItems      BudgetItem[]
+  tables           Table[]
+  timelineItems    TimelineItem[]
+  styleGuideImages StyleGuideImage[]
 
   @@index([organizerId])
+}
+
+model TimelineItem {
+  id          String   @id @default(cuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  time        String
+  title       String
+  responsible String?
+  createdAt   DateTime @default(now())
+
+  @@index([eventId])
+}
+
+model StyleGuideImage {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  image     Bytes
+  imageType String
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
 }
 
 enum TableShape {

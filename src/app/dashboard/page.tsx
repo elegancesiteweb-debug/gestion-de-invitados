@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SignOutButton } from "@/components/SignOutButton";
 import { formatDate } from "@/lib/dates";
+import { hasFeature } from "@/lib/features";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -19,11 +20,15 @@ export default async function DashboardPage() {
     include: {
       _count: { select: { guests: true } },
       guests: { select: { status: true, companionsConfirmed: true } },
+      tasks: { select: { done: true } },
+      budgetItems: { select: { estimatedAmount: true, actualAmount: true } },
     },
   });
 
   const canCreateEvent =
     organizer.accountType === "PLANNER" || organizer.eventsCreatedCount < 1;
+  const showVendorsLink = hasFeature(session.user.accountType, "vendor_directory");
+  const showMultiEventStats = hasFeature(session.user.accountType, "multi_event_dashboard");
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10">
@@ -40,6 +45,11 @@ export default async function DashboardPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
+          {showVendorsLink && (
+            <Link href="/dashboard/vendors" className="text-sm text-gold-dark hover:underline">
+              Proveedores
+            </Link>
+          )}
           {session.user.isAdmin && (
             <Link href="/dashboard/admin" className="text-sm text-gold-dark hover:underline">
               Admin
@@ -72,6 +82,14 @@ export default async function DashboardPage() {
           {events.map((event) => {
             const confirmed = event.guests.filter((g) => g.status === "CONFIRMED").length;
             const total = event._count.guests;
+
+            const pendingTasks = event.tasks.filter((t) => !t.done).length;
+            const totalEstimated = event.budgetItems.reduce((sum, b) => sum + b.estimatedAmount, 0);
+            const totalActual = event.budgetItems.reduce((sum, b) => sum + (b.actualAmount ?? 0), 0);
+            const daysUntil = Math.ceil(
+              (event.eventDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+            );
+
             return (
               <li key={event.id}>
                 <Link
@@ -100,6 +118,17 @@ export default async function DashboardPage() {
                       {confirmed}/{total} confirmados
                     </p>
                   </div>
+
+                  {showMultiEventStats && (
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-gold/15 pt-2 text-xs text-ink-muted">
+                      <span>{daysUntil >= 0 ? `${daysUntil} día(s) para el evento` : "Ya pasó"}</span>
+                      <span>{pendingTasks} tarea(s) pendiente(s)</span>
+                      <span>
+                        Presupuesto: {totalActual.toLocaleString("es-ES")} /{" "}
+                        {totalEstimated.toLocaleString("es-ES")}
+                      </span>
+                    </div>
+                  )}
                 </Link>
               </li>
             );

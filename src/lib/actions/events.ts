@@ -66,6 +66,40 @@ export async function createEvent(formData: FormData) {
     },
   });
 
+  const copyFromEventId = (formData.get("copyFromEventId") as string | null)?.trim();
+  if (copyFromEventId) {
+    const source = await prisma.event.findFirst({
+      where: { id: copyFromEventId, organizerId },
+      include: { tasks: true, budgetItems: true },
+    });
+    if (source) {
+      await prisma.$transaction([
+        prisma.event.update({
+          where: { id: event.id },
+          data: { messageTemplate: source.messageTemplate },
+        }),
+        ...(source.tasks.length > 0
+          ? [
+              prisma.task.createMany({
+                data: source.tasks.map((t) => ({ eventId: event.id, title: t.title, done: false })),
+              }),
+            ]
+          : []),
+        ...(source.budgetItems.length > 0
+          ? [
+              prisma.budgetItem.createMany({
+                data: source.budgetItems.map((b) => ({
+                  eventId: event.id,
+                  category: b.category,
+                  estimatedAmount: b.estimatedAmount,
+                })),
+              }),
+            ]
+          : []),
+      ]);
+    }
+  }
+
   revalidatePath("/dashboard");
   redirect(`/dashboard/events/${event.id}`);
 }
@@ -172,6 +206,19 @@ export async function toggleGeneralRsvp(eventId: string, formData: FormData) {
   await prisma.event.updateMany({
     where: { id: eventId, organizerId },
     data: { publicRsvpToken: enable ? nanoid(12) : null },
+  });
+
+  revalidatePath(`/dashboard/events/${eventId}`);
+}
+
+export async function toggleClientPortal(eventId: string, formData: FormData) {
+  const organizerId = await requireOrganizerId();
+
+  const enable = formData.get("enable") === "true";
+
+  await prisma.event.updateMany({
+    where: { id: eventId, organizerId },
+    data: { clientPortalToken: enable ? nanoid(12) : null },
   });
 
   revalidatePath(`/dashboard/events/${eventId}`);

@@ -13,6 +13,8 @@ import { SendsPanel } from "@/components/event-dashboard/SendsPanel";
 import { SettingsPanel } from "@/components/event-dashboard/SettingsPanel";
 import { TasksPanel } from "@/components/event-dashboard/TasksPanel";
 import { BudgetPanel } from "@/components/event-dashboard/BudgetPanel";
+import { TimelinePanel } from "@/components/event-dashboard/TimelinePanel";
+import { StyleGuidePanel } from "@/components/event-dashboard/StyleGuidePanel";
 import { formatDateTime } from "@/lib/dates";
 
 export default async function EventDetailPage({
@@ -38,6 +40,8 @@ export default async function EventDetailPage({
       tasks: { orderBy: { createdAt: "asc" } },
       budgetItems: { orderBy: { createdAt: "asc" } },
       tables: { orderBy: { createdAt: "asc" } },
+      timelineItems: { orderBy: { time: "asc" } },
+      styleGuideImages: { orderBy: { createdAt: "asc" }, select: { id: true, imageType: true } },
     },
   });
 
@@ -122,12 +126,16 @@ export default async function EventDetailPage({
           <TasksPanel eventId={event.id} tasks={event.tasks} />
         ) : activeTab === "presupuesto" ? (
           <BudgetPanel eventId={event.id} items={event.budgetItems} />
+        ) : activeTab === "timeline" ? (
+          <TimelinePanel eventId={event.id} items={event.timelineItems} />
+        ) : activeTab === "estilo" ? (
+          <StyleGuidePanel event={event} images={event.styleGuideImages} />
         ) : activeTab === "accesos" ? (
           <AccessPanel guests={event.guests} />
         ) : activeTab === "envios" ? (
           <SendsPanel event={event} guests={event.guests} baseUrl={baseUrl} />
         ) : activeTab === "configuracion" ? (
-          <SettingsPanel event={event} baseUrl={baseUrl} />
+          <SettingsPanel event={event} baseUrl={baseUrl} accountType={session.user.accountType} />
         ) : (
           <GuestsPanel event={event} guests={event.guests} tables={event.tables} baseUrl={baseUrl} />
         )}

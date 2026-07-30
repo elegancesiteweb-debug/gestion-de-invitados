@@ -1,7 +1,25 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { hasFeature } from "@/lib/features";
 import { createEvent } from "@/lib/actions/events";
 
-export default function NewEventPage() {
+export default async function NewEventPage() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
+  const canCopyTemplate = hasFeature(session.user.accountType, "reusable_templates");
+  const existingEvents = canCopyTemplate
+    ? await prisma.event.findMany({
+        where: { organizerId: session.user.id },
+        orderBy: { eventDate: "desc" },
+        select: { id: true, title: true },
+      })
+    : [];
+
   return (
     <div className="mx-auto w-full max-w-lg px-4 py-10">
       <Link href="/dashboard" className="text-sm text-gold-dark hover:underline">
@@ -13,6 +31,29 @@ export default function NewEventPage() {
         action={createEvent}
         className="mt-6 space-y-4 rounded-2xl border border-gold/20 bg-white/60 p-6 shadow-lg backdrop-blur-xl"
       >
+        {canCopyTemplate && existingEvents.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Empezar a partir de (opcional)
+            </label>
+            <select
+              name="copyFromEventId"
+              defaultValue=""
+              className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
+            >
+              <option value="">Empezar en blanco</option>
+              {existingEvents.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.title}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-ink-muted">
+              Copia el mensaje de invitación, el checklist y las categorías de presupuesto de ese
+              evento.
+            </p>
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium mb-1">Título</label>
           <input

@@ -1,7 +1,8 @@
-import type { Event } from "@prisma/client";
+import type { AccountType, Event } from "@prisma/client";
 import {
   updateEventSettings,
   toggleGeneralRsvp,
+  toggleClientPortal,
   uploadEventLogo,
   removeEventLogo,
 } from "@/lib/actions/events";
@@ -10,9 +11,19 @@ import { TemplateEditor } from "@/components/event-dashboard/TemplateEditor";
 import { GeneralPassesInput } from "@/components/event-dashboard/GeneralPassesInput";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { EmbedCodeButton } from "@/components/EmbedCodeButton";
+import { hasFeature } from "@/lib/features";
 
-export function SettingsPanel({ event, baseUrl }: { event: Event; baseUrl: string }) {
+export function SettingsPanel({
+  event,
+  baseUrl,
+  accountType,
+}: {
+  event: Event;
+  baseUrl: string;
+  accountType: AccountType;
+}) {
   const generalUrl = event.publicRsvpToken ? `${baseUrl}/g/${event.publicRsvpToken}` : null;
+  const portalUrl = event.clientPortalToken ? `${baseUrl}/portal/${event.clientPortalToken}` : null;
 
   return (
     <div className="space-y-6 py-6">
@@ -184,6 +195,47 @@ export function SettingsPanel({ event, baseUrl }: { event: Event; baseUrl: strin
           </div>
         )}
       </div>
+
+      {hasFeature(accountType, "client_portal") && (
+        <div className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
+          <h2 className="font-serif text-lg font-medium text-ink">Portal de cliente</h2>
+          <p className="mt-1 text-xs text-ink-muted">
+            Link de solo lectura para compartir con la pareja/cliente: ve estadísticas de
+            confirmaciones, la lista de invitados, tareas y la agenda del día, sin poder editar
+            nada.
+          </p>
+
+          <div className="mt-3 flex items-center gap-3">
+            {event.clientPortalToken ? (
+              <form action={toggleClientPortal.bind(null, event.id)}>
+                <input type="hidden" name="enable" value="false" />
+                <button
+                  type="submit"
+                  className="rounded-lg border border-danger/30 bg-danger-bg px-3 py-1.5 text-sm text-danger hover:bg-danger-bg/80"
+                >
+                  Desactivar portal de cliente
+                </button>
+              </form>
+            ) : (
+              <form action={toggleClientPortal.bind(null, event.id)}>
+                <input type="hidden" name="enable" value="true" />
+                <button
+                  type="submit"
+                  className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm text-white hover:shadow-lg"
+                >
+                  Activar portal de cliente
+                </button>
+              </form>
+            )}
+          </div>
+
+          {portalUrl && (
+            <div className="mt-4 flex items-center gap-4 border-t border-gold/15 pt-4">
+              <CopyLinkButton url={portalUrl} />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
