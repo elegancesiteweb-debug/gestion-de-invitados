@@ -61,6 +61,8 @@ export default async function ConfirmAttendancePage({
           currentCompanions={guest.companionsConfirmed}
           currentMessage={guest.messageFromGuest}
           currentDietaryNotes={guest.dietaryNotes}
+          askDietary={guest.event.askDietaryOnRsvp}
+          askMessage={guest.event.askMessageOnRsvp}
         />
       </div>
     </div>

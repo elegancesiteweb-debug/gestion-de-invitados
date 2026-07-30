@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { guestSchema } from "@/lib/validations";
 import { sendRsvpEmail } from "@/lib/email";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
+import { findOrCreateTableByName } from "@/lib/tables";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -46,6 +47,8 @@ export async function createGuest(eventId: string, formData: FormData) {
 
   const { name, email, phone, maxCompanions, tableName } = parsed.data;
 
+  const table = tableName ? await findOrCreateTableByName(eventId, tableName) : null;
+
   await prisma.guest.create({
     data: {
       eventId,
@@ -53,7 +56,8 @@ export async function createGuest(eventId: string, formData: FormData) {
       email: email || null,
       phone: phone || null,
       maxCompanions,
-      tableName: tableName || null,
+      tableId: table?.id ?? null,
+      tableName: table?.name ?? null,
       token: nanoid(12),
       checkinToken: nanoid(12),
     },
@@ -103,17 +107,28 @@ export async function importGuestsCsv(eventId: string, formData: FormData) {
     throw new Error("El CSV no contiene invitados válidos (se requiere columna 'name' o 'nombre')");
   }
 
+  const distinctTableNames = [...new Set(rows.map((row) => row.tableName).filter(Boolean))];
+  const tableByName = new Map<string, { id: string; name: string }>();
+  for (const rawName of distinctTableNames) {
+    const table = await findOrCreateTableByName(eventId, rawName);
+    if (table) tableByName.set(rawName, table);
+  }
+
   await prisma.guest.createMany({
-    data: rows.map((row) => ({
-      eventId,
-      name: row.name,
-      email: row.email || null,
-      phone: row.phone || null,
-      maxCompanions: row.maxCompanions,
-      tableName: row.tableName || null,
-      token: nanoid(12),
-      checkinToken: nanoid(12),
-    })),
+    data: rows.map((row) => {
+      const table = row.tableName ? tableByName.get(row.tableName) : undefined;
+      return {
+        eventId,
+        name: row.name,
+        email: row.email || null,
+        phone: row.phone || null,
+        maxCompanions: row.maxCompanions,
+        tableId: table?.id ?? null,
+        tableName: table?.name ?? null,
+        token: nanoid(12),
+        checkinToken: nanoid(12),
+      };
+    }),
   });
 
   revalidatePath(`/dashboard/events/${eventId}`);

@@ -86,6 +86,8 @@ export async function updateEventSettings(eventId: string, formData: FormData) {
 
   const messageTemplate = (formData.get("messageTemplate") as string | null)?.trim() || null;
   const showTableOnRsvp = formData.get("showTableOnRsvp") === "on";
+  const askDietaryOnRsvp = formData.get("askDietaryOnRsvp") === "on";
+  const askMessageOnRsvp = formData.get("askMessageOnRsvp") === "on";
 
   const generalUnlimited = formData.get("generalUnlimited") === "on";
   let generalMaxCompanions: number | null;
@@ -101,18 +103,15 @@ export async function updateEventSettings(eventId: string, formData: FormData) {
   const reminderDaysAfter =
     Number.isFinite(parsedReminderDays) && parsedReminderDays > 0 ? parsedReminderDays : null;
 
-  const dressCode = (formData.get("dressCode") as string | null)?.trim() || null;
-  const mapUrl = (formData.get("mapUrl") as string | null)?.trim() || null;
-
   await prisma.event.updateMany({
     where: { id: eventId, organizerId },
     data: {
       messageTemplate,
       showTableOnRsvp,
+      askDietaryOnRsvp,
+      askMessageOnRsvp,
       generalMaxCompanions,
       reminderDaysAfter,
-      dressCode,
-      mapUrl,
     },
   });
 

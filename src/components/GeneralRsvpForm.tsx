@@ -8,9 +8,13 @@ type RsvpState = { error?: string; ok?: boolean } | null;
 export function GeneralRsvpForm({
   publicRsvpToken,
   maxCompanions,
+  askDietary,
+  askMessage,
 }: {
   publicRsvpToken: string;
   maxCompanions: number | null;
+  askDietary: boolean;
+  askMessage: boolean;
 }) {
   const [status, setStatus] = useState<"CONFIRMED" | "DECLINED">("CONFIRMED");
   const [state, formAction, pending] = useActionState<RsvpState, FormData>(
@@ -86,7 +90,7 @@ export function GeneralRsvpForm({
         </div>
       )}
 
-      {status === "CONFIRMED" && (
+      {status === "CONFIRMED" && askDietary && (
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
             Restricciones alimentarias (opcional)
@@ -100,16 +104,18 @@ export function GeneralRsvpForm({
         </div>
       )}
 
-      <div>
-        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
-          Mensaje (opcional)
-        </label>
-        <textarea
-          name="messageFromGuest"
-          rows={2}
-          className="w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-        />
-      </div>
+      {askMessage && (
+        <div>
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+            Mensaje (opcional)
+          </label>
+          <textarea
+            name="messageFromGuest"
+            rows={2}
+            className="w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          />
+        </div>
+      )}
 
       {state?.error && <p className="text-sm text-danger">{state.error}</p>}
       {state?.ok && <p className="text-sm text-success">¡Gracias! Tu respuesta fue registrada.</p>}

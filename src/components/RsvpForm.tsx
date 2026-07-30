@@ -12,6 +12,8 @@ export function RsvpForm({
   currentCompanions,
   currentMessage,
   currentDietaryNotes,
+  askDietary,
+  askMessage,
 }: {
   token: string;
   maxCompanions: number;
@@ -19,6 +21,8 @@ export function RsvpForm({
   currentCompanions: number | null;
   currentMessage: string | null;
   currentDietaryNotes: string | null;
+  askDietary: boolean;
+  askMessage: boolean;
 }) {
   const [status, setStatus] = useState(
     currentStatus === "DECLINED" ? "DECLINED" : "CONFIRMED"
@@ -84,7 +88,7 @@ export function RsvpForm({
         </div>
       )}
 
-      {status === "CONFIRMED" && (
+      {status === "CONFIRMED" && askDietary && (
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
             Restricciones alimentarias (opcional)
@@ -99,17 +103,19 @@ export function RsvpForm({
         </div>
       )}
 
-      <div>
-        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
-          Mensaje (opcional)
-        </label>
-        <textarea
-          name="messageFromGuest"
-          defaultValue={currentMessage ?? ""}
-          rows={2}
-          className="w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
-        />
-      </div>
+      {askMessage && (
+        <div>
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+            Mensaje (opcional)
+          </label>
+          <textarea
+            name="messageFromGuest"
+            defaultValue={currentMessage ?? ""}
+            rows={2}
+            className="w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+          />
+        </div>
+      )}
 
       {state?.error && <p className="text-sm text-danger">{state.error}</p>}
       {state?.ok && <p className="text-sm text-success">¡Gracias! Tu respuesta fue registrada.</p>}

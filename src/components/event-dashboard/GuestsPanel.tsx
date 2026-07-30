@@ -1,4 +1,4 @@
-import type { Event, Guest } from "@prisma/client";
+import type { Event, Guest, Table } from "@prisma/client";
 import {
   createGuest,
   deleteGuest,
@@ -16,13 +16,15 @@ import { EmbedCodeButton } from "@/components/EmbedCodeButton";
 export function GuestsPanel({
   event,
   guests,
+  tables,
   baseUrl,
 }: {
   event: Event;
   guests: Guest[];
+  tables: Table[];
   baseUrl: string;
 }) {
-  const tableNames = [...new Set(guests.map((g) => g.tableName).filter(Boolean))] as string[];
+  const tableNames = tables.map((t) => t.name);
   const template = event.messageTemplate || DEFAULT_MESSAGE_TEMPLATE;
 
   return (

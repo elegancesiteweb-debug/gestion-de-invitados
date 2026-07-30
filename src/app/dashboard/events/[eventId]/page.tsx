@@ -36,6 +36,7 @@ export default async function EventDetailPage({
       guests: { orderBy: { createdAt: "asc" } },
       tasks: { orderBy: { createdAt: "asc" } },
       budgetItems: { orderBy: { createdAt: "asc" } },
+      tables: { orderBy: { createdAt: "asc" } },
     },
   });
 
@@ -87,7 +88,7 @@ export default async function EventDetailPage({
         {activeTab === "confirmaciones" ? (
           <ConfirmationsPanel eventId={event.id} guests={event.guests} />
         ) : activeTab === "mesas" ? (
-          <TablesPanel guests={event.guests} />
+          <TablesPanel eventId={event.id} tables={event.tables} guests={event.guests} />
         ) : activeTab === "tareas" ? (
           <TasksPanel eventId={event.id} tasks={event.tasks} />
         ) : activeTab === "presupuesto" ? (
@@ -99,7 +100,7 @@ export default async function EventDetailPage({
         ) : activeTab === "configuracion" ? (
           <SettingsPanel event={event} baseUrl={baseUrl} />
         ) : (
-          <GuestsPanel event={event} guests={event.guests} baseUrl={baseUrl} />
+          <GuestsPanel event={event} guests={event.guests} tables={event.tables} baseUrl={baseUrl} />
         )}
       </div>
     </div>

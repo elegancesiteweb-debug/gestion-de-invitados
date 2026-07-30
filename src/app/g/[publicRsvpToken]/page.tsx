@@ -45,6 +45,8 @@ export default async function GeneralConfirmAttendancePage({
         <GeneralRsvpForm
           publicRsvpToken={publicRsvpToken}
           maxCompanions={event.generalMaxCompanions}
+          askDietary={event.askDietaryOnRsvp}
+          askMessage={event.askMessageOnRsvp}
         />
       </div>
     </div>
