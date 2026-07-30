@@ -71,15 +71,25 @@ export default async function DashboardPage() {
                   href={`/dashboard/events/${event.id}`}
                   className="block rounded-xl border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl transition hover:border-gold/40 hover:shadow-lg"
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-ink">{event.title}</p>
-                      <p className="text-sm text-ink-muted">
-                        {event.eventDate.toLocaleDateString("es-ES", { dateStyle: "long" })}
-                        {event.location ? ` · ${event.location}` : ""}
-                      </p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      {event.logoImageType && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={`/api/events/${event.id}/logo`}
+                          alt=""
+                          className="h-12 w-12 flex-none rounded-lg object-cover"
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-ink">{event.title}</p>
+                        <p className="text-sm text-ink-muted">
+                          {event.eventDate.toLocaleDateString("es-ES", { dateStyle: "long" })}
+                          {event.location ? ` · ${event.location}` : ""}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-sm text-ink-muted">
+                    <p className="flex-none text-sm text-ink-muted">
                       {confirmed}/{total} confirmados
                     </p>
                   </div>

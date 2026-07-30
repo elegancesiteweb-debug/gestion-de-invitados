@@ -66,14 +66,39 @@ export default async function EventDetailPage({
       </aside>
 
       <main className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
-            <p className="text-sm text-ink-muted">
-              {event.eventDate.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" })}
-              {event.location ? ` · ${event.location}` : ""}
-            </p>
+        {event.logoImageType && (
+          <div className="relative mb-4 h-36 w-full overflow-hidden rounded-2xl shadow-md sm:h-44">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/events/${event.id}/logo`}
+              alt=""
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-4">
+              <h1 className="font-serif text-2xl font-medium text-white drop-shadow-sm">
+                {event.title}
+              </h1>
+              <p className="text-sm text-white/90 drop-shadow-sm">
+                {event.eventDate.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" })}
+                {event.location ? ` · ${event.location}` : ""}
+              </p>
+            </div>
           </div>
+        )}
+
+        <div
+          className={`flex flex-wrap items-start gap-3 ${event.logoImageType ? "justify-end" : "justify-between"}`}
+        >
+          {!event.logoImageType && (
+            <div>
+              <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
+              <p className="text-sm text-ink-muted">
+                {event.eventDate.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" })}
+                {event.location ? ` · ${event.location}` : ""}
+              </p>
+            </div>
+          )}
           <form action={deleteEvent.bind(null, event.id)}>
             <button type="submit" className="text-sm text-danger hover:underline">
               Eliminar evento
