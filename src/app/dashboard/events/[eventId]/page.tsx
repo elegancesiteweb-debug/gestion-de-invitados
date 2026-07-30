@@ -13,6 +13,7 @@ import { SendsPanel } from "@/components/event-dashboard/SendsPanel";
 import { SettingsPanel } from "@/components/event-dashboard/SettingsPanel";
 import { TasksPanel } from "@/components/event-dashboard/TasksPanel";
 import { BudgetPanel } from "@/components/event-dashboard/BudgetPanel";
+import { formatDateTime } from "@/lib/dates";
 
 export default async function EventDetailPage({
   params,
@@ -80,7 +81,7 @@ export default async function EventDetailPage({
                 {event.title}
               </h1>
               <p className="text-sm text-white/90 drop-shadow-sm">
-                {event.eventDate.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" })}
+                {formatDateTime(event.eventDate)}
                 {event.location ? ` · ${event.location}` : ""}
               </p>
             </div>
@@ -94,7 +95,7 @@ export default async function EventDetailPage({
             <div>
               <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
               <p className="text-sm text-ink-muted">
-                {event.eventDate.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" })}
+                {formatDateTime(event.eventDate)}
                 {event.location ? ` · ${event.location}` : ""}
               </p>
             </div>

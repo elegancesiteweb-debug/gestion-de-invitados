@@ -1,6 +1,7 @@
-import type { Guest } from "@prisma/client";
+import type { Companion, Guest } from "@prisma/client";
+import { CheckedInGuestList } from "@/components/event-dashboard/CheckedInGuestList";
 
-export function AccessPanel({ guests }: { guests: Guest[] }) {
+export function AccessPanel({ guests }: { guests: (Guest & { companions: Companion[] })[] }) {
   const arrived = guests
     .filter((g) => g.checkedInAt !== null)
     .sort((a, b) => (b.checkedInAt as Date).getTime() - (a.checkedInAt as Date).getTime());
@@ -32,28 +33,7 @@ export function AccessPanel({ guests }: { guests: Guest[] }) {
             invitado.
           </p>
         ) : (
-          <div className="space-y-2">
-            {arrived.map((guest) => (
-              <div
-                key={guest.id}
-                className="flex items-center justify-between rounded-lg border border-gold/20 bg-white p-3"
-              >
-                <div>
-                  <p className="font-medium">{guest.name}</p>
-                  <p className="text-xs text-ink-muted">
-                    {guest.tableName || "Sin mesa"} · {guest.checkedInPasses ?? 1} pase
-                    {(guest.checkedInPasses ?? 1) !== 1 ? "s" : ""}
-                  </p>
-                </div>
-                <p className="text-sm font-medium text-success">
-                  {(guest.checkedInAt as Date).toLocaleTimeString("es-ES", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            ))}
-          </div>
+          <CheckedInGuestList guests={arrived} />
         )}
       </div>
     </div>

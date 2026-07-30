@@ -9,6 +9,7 @@ import {
 } from "@/lib/actions/guests";
 import { buildWhatsAppLink, buildRsvpMessage } from "@/lib/whatsapp";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
+import { formatDate } from "@/lib/dates";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { GuestQrButton } from "@/components/GuestQrButton";
@@ -110,7 +111,7 @@ export function GuestsPanel({
             template,
             guestName: guest.name,
             eventTitle: event.title,
-            eventDate: event.eventDate.toLocaleDateString("es-ES", { dateStyle: "long" }),
+            eventDate: formatDate(event.eventDate),
             location: event.location,
             tableName: guest.tableName,
             maxCompanions: guest.maxCompanions,

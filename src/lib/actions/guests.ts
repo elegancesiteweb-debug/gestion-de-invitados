@@ -10,6 +10,7 @@ import { guestSchema } from "@/lib/validations";
 import { sendRsvpEmail } from "@/lib/email";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { findOrCreateTableByName } from "@/lib/tables";
+import { formatDate } from "@/lib/dates";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -200,9 +201,7 @@ export async function sendGuestEmail(eventId: string, guestId: string) {
     template: event.messageTemplate || DEFAULT_MESSAGE_TEMPLATE,
     guestName: guest.name,
     eventTitle: event.title,
-    eventDate: event.eventDate.toLocaleDateString("es-ES", {
-      dateStyle: "long",
-    }),
+    eventDate: formatDate(event.eventDate),
     location: event.location,
     tableName: guest.tableName,
     maxCompanions: guest.maxCompanions,
@@ -236,7 +235,7 @@ export async function sendAllPendingEmails(eventId: string) {
         template,
         guestName: guest.name,
         eventTitle: event.title,
-        eventDate: event.eventDate.toLocaleDateString("es-ES", { dateStyle: "long" }),
+        eventDate: formatDate(event.eventDate),
         location: event.location,
         tableName: guest.tableName,
         maxCompanions: guest.maxCompanions,

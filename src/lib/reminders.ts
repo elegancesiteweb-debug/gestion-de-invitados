@@ -2,6 +2,7 @@ import type { Event, Guest } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendRsvpEmail } from "@/lib/email";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
+import { formatDate } from "@/lib/dates";
 
 export function isGuestReminderEligible(event: Event, guest: Guest, now: Date = new Date()): boolean {
   if (event.reminderDaysAfter == null) return false;
@@ -37,7 +38,7 @@ export async function sendEventReminders(eventId: string): Promise<number> {
         template,
         guestName: guest.name,
         eventTitle: event.title,
-        eventDate: event.eventDate.toLocaleDateString("es-ES", { dateStyle: "long" }),
+        eventDate: formatDate(event.eventDate),
         location: event.location,
         tableName: guest.tableName,
         maxCompanions: guest.maxCompanions,

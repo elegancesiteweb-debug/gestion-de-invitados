@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAccessCode } from "@/lib/actions/admin";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
+import { formatDate } from "@/lib/dates";
 
 export default async function AdminPage({
   searchParams,
@@ -105,7 +106,7 @@ export default async function AdminPage({
                     {c.usedAt ? (
                       <span className="text-warning">
                         Usado por {c.usedByOrganizer?.name} ({c.usedByOrganizer?.email}) ·{" "}
-                        {c.usedAt.toLocaleDateString("es-ES", { dateStyle: "medium" })}
+                        {formatDate(c.usedAt, "medium")}
                       </span>
                     ) : (
                       <span className="text-success">Sin usar</span>

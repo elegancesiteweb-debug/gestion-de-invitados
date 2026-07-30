@@ -1,10 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-
-function formatTime(date: Date) {
-  return date.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-}
+import { formatTime } from "@/lib/dates";
 
 export async function checkInGuest(checkinToken: string) {
   const guest = await prisma.guest.findUnique({ where: { checkinToken } });

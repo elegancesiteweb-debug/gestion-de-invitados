@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PrintButton } from "@/components/PrintButton";
+import { formatDate } from "@/lib/dates";
 
 export default async function PrintConfirmationsPage({
   params,
@@ -56,7 +57,7 @@ export default async function PrintConfirmationsPage({
         <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
         <p className="mt-1 text-sm text-ink-muted">
           Lista de confirmaciones ·{" "}
-          {event.eventDate.toLocaleDateString("es-ES", { dateStyle: "long" })}
+          {formatDate(event.eventDate)}
           {event.location ? ` · ${event.location}` : ""}
         </p>
       </header>
@@ -121,7 +122,7 @@ export default async function PrintConfirmationsPage({
       </table>
 
       <p className="mt-6 text-center text-xs text-ink-light">
-        Generado el {new Date().toLocaleDateString("es-ES", { dateStyle: "long" })}
+        Generado el {formatDate(new Date())}
       </p>
     </div>
   );

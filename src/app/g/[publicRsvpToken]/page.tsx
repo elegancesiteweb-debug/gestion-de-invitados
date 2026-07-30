@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { GeneralRsvpForm } from "@/components/GeneralRsvpForm";
 import { EmbedTransparentBackground } from "@/components/EmbedTransparentBackground";
+import { formatDateTime } from "@/lib/dates";
 
 export default async function GeneralConfirmAttendancePage({
   params,
@@ -41,7 +42,7 @@ export default async function GeneralConfirmAttendancePage({
         </p>
         <h1 className="mt-1 font-serif text-2xl font-medium text-ink">{event.title}</h1>
         <p className="mt-1 text-sm text-ink-muted">
-          {event.eventDate.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" })}
+          {formatDateTime(event.eventDate)}
         </p>
         {event.location && <p className="text-sm text-ink-muted">{event.location}</p>}
         {event.notes && <p className="mt-2 text-sm text-ink-muted">{event.notes}</p>}

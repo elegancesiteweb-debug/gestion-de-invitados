@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SignOutButton } from "@/components/SignOutButton";
+import { formatDate } from "@/lib/dates";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -84,7 +85,7 @@ export default async function DashboardPage() {
                       <div className="min-w-0">
                         <p className="truncate font-medium text-ink">{event.title}</p>
                         <p className="text-sm text-ink-muted">
-                          {event.eventDate.toLocaleDateString("es-ES", { dateStyle: "long" })}
+                          {formatDate(event.eventDate)}
                           {event.location ? ` · ${event.location}` : ""}
                         </p>
                       </div>

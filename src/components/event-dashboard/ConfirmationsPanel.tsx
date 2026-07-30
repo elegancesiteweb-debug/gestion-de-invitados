@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Companion, Guest } from "@prisma/client";
 import { StatusBadge } from "@/components/StatusBadge";
 import { deleteGuest } from "@/lib/actions/guests";
+import { formatInAppTimezone } from "@/lib/dates";
 
 export function ConfirmationsPanel({
   eventId,
@@ -49,7 +50,7 @@ export function ConfirmationsPanel({
                   ? `Asistirá · ${1 + (guest.companionsConfirmed ?? 0)} persona(s)`
                   : "No podrá asistir"}
                 {guest.respondedAt &&
-                  ` · ${guest.respondedAt.toLocaleDateString("es-ES", {
+                  ` · ${formatInAppTimezone(guest.respondedAt, {
                     day: "2-digit",
                     month: "short",
                     hour: "2-digit",
