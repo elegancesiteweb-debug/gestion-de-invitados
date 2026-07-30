@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, type DragEvent, type PointerEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type DragEvent, type PointerEvent } from "react";
 import type { Companion, Guest, Table as TableModel, TableShape } from "@prisma/client";
 import {
   createTable,
@@ -66,9 +66,21 @@ export function SeatingCanvas({
   const [error, setError] = useState<string | null>(null);
   const [selectedGuestId, setSelectedGuestId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   const unassigned = guests.filter((g) => g.tableId == null);
   const selectedGuest = guests.find((g) => g.id === selectedGuestId) ?? null;
+
+  // Al abrir la pestaña, si las mesas quedaron ubicadas fuera de lo que entra en
+  // una pantalla angosta (por ejemplo, se acomodaron en una pantalla grande),
+  // centramos la vista en ellas en vez de dejar el lienzo mostrando una esquina vacía.
+  useEffect(() => {
+    if (!canvasRef.current || tables.length === 0) return;
+    const minX = Math.min(...tables.map((t) => t.x));
+    const minY = Math.min(...tables.map((t) => t.y));
+    canvasRef.current.scrollTo({ left: Math.max(0, minX - 100), top: Math.max(0, minY - 100) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function toggleSelectGuest(e: { stopPropagation: () => void }, guestId: string) {
     e.stopPropagation();
@@ -218,10 +230,17 @@ export function SeatingCanvas({
         </form>
       </details>
 
+      {tables.length > 0 && (
+        <p className="text-xs text-ink-muted lg:hidden">
+          Deslizá dentro del recuadro para ver todas tus mesas — tocá un invitado y después una
+          mesa para asignarlo.
+        </p>
+      )}
+
       <div className="flex flex-col gap-4 lg:flex-row">
         <div
-          className="relative flex-1 overflow-auto rounded-lg border border-gold/20 bg-white/40 shadow-md backdrop-blur-xl"
-          style={{ height: 640 }}
+          ref={canvasRef}
+          className="relative h-[420px] flex-1 overflow-auto rounded-lg border border-gold/20 bg-white/40 shadow-md backdrop-blur-xl sm:h-[520px] lg:h-[640px]"
         >
           {tables.length === 0 && (
             <p className="p-6 text-sm text-ink-muted">
