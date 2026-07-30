@@ -39,13 +39,14 @@ export async function createGuest(eventId: string, formData: FormData) {
     phone: formData.get("phone") || undefined,
     maxCompanions: formData.get("maxCompanions") || 0,
     tableName: formData.get("tableName") || undefined,
+    invitationLinkUrl: formData.get("invitationLinkUrl") || undefined,
   });
 
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Datos inválidos");
   }
 
-  const { name, email, phone, maxCompanions, tableName } = parsed.data;
+  const { name, email, phone, maxCompanions, tableName, invitationLinkUrl } = parsed.data;
 
   const table = tableName ? await findOrCreateTableByName(eventId, tableName) : null;
 
@@ -58,6 +59,7 @@ export async function createGuest(eventId: string, formData: FormData) {
       maxCompanions,
       tableId: table?.id ?? null,
       tableName: table?.name ?? null,
+      invitationLinkUrl: invitationLinkUrl || null,
       token: nanoid(12),
       checkinToken: nanoid(12),
     },
@@ -100,6 +102,7 @@ export async function importGuestsCsv(eventId: string, formData: FormData) {
       phone: (row.phone || row.telefono || row.teléfono || "").trim(),
       maxCompanions: parseInt(row.maxcompanions || row.acompanantes || row.acompañantes || "0", 10) || 0,
       tableName: (row.tablename || row.mesa || "").trim(),
+      invitationLinkUrl: (row.invitationlink || row.linkinvitacion || "").trim(),
     }))
     .filter((row) => row.name.length > 0);
 
@@ -125,6 +128,7 @@ export async function importGuestsCsv(eventId: string, formData: FormData) {
         maxCompanions: row.maxCompanions,
         tableId: table?.id ?? null,
         tableName: table?.name ?? null,
+        invitationLinkUrl: row.invitationLinkUrl || null,
         token: nanoid(12),
         checkinToken: nanoid(12),
       };
@@ -161,6 +165,7 @@ export async function sendGuestEmail(eventId: string, guestId: string) {
     tableName: guest.tableName,
     maxCompanions: guest.maxCompanions,
     confirmUrl,
+    invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
   });
 
   await prisma.guest.update({
@@ -194,6 +199,7 @@ export async function sendAllPendingEmails(eventId: string) {
         tableName: guest.tableName,
         maxCompanions: guest.maxCompanions,
         confirmUrl: `${baseUrl}/c/${guest.token}`,
+        invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
       });
       await prisma.guest.update({
         where: { id: guest.id },

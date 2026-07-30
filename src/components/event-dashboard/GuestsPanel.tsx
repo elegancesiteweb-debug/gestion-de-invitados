@@ -99,6 +99,15 @@ export function GuestsPanel({
               className="w-20 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
             />
           </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Link de invitación (opcional)</label>
+            <input
+              name="invitationLinkUrl"
+              type="url"
+              placeholder="https://..."
+              className="w-48 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+            />
+          </div>
           <button
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
@@ -140,6 +149,7 @@ export function GuestsPanel({
                         tableName: guest.tableName,
                         maxCompanions: guest.maxCompanions,
                         confirmUrl,
+                        invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
                       })
                     )
                   : null;

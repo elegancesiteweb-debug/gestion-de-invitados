@@ -17,6 +17,7 @@ export const TEMPLATE_VARIABLES = [
   "mesa",
   "pases",
   "link",
+  "invitacion",
 ] as const;
 
 export function renderTemplate(template: string, vars: Record<string, string>): string {

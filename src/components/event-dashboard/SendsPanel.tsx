@@ -85,6 +85,7 @@ export function SendsPanel({
                         tableName: guest.tableName,
                         maxCompanions: guest.maxCompanions,
                         confirmUrl,
+                        invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
                       })
                     )
                   : null;

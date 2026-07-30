@@ -56,6 +56,9 @@ model Event {
   showTableOnRsvp Boolean @default(true)
   askDietaryOnRsvp Boolean @default(true)
   askMessageOnRsvp Boolean @default(true)
+  askCompanionNamesOnRsvp Boolean @default(false)
+
+  invitationLinkUrl String?
 
   publicRsvpToken      String? @unique
   generalMaxCompanions Int?    @default(5) // null = sin límite de acompañantes
@@ -121,13 +124,28 @@ model Guest {
   tableId   String?
   table     Table?  @relation(fields: [tableId], references: [id], onDelete: SetNull)
 
+  invitationLinkUrl String?
+
   checkinToken    String    @unique
   checkedInAt     DateTime?
   checkedInPasses Int?
 
   createdAt DateTime @default(now())
 
+  companions Companion[]
+
   @@index([eventId])
+}
+
+model Companion {
+  id        String   @id @default(cuid())
+  guestId   String
+  guest     Guest    @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  name      String
+  attending Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([guestId])
 }
 
 model Task {

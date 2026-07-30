@@ -42,6 +42,7 @@ export async function sendEventReminders(eventId: string): Promise<number> {
         tableName: guest.tableName,
         maxCompanions: guest.maxCompanions,
         confirmUrl: `${baseUrl}/c/${guest.token}`,
+        invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
       });
       await prisma.guest.update({
         where: { id: guest.id },

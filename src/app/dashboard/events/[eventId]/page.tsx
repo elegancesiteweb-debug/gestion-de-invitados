@@ -33,7 +33,7 @@ export default async function EventDetailPage({
   const event = await prisma.event.findFirst({
     where: { id: eventId, organizerId: session.user.id },
     include: {
-      guests: { orderBy: { createdAt: "asc" } },
+      guests: { orderBy: { createdAt: "asc" }, include: { companions: true } },
       tasks: { orderBy: { createdAt: "asc" } },
       budgetItems: { orderBy: { createdAt: "asc" } },
       tables: { orderBy: { createdAt: "asc" } },
@@ -55,35 +55,38 @@ export default async function EventDetailPage({
   );
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-10">
-      <Link href="/dashboard" className="text-sm text-gold-dark hover:underline">
-        ← Tus eventos
-      </Link>
-
-      <div className="mt-2 flex items-start justify-between">
-        <div>
-          <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
-          <p className="text-sm text-ink-muted">
-            {event.eventDate.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" })}
-            {event.location ? ` · ${event.location}` : ""}
-          </p>
+    <div className="mx-auto flex w-full max-w-6xl gap-6 px-4 py-10">
+      <aside className="w-48 flex-none">
+        <Link href="/dashboard" className="text-sm text-gold-dark hover:underline">
+          ← Tus eventos
+        </Link>
+        <div className="sticky top-6 mt-4">
+          <EventTabsNav activeTab={activeTab} accountType={session.user.accountType} />
         </div>
-        <form action={deleteEvent.bind(null, event.id)}>
-          <button type="submit" className="text-sm text-danger hover:underline">
-            Eliminar evento
-          </button>
-        </form>
-      </div>
+      </aside>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label="Confirmados" value={confirmed.length} />
-        <StatCard label="No asisten" value={declined.length} />
-        <StatCard label="Pendientes" value={pending.length} />
-        <StatCard label="Total asistentes" value={totalAttendees} />
-      </div>
+      <main className="min-w-0 flex-1">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
+            <p className="text-sm text-ink-muted">
+              {event.eventDate.toLocaleString("es-ES", { dateStyle: "long", timeStyle: "short" })}
+              {event.location ? ` · ${event.location}` : ""}
+            </p>
+          </div>
+          <form action={deleteEvent.bind(null, event.id)}>
+            <button type="submit" className="text-sm text-danger hover:underline">
+              Eliminar evento
+            </button>
+          </form>
+        </div>
 
-      <div className="mt-8">
-        <EventTabsNav activeTab={activeTab} accountType={session.user.accountType} />
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard label="Confirmados" value={confirmed.length} />
+          <StatCard label="No asisten" value={declined.length} />
+          <StatCard label="Pendientes" value={pending.length} />
+          <StatCard label="Total asistentes" value={totalAttendees} />
+        </div>
 
         {activeTab === "confirmaciones" ? (
           <ConfirmationsPanel eventId={event.id} guests={event.guests} />
@@ -102,7 +105,7 @@ export default async function EventDetailPage({
         ) : (
           <GuestsPanel event={event} guests={event.guests} tables={event.tables} baseUrl={baseUrl} />
         )}
-      </div>
+      </main>
     </div>
   );
 }

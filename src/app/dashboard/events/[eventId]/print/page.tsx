@@ -17,7 +17,7 @@ export default async function PrintConfirmationsPage({
 
   const event = await prisma.event.findFirst({
     where: { id: eventId, organizerId: session.user.id },
-    include: { guests: { orderBy: { name: "asc" } } },
+    include: { guests: { orderBy: { name: "asc" }, include: { companions: true } } },
   });
 
   if (!event) {
@@ -97,6 +97,13 @@ export default async function PrintConfirmationsPage({
               </td>
               <td className="py-2 pr-2">
                 {guest.status === "CONFIRMED" ? 1 + (guest.companionsConfirmed ?? 0) : "—"}
+                {guest.companions.length > 0 && (
+                  <span className="block text-xs text-ink-muted">
+                    {guest.companions
+                      .map((c) => `${c.name}${c.attending ? "" : " (no asiste)"}`)
+                      .join(", ")}
+                  </span>
+                )}
               </td>
               <td className="py-2 pr-2 text-ink-muted">{guest.dietaryNotes || ""}</td>
               <td className="py-2 text-ink-muted">{guest.messageFromGuest || ""}</td>

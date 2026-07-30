@@ -16,12 +16,14 @@ export default async function ConfirmAttendancePage({
 
   const guest = await prisma.guest.findUnique({
     where: { token },
-    include: { event: true },
+    include: { event: true, companions: true },
   });
 
   if (!guest) {
     notFound();
   }
+
+  const invitationUrl = guest.invitationLinkUrl ?? guest.event.invitationLinkUrl;
 
   return (
     <div
@@ -52,6 +54,16 @@ export default async function ConfirmAttendancePage({
           {guest.event.showTableOnRsvp && guest.tableName && (
             <p className="mt-1 text-sm text-ink-muted">Mesa asignada: {guest.tableName}</p>
           )}
+          {invitationUrl && (
+            <a
+              href={invitationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block text-sm font-medium text-gold-dark hover:underline"
+            >
+              Ver invitación →
+            </a>
+          )}
         </div>
 
         <RsvpForm
@@ -59,10 +71,12 @@ export default async function ConfirmAttendancePage({
           maxCompanions={guest.maxCompanions}
           currentStatus={guest.status}
           currentCompanions={guest.companionsConfirmed}
+          currentCompanionNames={guest.companions}
           currentMessage={guest.messageFromGuest}
           currentDietaryNotes={guest.dietaryNotes}
           askDietary={guest.event.askDietaryOnRsvp}
           askMessage={guest.event.askMessageOnRsvp}
+          askCompanionNames={guest.event.askCompanionNamesOnRsvp}
         />
       </div>
     </div>

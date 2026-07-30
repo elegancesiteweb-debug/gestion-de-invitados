@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, type DragEvent, type PointerEvent } from "react";
-import type { Guest, Table as TableModel, TableShape } from "@prisma/client";
+import type { Companion, Guest, Table as TableModel, TableShape } from "@prisma/client";
 import {
   createTable,
   updateTableDetails,
@@ -9,7 +9,9 @@ import {
   deleteTable,
   assignGuestToTable,
 } from "@/lib/actions/tables";
-import { calcTableOccupancy } from "@/lib/tables";
+import { calcTableOccupancy, buildSeatOccupants } from "@/lib/tables";
+
+type GuestWithCompanions = Guest & { companions: Companion[] };
 
 type DragState = {
   tableId: string;
@@ -20,13 +22,15 @@ type DragState = {
   originY: number;
 };
 
-function shapeStyle(shape: TableShape, seats: number): React.CSSProperties {
+const SEAT_MARGIN = 26;
+const PARTY_ROW_HEIGHT = 32;
+
+function shapeDimensions(shape: TableShape, seats: number): { width: number; height: number } {
   if (shape === "RECT") {
-    const width = Math.min(260, 140 + seats * 8);
-    return { width, minHeight: 110, borderRadius: "0.75rem" };
+    return { width: Math.min(260, 140 + seats * 8), height: 110 };
   }
   const size = Math.min(180, 90 + seats * 5);
-  return { width: size, minHeight: size, borderRadius: "9999px" };
+  return { width: size, height: size };
 }
 
 function guestLabel(guest: Guest): string {
@@ -41,7 +45,7 @@ export function SeatingCanvas({
 }: {
   eventId: string;
   initialTables: TableModel[];
-  initialGuests: Guest[];
+  initialGuests: GuestWithCompanions[];
 }) {
   const [tables, setTables] = useState(initialTables);
   const [prevInitialTables, setPrevInitialTables] = useState(initialTables);
@@ -184,7 +188,7 @@ export function SeatingCanvas({
       <div className="flex flex-col gap-4 lg:flex-row">
         <div
           className="relative flex-1 overflow-auto rounded-lg border border-gold/20 bg-white/40 shadow-md backdrop-blur-xl"
-          style={{ height: 600 }}
+          style={{ height: 640 }}
         >
           {tables.length === 0 && (
             <p className="p-6 text-sm text-ink-muted">
@@ -195,14 +199,150 @@ export function SeatingCanvas({
             const occupancy = calcTableOccupancy(table.id, guests);
             const overCapacity = occupancy > table.seats;
             const seated = guests.filter((g) => g.tableId === table.id);
+            const { width, height } = shapeDimensions(table.shape, table.seats);
+
+            const editForm = editingId === table.id && (
+              <form
+                action={async (formData) => {
+                  setError(null);
+                  try {
+                    await updateTableDetails(table.id, formData);
+                    setEditingId(null);
+                  } catch {
+                    setError("No se pudo actualizar la mesa");
+                  }
+                }}
+                className="absolute z-10 flex flex-col gap-1 rounded-lg border border-gold/20 bg-white p-2 shadow-lg"
+                style={{ left: 0, top: table.shape === "RECT" ? height + 4 : width + 2 * SEAT_MARGIN }}
+              >
+                <input
+                  name="name"
+                  defaultValue={table.name}
+                  className="rounded border border-gold/25 px-1.5 py-1 text-xs"
+                />
+                <select
+                  name="shape"
+                  defaultValue={table.shape}
+                  className="rounded border border-gold/25 px-1.5 py-1 text-xs"
+                >
+                  <option value="ROUND">Redonda</option>
+                  <option value="RECT">Rectangular</option>
+                </select>
+                <input
+                  name="seats"
+                  type="number"
+                  min={1}
+                  defaultValue={table.seats}
+                  className="rounded border border-gold/25 px-1.5 py-1 text-xs"
+                />
+                <button type="submit" className="rounded bg-gold-dark px-2 py-1 text-xs text-white">
+                  Guardar
+                </button>
+              </form>
+            );
+
+            if (table.shape === "ROUND") {
+              const wrapperWidth = width + 2 * SEAT_MARGIN;
+              const circleCenter = SEAT_MARGIN + width / 2;
+              const wrapperHeight = width + 2 * SEAT_MARGIN + PARTY_ROW_HEIGHT;
+              const seatRadius = width / 2 + 20;
+              const occupants = buildSeatOccupants(table.id, guests);
+
+              return (
+                <div
+                  key={table.id}
+                  className="absolute"
+                  style={{
+                    left: table.x - circleCenter,
+                    top: table.y - circleCenter,
+                    width: wrapperWidth,
+                    height: wrapperHeight,
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => handleDropOnTable(e, table.id)}
+                >
+                  <div
+                    className={`absolute flex cursor-move select-none flex-col items-center justify-center rounded-full border-2 bg-warm/95 text-center shadow-md ${
+                      overCapacity ? "border-danger/50" : "border-gold/30"
+                    }`}
+                    style={{ left: SEAT_MARGIN, top: SEAT_MARGIN, width, height: width }}
+                    onPointerDown={(e) => handlePointerDown(e, table)}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                  >
+                    <p className="text-sm font-medium text-ink">{table.name}</p>
+                    <p className={`text-xs ${overCapacity ? "text-danger" : "text-ink-muted"}`}>
+                      {occupancy}/{table.seats}
+                    </p>
+                    <div className="mt-1 flex gap-2 text-[10px]">
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(editingId === table.id ? null : table.id)}
+                        className="text-gold-dark hover:underline"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTable(table.id)}
+                        className="text-danger hover:underline"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+
+                  {Array.from({ length: table.seats }, (_, i) => {
+                    const angle = (2 * Math.PI * i) / table.seats - Math.PI / 2;
+                    const seatX = circleCenter + seatRadius * Math.cos(angle);
+                    const seatY = circleCenter + seatRadius * Math.sin(angle);
+                    return (
+                      <div
+                        key={i}
+                        className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] text-ink shadow-sm"
+                        style={{ left: seatX, top: seatY }}
+                      >
+                        {occupants[i] ?? ""}
+                      </div>
+                    );
+                  })}
+
+                  <div
+                    className="absolute flex flex-wrap justify-center gap-1 px-1"
+                    style={{ left: 0, top: 2 * SEAT_MARGIN + width, width: wrapperWidth }}
+                  >
+                    {seated.map((guest) => (
+                      <span
+                        key={guest.id}
+                        draggable
+                        onDragStart={(e) => handleDragStartGuest(e, guest.id)}
+                        className="flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[11px] text-ink shadow-sm"
+                      >
+                        {guestLabel(guest)}
+                        <button
+                          type="button"
+                          onClick={() => assignGuest(guest.id, null)}
+                          className="text-ink-muted hover:text-danger"
+                          aria-label={`Quitar a ${guest.name} de la mesa`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+
+                  {editForm}
+                </div>
+              );
+            }
 
             return (
               <div
                 key={table.id}
-                className={`absolute flex flex-col items-center gap-1 border-2 bg-warm/95 p-2 text-center shadow-md ${
+                className={`absolute flex flex-col items-center gap-1 rounded-xl border-2 bg-warm/95 p-2 text-center shadow-md ${
                   overCapacity ? "border-danger/50" : "border-gold/30"
                 }`}
-                style={{ left: table.x, top: table.y, ...shapeStyle(table.shape, table.seats) }}
+                style={{ left: table.x - width / 2, top: table.y - height / 2, width, height }}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDropOnTable(e, table.id)}
               >
@@ -256,44 +396,7 @@ export function SeatingCanvas({
                   </button>
                 </div>
 
-                {editingId === table.id && (
-                  <form
-                    action={async (formData) => {
-                      setError(null);
-                      try {
-                        await updateTableDetails(table.id, formData);
-                        setEditingId(null);
-                      } catch {
-                        setError("No se pudo actualizar la mesa");
-                      }
-                    }}
-                    className="mt-1 flex flex-col gap-1 rounded-lg border border-gold/20 bg-white p-2"
-                  >
-                    <input
-                      name="name"
-                      defaultValue={table.name}
-                      className="rounded border border-gold/25 px-1.5 py-1 text-xs"
-                    />
-                    <select
-                      name="shape"
-                      defaultValue={table.shape}
-                      className="rounded border border-gold/25 px-1.5 py-1 text-xs"
-                    >
-                      <option value="ROUND">Redonda</option>
-                      <option value="RECT">Rectangular</option>
-                    </select>
-                    <input
-                      name="seats"
-                      type="number"
-                      min={1}
-                      defaultValue={table.seats}
-                      className="rounded border border-gold/25 px-1.5 py-1 text-xs"
-                    />
-                    <button type="submit" className="rounded bg-gold-dark px-2 py-1 text-xs text-white">
-                      Guardar
-                    </button>
-                  </form>
-                )}
+                {editForm}
               </div>
             );
           })}

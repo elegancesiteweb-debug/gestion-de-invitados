@@ -1,5 +1,7 @@
-import type { Guest } from "@prisma/client";
+import type { Companion, Guest } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+
+type GuestWithCompanions = Guest & { companions: Companion[] };
 
 const GRID_COLUMNS = 4;
 const GRID_STEP = 180;
@@ -37,4 +39,27 @@ export function calcTableOccupancy(tableId: string, guests: Guest[]): number {
   return guests
     .filter((guest) => guest.tableId === tableId)
     .reduce((sum, guest) => sum + calcGuestOccupancy(guest), 0);
+}
+
+// Etiquetas de asiento en orden: por cada invitado de la mesa, su nombre y
+// (si están nombrados) sus acompañantes asistentes, o marcadores genéricos
+// si los acompañantes son solo un número.
+export function buildSeatOccupants(tableId: string, guests: GuestWithCompanions[]): string[] {
+  const labels: string[] = [];
+
+  for (const guest of guests.filter((g) => g.tableId === tableId)) {
+    labels.push(guest.name);
+    if (guest.companions.length > 0) {
+      for (const companion of guest.companions) {
+        if (companion.attending) labels.push(companion.name);
+      }
+    } else {
+      const extra = calcGuestOccupancy(guest) - 1;
+      for (let i = 0; i < extra; i++) {
+        labels.push("+1 invitado");
+      }
+    }
+  }
+
+  return labels;
 }

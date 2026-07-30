@@ -88,6 +88,8 @@ export async function updateEventSettings(eventId: string, formData: FormData) {
   const showTableOnRsvp = formData.get("showTableOnRsvp") === "on";
   const askDietaryOnRsvp = formData.get("askDietaryOnRsvp") === "on";
   const askMessageOnRsvp = formData.get("askMessageOnRsvp") === "on";
+  const askCompanionNamesOnRsvp = formData.get("askCompanionNamesOnRsvp") === "on";
+  const invitationLinkUrl = (formData.get("invitationLinkUrl") as string | null)?.trim() || null;
 
   const generalUnlimited = formData.get("generalUnlimited") === "on";
   let generalMaxCompanions: number | null;
@@ -110,6 +112,8 @@ export async function updateEventSettings(eventId: string, formData: FormData) {
       showTableOnRsvp,
       askDietaryOnRsvp,
       askMessageOnRsvp,
+      askCompanionNamesOnRsvp,
+      invitationLinkUrl,
       generalMaxCompanions,
       reminderDaysAfter,
     },

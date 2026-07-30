@@ -1,4 +1,4 @@
-import type { Guest, Table } from "@prisma/client";
+import type { Companion, Guest, Table } from "@prisma/client";
 import { SeatingCanvas } from "@/components/event-dashboard/SeatingCanvas";
 
 export function TablesPanel({
@@ -8,7 +8,7 @@ export function TablesPanel({
 }: {
   eventId: string;
   tables: Table[];
-  guests: Guest[];
+  guests: (Guest & { companions: Companion[] })[];
 }) {
   return <SeatingCanvas eventId={eventId} initialTables={tables} initialGuests={guests} />;
 }

@@ -38,9 +38,33 @@ export function SettingsPanel({ event, baseUrl }: { event: Event; baseUrl: strin
             <input type="checkbox" name="askMessageOnRsvp" defaultChecked={event.askMessageOnRsvp} />
             Permitir que el invitado deje un mensaje
           </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="askCompanionNamesOnRsvp"
+              defaultChecked={event.askCompanionNamesOnRsvp}
+            />
+            Pedir el nombre de cada acompañante y que confirmen quién asiste
+          </label>
         </div>
 
         <GeneralPassesInput initialValue={event.generalMaxCompanions} />
+
+        <div className="border-t border-gold/15 pt-4">
+          <h3 className="font-serif text-base font-medium text-ink">Link de invitación</h3>
+          <p className="text-xs text-ink-muted">
+            Link a la invitación diseñada aparte (Canva, PDF, imagen). Se usa en el mensaje con la
+            variable {"{invitacion}"} y se muestra como botón en la página de confirmación. Cada
+            invitado puede tener su propio link (al agregarlo); si no, se usa este general.
+          </p>
+          <input
+            name="invitationLinkUrl"
+            type="url"
+            defaultValue={event.invitationLinkUrl ?? ""}
+            placeholder="https://www.canva.com/design/..."
+            className="mt-2 w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm"
+          />
+        </div>
 
         <div className="border-t border-gold/15 pt-4">
           <h3 className="font-serif text-base font-medium text-ink">Recordatorios</h3>

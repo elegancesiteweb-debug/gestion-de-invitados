@@ -40,6 +40,16 @@ export default async function GeneralConfirmAttendancePage({
 
         <div className="mt-4 border-t border-gold/15 pt-4">
           <p className="text-sm text-ink-muted">Por favor confirma tu asistencia.</p>
+          {event.invitationLinkUrl && (
+            <a
+              href={event.invitationLinkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block text-sm font-medium text-gold-dark hover:underline"
+            >
+              Ver invitación →
+            </a>
+          )}
         </div>
 
         <GeneralRsvpForm
@@ -47,6 +57,7 @@ export default async function GeneralConfirmAttendancePage({
           maxCompanions={event.generalMaxCompanions}
           askDietary={event.askDietaryOnRsvp}
           askMessage={event.askMessageOnRsvp}
+          askCompanionNames={event.askCompanionNamesOnRsvp}
         />
       </div>
     </div>

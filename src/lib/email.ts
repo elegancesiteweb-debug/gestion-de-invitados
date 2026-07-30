@@ -13,6 +13,7 @@ export async function sendRsvpEmail(params: {
   tableName?: string | null;
   maxCompanions: number;
   confirmUrl: string;
+  invitationUrl?: string | null;
 }) {
   if (!resend) {
     throw new Error(
@@ -20,7 +21,7 @@ export async function sendRsvpEmail(params: {
     );
   }
 
-  const { to, template, guestName, eventTitle, eventDate, location, tableName, maxCompanions, confirmUrl } = params;
+  const { to, template, guestName, eventTitle, eventDate, location, tableName, maxCompanions, confirmUrl, invitationUrl } = params;
 
   const bodyText = renderTemplate(template, {
     nombre: guestName,
@@ -30,6 +31,7 @@ export async function sendRsvpEmail(params: {
     mesa: tableName || "por asignar",
     pases: String(maxCompanions + 1),
     link: confirmUrl,
+    invitacion: invitationUrl || "",
   });
 
   return resend.emails.send({

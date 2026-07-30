@@ -10,19 +10,23 @@ export function RsvpForm({
   maxCompanions,
   currentStatus,
   currentCompanions,
+  currentCompanionNames,
   currentMessage,
   currentDietaryNotes,
   askDietary,
   askMessage,
+  askCompanionNames,
 }: {
   token: string;
   maxCompanions: number;
   currentStatus: string;
   currentCompanions: number | null;
+  currentCompanionNames: { name: string; attending: boolean }[];
   currentMessage: string | null;
   currentDietaryNotes: string | null;
   askDietary: boolean;
   askMessage: boolean;
+  askCompanionNames: boolean;
 }) {
   const [status, setStatus] = useState(
     currentStatus === "DECLINED" ? "DECLINED" : "CONFIRMED"
@@ -71,7 +75,7 @@ export function RsvpForm({
         </label>
       </div>
 
-      {status === "CONFIRMED" && (
+      {status === "CONFIRMED" && !askCompanionNames && (
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
             Acompañantes (máx. {maxCompanions})
@@ -85,6 +89,36 @@ export function RsvpForm({
             disabled={maxCompanions === 0}
             className="w-24 rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20 disabled:opacity-50"
           />
+        </div>
+      )}
+
+      {status === "CONFIRMED" && askCompanionNames && maxCompanions > 0 && (
+        <div>
+          <input type="hidden" name="companionCount" value={maxCompanions} />
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+            Acompañantes (hasta {maxCompanions})
+          </label>
+          <div className="space-y-2">
+            {Array.from({ length: maxCompanions }, (_, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  name={`companion_${i}_name`}
+                  defaultValue={currentCompanionNames[i]?.name ?? ""}
+                  placeholder={`Nombre del acompañante ${i + 1}`}
+                  className="flex-1 rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                />
+                <label className="flex items-center gap-1 text-xs text-ink-muted">
+                  <input
+                    type="checkbox"
+                    name={`companion_${i}_attending`}
+                    defaultChecked={currentCompanionNames[i]?.attending ?? true}
+                  />
+                  asiste
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -1,9 +1,15 @@
 import Link from "next/link";
-import type { Guest } from "@prisma/client";
+import type { Companion, Guest } from "@prisma/client";
 import { StatusBadge } from "@/components/StatusBadge";
 import { deleteGuest } from "@/lib/actions/guests";
 
-export function ConfirmationsPanel({ eventId, guests }: { eventId: string; guests: Guest[] }) {
+export function ConfirmationsPanel({
+  eventId,
+  guests,
+}: {
+  eventId: string;
+  guests: (Guest & { companions: Companion[] })[];
+}) {
   const responded = guests
     .filter((g) => g.respondedAt !== null)
     .sort((a, b) => (b.respondedAt as Date).getTime() - (a.respondedAt as Date).getTime());
@@ -63,6 +69,15 @@ export function ConfirmationsPanel({ eventId, guests }: { eventId: string; guest
             <p className="mt-2 text-xs text-ink-muted">
               <span className="font-medium">Restricción alimentaria:</span> {guest.dietaryNotes}
             </p>
+          )}
+          {guest.companions.length > 0 && (
+            <ul className="mt-2 text-xs text-ink-muted">
+              {guest.companions.map((companion) => (
+                <li key={companion.id}>
+                  {companion.attending ? "✓" : "✗"} {companion.name}
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       ))}

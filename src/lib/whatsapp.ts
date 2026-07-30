@@ -15,6 +15,7 @@ export function buildRsvpMessage(params: {
   tableName?: string | null;
   maxCompanions: number;
   confirmUrl: string;
+  invitationUrl?: string | null;
 }): string {
   return renderTemplate(params.template, {
     nombre: params.guestName,
@@ -24,5 +25,6 @@ export function buildRsvpMessage(params: {
     mesa: params.tableName || "por asignar",
     pases: String(params.maxCompanions + 1),
     link: params.confirmUrl,
+    invitacion: params.invitationUrl || "",
   });
 }

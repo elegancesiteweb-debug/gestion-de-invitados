@@ -10,13 +10,25 @@ export function GeneralRsvpForm({
   maxCompanions,
   askDietary,
   askMessage,
+  askCompanionNames,
 }: {
   publicRsvpToken: string;
   maxCompanions: number | null;
   askDietary: boolean;
   askMessage: boolean;
+  askCompanionNames: boolean;
 }) {
   const [status, setStatus] = useState<"CONFIRMED" | "DECLINED">("CONFIRMED");
+  const [companionRowCount, setCompanionRowCount] = useState(0);
+
+  function addCompanionRow() {
+    if (maxCompanions !== null && companionRowCount >= maxCompanions) return;
+    setCompanionRowCount((prev) => prev + 1);
+  }
+
+  function removeCompanionRow() {
+    setCompanionRowCount((prev) => Math.max(0, prev - 1));
+  }
   const [state, formAction, pending] = useActionState<RsvpState, FormData>(
     async (_prev, formData) => submitGeneralRsvp(publicRsvpToken, formData),
     null
@@ -73,7 +85,7 @@ export function GeneralRsvpForm({
         </label>
       </div>
 
-      {status === "CONFIRMED" && maxCompanions !== 0 && (
+      {status === "CONFIRMED" && maxCompanions !== 0 && !askCompanionNames && (
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
             Acompañantes {maxCompanions !== null ? `(máx. ${maxCompanions})` : ""}
@@ -87,6 +99,50 @@ export function GeneralRsvpForm({
             className="w-24 rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
           />
           <p className="mt-1 text-xs text-ink-muted">Cuántas personas además de ti.</p>
+        </div>
+      )}
+
+      {status === "CONFIRMED" && maxCompanions !== 0 && askCompanionNames && (
+        <div>
+          <input type="hidden" name="companionCount" value={companionRowCount} />
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+            Acompañantes {maxCompanions !== null ? `(máx. ${maxCompanions})` : ""}
+          </label>
+          <div className="space-y-2">
+            {Array.from({ length: companionRowCount }, (_, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  name={`companion_${i}_name`}
+                  placeholder={`Nombre del acompañante ${i + 1}`}
+                  className="flex-1 rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
+                />
+                <label className="flex items-center gap-1 text-xs text-ink-muted">
+                  <input type="checkbox" name={`companion_${i}_attending`} defaultChecked />
+                  asiste
+                </label>
+                {i === companionRowCount - 1 && (
+                  <button
+                    type="button"
+                    onClick={removeCompanionRow}
+                    className="text-ink-muted hover:text-danger"
+                    aria-label="Quitar acompañante"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          {(maxCompanions === null || companionRowCount < maxCompanions) && (
+            <button
+              type="button"
+              onClick={addCompanionRow}
+              className="mt-2 text-sm text-gold-dark hover:underline"
+            >
+              + Agregar acompañante
+            </button>
+          )}
         </div>
       )}
 

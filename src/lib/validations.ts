@@ -26,6 +26,7 @@ export const guestSchema = z.object({
   phone: z.string().optional(),
   maxCompanions: z.coerce.number().int().min(0).default(0),
   tableName: z.string().optional(),
+  invitationLinkUrl: z.string().url("Link inválido").optional().or(z.literal("")),
 });
 
 export const rsvpSchema = z.object({
