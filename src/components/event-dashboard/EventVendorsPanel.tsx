@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { EventVendor, Vendor } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
+import { CopyLinkButton } from "@/components/CopyLinkButton";
 import {
   assignVendorToEvent,
   unassignVendorFromEvent,
@@ -13,10 +14,12 @@ export async function EventVendorsPanel({
   eventId,
   eventVendors,
   availableVendors,
+  baseUrl,
 }: {
   eventId: string;
   eventVendors: EventVendorWithVendor[];
   availableVendors: Vendor[];
+  baseUrl: string;
 }) {
   const t = await getTranslations("eventVendors");
   const assignedIds = new Set(eventVendors.map((ev) => ev.vendorId));
@@ -53,9 +56,30 @@ export async function EventVendorsPanel({
                         {t("rejectedByClient")}
                       </span>
                     )}
+                    {ev.vendorConfirmed === true && (
+                      <span className="ml-2 rounded-full bg-success-bg px-2 py-0.5 text-xs text-success">
+                        {t("vendorConfirmed")}
+                      </span>
+                    )}
+                    {ev.vendorConfirmed === false && (
+                      <span className="ml-2 rounded-full bg-danger-bg px-2 py-0.5 text-xs text-danger">
+                        {t("vendorDeclined")}
+                      </span>
+                    )}
+                    {ev.vendorConfirmed == null && (
+                      <span className="ml-2 rounded-full bg-warm px-2 py-0.5 text-xs text-ink-muted">
+                        {t("vendorPending")}
+                      </span>
+                    )}
                   </p>
                   <p className="text-xs text-ink-muted">
                     {ev.vendor.phone || ""} {ev.vendor.email ? `· ${ev.vendor.email}` : ""}
+                  </p>
+                  <p className="mt-1">
+                    <CopyLinkButton
+                      url={`${baseUrl}/vendor/${ev.confirmationToken}`}
+                      label={t("copyConfirmationLink")}
+                    />
                   </p>
                 </div>
                 <form action={unassignVendorFromEvent.bind(null, eventId, ev.vendorId)}>

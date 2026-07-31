@@ -134,3 +134,25 @@ export async function submitProposalImageComment(
 
   revalidatePath(`/portal/${clientPortalToken}`);
 }
+
+export async function submitSatisfactionSurvey(clientPortalToken: string, formData: FormData) {
+  const event = await requireEventByClientPortalToken(clientPortalToken);
+
+  const existing = await prisma.satisfactionSurvey.findUnique({ where: { eventId: event.id } });
+  if (existing) {
+    throw new Error("Ya enviaste tu respuesta");
+  }
+
+  const rating = Number(formData.get("rating"));
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    throw new Error("Elige una calificación de 1 a 5");
+  }
+  const wouldRecommend = formData.get("wouldRecommend") === "on";
+  const comments = (formData.get("comments") as string | null)?.trim() || null;
+
+  await prisma.satisfactionSurvey.create({
+    data: { eventId: event.id, rating, wouldRecommend, comments },
+  });
+
+  revalidatePath(`/portal/${clientPortalToken}`);
+}

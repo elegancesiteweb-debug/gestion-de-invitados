@@ -132,6 +132,12 @@ model EventVendor {
   clientApproved Boolean?
   createdAt      DateTime @default(now())
 
+  // El proveedor confirma su propia participación en el evento (distinto de
+  // clientApproved, que es el cliente aprobando/rechazando al proveedor).
+  confirmationToken String    @unique @default(cuid())
+  vendorConfirmed   Boolean?
+  confirmedAt       DateTime?
+
   @@unique([eventId, vendorId])
   @@index([eventId])
   @@index([vendorId])
@@ -234,17 +240,42 @@ model Event {
   floorPlanImageType String?
   floorPlanData      Json?
 
-  guests           Guest[]
-  tasks            Task[]
-  budgetItems      BudgetItem[]
-  tables           Table[]
-  timelineItems    TimelineItem[]
-  styleGuideImages StyleGuideImage[]
-  eventVendors     EventVendor[]
-  clientComments   ClientComment[]
-  activityLog      ActivityLogEntry[]
+  guests             Guest[]
+  tasks              Task[]
+  budgetItems        BudgetItem[]
+  tables             Table[]
+  timelineItems      TimelineItem[]
+  styleGuideImages   StyleGuideImage[]
+  eventVendors       EventVendor[]
+  clientComments     ClientComment[]
+  activityLog        ActivityLogEntry[]
+  documents          EventDocument[]
+  satisfactionSurvey SatisfactionSurvey?
 
   @@index([organizerId])
+}
+
+model EventDocument {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name      String
+  file      Bytes
+  fileType  String
+  fileSize  Int
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+}
+
+model SatisfactionSurvey {
+  id             String   @id @default(cuid())
+  eventId        String   @unique
+  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  rating         Int
+  wouldRecommend Boolean?
+  comments       String?
+  createdAt      DateTime @default(now())
 }
 
 model ActivityLogEntry {

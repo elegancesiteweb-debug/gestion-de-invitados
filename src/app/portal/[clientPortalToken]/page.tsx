@@ -16,6 +16,7 @@ import {
   deleteInspirationImage,
   submitProposalComment,
   submitProposalImageComment,
+  submitSatisfactionSurvey,
 } from "@/lib/actions/portal";
 
 export default async function ClientPortalPage({
@@ -37,6 +38,7 @@ export default async function ClientPortalPage({
       eventVendors: { orderBy: { createdAt: "asc" }, include: { vendor: true } },
       clientComments: { orderBy: { createdAt: "desc" } },
       styleGuideImages: { orderBy: { createdAt: "desc" } },
+      satisfactionSurvey: true,
     },
   });
 
@@ -63,6 +65,7 @@ export default async function ClientPortalPage({
   });
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const showSatisfactionSurvey = event.eventDate < new Date() || event.status === "COMPLETED";
   const confirmed = event.guests.filter((g) => g.status === "CONFIRMED");
   const declined = event.guests.filter((g) => g.status === "DECLINED");
   const pending = event.guests.filter((g) => g.status === "PENDING");
@@ -467,6 +470,60 @@ export default async function ClientPortalPage({
                 </div>
               ))}
             </div>
+          </section>
+        )}
+
+        {showSatisfactionSurvey && (
+          <section className="mt-8">
+            <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("satisfactionTitle")}</h2>
+            {event.satisfactionSurvey ? (
+              <div className="rounded-lg border border-success/30 bg-success-bg p-4 text-sm text-success">
+                {t("satisfactionThanks")}
+              </div>
+            ) : (
+              <form
+                action={submitSatisfactionSurvey.bind(null, clientPortalToken)}
+                className="space-y-3 rounded-lg border border-gold/20 bg-white/60 p-4"
+              >
+                <div>
+                  <label className="block text-xs font-medium mb-1">{t("satisfactionRating")}</label>
+                  <select
+                    name="rating"
+                    required
+                    defaultValue=""
+                    className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+                  >
+                    <option value="" disabled>
+                      {t("satisfactionRatingPlaceholder")}
+                    </option>
+                    <option value="5">{t("satisfactionRating5")}</option>
+                    <option value="4">{t("satisfactionRating4")}</option>
+                    <option value="3">{t("satisfactionRating3")}</option>
+                    <option value="2">{t("satisfactionRating2")}</option>
+                    <option value="1">{t("satisfactionRating1")}</option>
+                  </select>
+                </div>
+                <label className="flex items-center gap-2 text-sm text-ink">
+                  <input name="wouldRecommend" type="checkbox" />
+                  {t("satisfactionRecommend")}
+                </label>
+                <div>
+                  <label className="block text-xs font-medium mb-1">{t("satisfactionCommentsLabel")}</label>
+                  <textarea
+                    name="comments"
+                    rows={3}
+                    placeholder={t("satisfactionCommentsPlaceholder")}
+                    className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
+                >
+                  {t("satisfactionSubmit")}
+                </button>
+              </form>
+            )}
           </section>
         )}
 

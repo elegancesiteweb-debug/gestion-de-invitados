@@ -83,7 +83,9 @@
     "daysUntil": "{days} day(s) until the event",
     "eventPassed": "Already happened",
     "pendingTasks": "{count} pending task(s)",
-    "budgetLabel": "Budget: {actual} / {estimated}"
+    "budgetLabel": "Budget: {actual} / {estimated}",
+    "countdownToday": "It's today!",
+    "countdownDays": "{days} days to go"
   },
   "eventTabs": {
     "invitados": "Guests",
@@ -94,6 +96,7 @@
     "presupuesto": "Budget",
     "timeline": "Schedule",
     "proveedores": "Vendors",
+    "documentos": "Documents",
     "estilo": "Style",
     "mensajes": "Messages",
     "actividad": "Activity",
@@ -249,7 +252,11 @@
     "notes": "Notes",
     "createAndAdd": "Create and add",
     "alsoSavedPrefix": "This vendor will also be saved to your",
-    "generalDirectory": "general directory"
+    "generalDirectory": "general directory",
+    "vendorConfirmed": "Vendor confirmed",
+    "vendorDeclined": "Vendor declined",
+    "vendorPending": "Vendor: pending",
+    "copyConfirmationLink": "Copy confirmation link"
   },
   "eventSettings": {
     "statusPlanning": "Planning",
@@ -292,7 +299,40 @@
     "activateCalendar": "Activate calendar",
     "downloadIcs": "Download .ics",
     "subscribeWebcal": "Subscribe (webcal)",
-    "copyLink": "Copy link"
+    "copyLink": "Copy link",
+    "satisfactionTitle": "Client satisfaction",
+    "satisfactionRatingLine": "Rating: {rating}/5",
+    "satisfactionWouldRecommend": "Would recommend our services",
+    "satisfactionWouldNotRecommend": "Would not recommend our services"
+  },
+  "documents": {
+    "contracts": "Contracts",
+    "noContracts": "There are no contracts for this event yet.",
+    "signedOn": "Signed on {date}",
+    "pendingSignature": "Pending signature",
+    "viewDownload": "View / download →",
+    "invoices": "Invoices",
+    "noInvoices": "There are no invoices for this event yet.",
+    "paid": "Paid",
+    "pendingPayment": "Pending payment",
+    "view": "View →",
+    "files": "Files",
+    "nameOptional": "Name (optional)",
+    "file": "File",
+    "upload": "Upload",
+    "sizeLimit": "Maximum size: 5MB.",
+    "download": "Download",
+    "delete": "Delete"
+  },
+  "vendorPortal": {
+    "title": "Vendor confirmation",
+    "greeting": "Hi {name}, here's the event schedule.",
+    "schedule": "Day-of schedule",
+    "noSchedule": "No activities scheduled yet.",
+    "youConfirmed": "You confirmed your participation in this event.",
+    "youDeclined": "You indicated you won't be able to attend.",
+    "confirmParticipation": "Confirm participation",
+    "cantAttend": "I can't attend"
   },
   "templateEditor": {
     "preview": "Preview"
@@ -439,7 +479,9 @@
     "confirmed": "Confirmed",
     "declined": "Not attending",
     "pending": "Pending",
-    "totalAttendees": "Total attendees"
+    "totalAttendees": "Total attendees",
+    "countdownToday": "It's today! Your event is today.",
+    "countdownDays": "{days} days until your event"
   },
   "shared": {
     "copied": "Copied!",
@@ -623,7 +665,12 @@
     "leadsByStage": "Leads by stage",
     "upcomingPending": "Upcoming pending payments",
     "noPendingInvoices": "No pending invoices.",
-    "due": "Due {date}"
+    "due": "Due {date}",
+    "satisfaction": "Satisfaction",
+    "noSurveys": "No surveys answered yet.",
+    "averageRating": "Average rating",
+    "responses": "Responses",
+    "ratingOf5": "{rating}/5"
   },
   "reportsPrint": {
     "stageNew": "New",
@@ -862,7 +909,20 @@
     "images": "Images",
     "organizer": "Organizer",
     "you": "You",
-    "commentPlaceholder": "Write a comment..."
+    "commentPlaceholder": "Write a comment...",
+    "satisfactionTitle": "How was your experience?",
+    "satisfactionThanks": "Thanks for your response!",
+    "satisfactionRating": "Rating",
+    "satisfactionRatingPlaceholder": "Choose a rating...",
+    "satisfactionRating5": "5 - Excellent",
+    "satisfactionRating4": "4 - Very good",
+    "satisfactionRating3": "3 - Good",
+    "satisfactionRating2": "2 - Fair",
+    "satisfactionRating1": "1 - Poor",
+    "satisfactionRecommend": "Would you recommend our services?",
+    "satisfactionCommentsLabel": "Comments (optional)",
+    "satisfactionCommentsPlaceholder": "Tell us more about your experience...",
+    "satisfactionSubmit": "Submit response"
   },
   "eventPrint": {
     "backToEvent": "← Back to event",

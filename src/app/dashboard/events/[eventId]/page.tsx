@@ -5,7 +5,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteEvent } from "@/lib/actions/events";
 import { StatCard } from "@/components/event-dashboard/StatCard";
-import { EventTabsNav, type TabKey } from "@/components/event-dashboard/EventTabsNav";
+import { EventTabsNav, TAB_KEYS, type TabKey } from "@/components/event-dashboard/EventTabsNav";
+import { hasFeature } from "@/lib/features";
 import { GuestsPanel } from "@/components/event-dashboard/GuestsPanel";
 import { ConfirmationsPanel } from "@/components/event-dashboard/ConfirmationsPanel";
 import { TablesPanel } from "@/components/event-dashboard/TablesPanel";
@@ -17,11 +18,13 @@ import { BudgetPanel } from "@/components/event-dashboard/BudgetPanel";
 import { TimelinePanel } from "@/components/event-dashboard/TimelinePanel";
 import { StyleGuidePanel } from "@/components/event-dashboard/StyleGuidePanel";
 import { EventVendorsPanel } from "@/components/event-dashboard/EventVendorsPanel";
+import { DocumentsPanel } from "@/components/event-dashboard/DocumentsPanel";
 import { ClientMessagesPanel } from "@/components/event-dashboard/ClientMessagesPanel";
 import { ActivityLogPanel } from "@/components/event-dashboard/ActivityLogPanel";
 import { FloorPlanPanel } from "@/components/event-dashboard/FloorPlanPanel";
 import { EventStatusBadge } from "@/components/EventStatusBadge";
 import { formatDateTime } from "@/lib/dates";
+import { getCountdownMilestone } from "@/lib/eventCountdown";
 
 export default async function EventDetailPage({
   params,
@@ -54,10 +57,16 @@ export default async function EventDetailPage({
       },
       eventVendors: { orderBy: { createdAt: "asc" }, include: { vendor: true } },
       clientComments: { orderBy: { createdAt: "desc" } },
+      satisfactionSurvey: true,
     },
   });
 
   if (!event) {
+    notFound();
+  }
+
+  const activeTabMeta = TAB_KEYS.find((tab) => tab.key === activeTab);
+  if (activeTabMeta?.feature && !hasFeature(session.user.accountType, activeTabMeta.feature)) {
     notFound();
   }
 
@@ -78,8 +87,29 @@ export default async function EventDetailPage({
         })
       : [];
 
+  const leadForDocuments =
+    activeTab === "documentos"
+      ? await prisma.lead.findFirst({
+          where: { convertedEventId: event.id },
+          include: {
+            contracts: { orderBy: { createdAt: "asc" } },
+            invoices: { orderBy: { createdAt: "asc" } },
+          },
+        })
+      : null;
+
+  const eventDocuments =
+    activeTab === "documentos"
+      ? await prisma.eventDocument.findMany({
+          where: { eventId: event.id },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, name: true, fileSize: true, createdAt: true },
+        })
+      : [];
+
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
+  const countdownMilestone = getCountdownMilestone(event.eventDate);
   const confirmed = event.guests.filter((g) => g.status === "CONFIRMED");
   const declined = event.guests.filter((g) => g.status === "DECLINED");
   const pending = event.guests.filter((g) => g.status === "PENDING");
@@ -148,6 +178,12 @@ export default async function EventDetailPage({
           )}
         </div>
 
+        {countdownMilestone != null && event.status !== "COMPLETED" && event.status !== "CANCELLED" && (
+          <div className="mt-4 rounded-lg border border-gold/25 bg-white/60 px-4 py-2.5 text-sm text-gold-dark shadow-sm">
+            {countdownMilestone === 0 ? t("countdownToday") : t("countdownDays", { days: countdownMilestone })}
+          </div>
+        )}
+
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard label={t("confirmed")} value={confirmed.length} />
           <StatCard label={t("declined")} value={declined.length} />
@@ -176,6 +212,14 @@ export default async function EventDetailPage({
             eventId={event.id}
             eventVendors={event.eventVendors}
             availableVendors={availableVendors}
+            baseUrl={baseUrl}
+          />
+        ) : activeTab === "documentos" ? (
+          <DocumentsPanel
+            eventId={event.id}
+            contracts={leadForDocuments?.contracts ?? []}
+            invoices={leadForDocuments?.invoices ?? []}
+            documents={eventDocuments}
           />
         ) : activeTab === "estilo" ? (
           <StyleGuidePanel event={event} images={event.styleGuideImages} />
@@ -188,7 +232,12 @@ export default async function EventDetailPage({
         ) : activeTab === "envios" ? (
           <SendsPanel event={event} guests={event.guests} baseUrl={baseUrl} />
         ) : activeTab === "configuracion" ? (
-          <SettingsPanel event={event} baseUrl={baseUrl} accountType={session.user.accountType} />
+          <SettingsPanel
+            event={event}
+            baseUrl={baseUrl}
+            accountType={session.user.accountType}
+            satisfactionSurvey={event.satisfactionSurvey}
+          />
         ) : (
           <GuestsPanel event={event} guests={event.guests} tables={event.tables} baseUrl={baseUrl} />
         )}

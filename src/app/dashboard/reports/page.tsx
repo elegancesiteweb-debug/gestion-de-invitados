@@ -31,6 +31,14 @@ export default async function ReportsPage() {
     include: { invoices: true },
   });
 
+  const surveys = await prisma.satisfactionSurvey.findMany({
+    where: { event: { organizerId: session.user.id } },
+    include: { event: { select: { title: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+  const averageRating =
+    surveys.length > 0 ? surveys.reduce((sum, s) => sum + s.rating, 0) / surveys.length : null;
+
   const allInvoices = leads.flatMap((lead) => lead.invoices.map((invoice) => ({ ...invoice, leadName: lead.name })));
   const paidInvoices = allInvoices.filter((invoice) => invoice.status === "paid" && invoice.paidAt);
   const pendingInvoices = allInvoices
@@ -156,6 +164,36 @@ export default async function ReportsPage() {
               </div>
             ))}
           </div>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("satisfaction")}</h2>
+        {surveys.length === 0 ? (
+          <p className="text-sm text-ink-muted">{t("noSurveys")}</p>
+        ) : (
+          <>
+            <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <StatCard label={t("averageRating")} value={averageRating!.toFixed(1)} />
+              <StatCard label={t("responses")} value={surveys.length} />
+            </div>
+            <div className="space-y-2">
+              {surveys
+                .filter((s) => s.comments)
+                .slice(0, 10)
+                .map((survey) => (
+                  <div
+                    key={survey.id}
+                    className="rounded-lg border border-gold/20 bg-white/60 p-3 shadow-sm backdrop-blur-xl"
+                  >
+                    <p className="text-sm font-medium text-ink">
+                      {survey.event.title} · {t("ratingOf5", { rating: survey.rating })}
+                    </p>
+                    <p className="mt-1 text-sm italic text-ink-muted">“{survey.comments}”</p>
+                  </div>
+                ))}
+            </div>
+          </>
         )}
       </section>
     </div>

@@ -2,7 +2,7 @@ import type { AccountType } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { hasFeature, type FeatureKey } from "@/lib/features";
 
-const TAB_KEYS = [
+export const TAB_KEYS = [
   { key: "invitados", feature: undefined },
   { key: "confirmaciones", feature: undefined },
   { key: "mesas", feature: undefined },
@@ -11,6 +11,7 @@ const TAB_KEYS = [
   { key: "presupuesto", feature: "budget_basic" as FeatureKey },
   { key: "timeline", feature: "day_timeline" as FeatureKey },
   { key: "proveedores", feature: "vendor_directory" as FeatureKey },
+  { key: "documentos", feature: "document_library" as FeatureKey },
   { key: "estilo", feature: "style_guide" as FeatureKey },
   { key: "mensajes", feature: "client_portal" as FeatureKey },
   { key: "actividad", feature: undefined },

@@ -8,6 +8,7 @@ import { hasFeature } from "@/lib/features";
 import { EventStatusBadge } from "@/components/EventStatusBadge";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { toggleMasterCalendar } from "@/lib/actions/calendar";
+import { getCountdownMilestone } from "@/lib/eventCountdown";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -123,6 +124,10 @@ export default async function DashboardPage() {
             const daysUntil = Math.ceil(
               (event.eventDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
             );
+            const countdownMilestone =
+              event.status !== "COMPLETED" && event.status !== "CANCELLED"
+                ? getCountdownMilestone(event.eventDate)
+                : null;
 
             return (
               <li key={event.id}>
@@ -153,6 +158,14 @@ export default async function DashboardPage() {
                       <EventStatusBadge status={event.status} />
                     </div>
                   </div>
+
+                  {countdownMilestone != null && (
+                    <p className="mt-2 text-xs font-medium text-gold-dark">
+                      {countdownMilestone === 0
+                        ? t("countdownToday")
+                        : t("countdownDays", { days: countdownMilestone })}
+                    </p>
+                  )}
 
                   {showMultiEventStats && (
                     <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-gold/15 pt-2 text-xs text-ink-muted">

@@ -83,7 +83,9 @@
     "daysUntil": "{days} día(s) para el evento",
     "eventPassed": "Ya pasó",
     "pendingTasks": "{count} tarea(s) pendiente(s)",
-    "budgetLabel": "Presupuesto: {actual} / {estimated}"
+    "budgetLabel": "Presupuesto: {actual} / {estimated}",
+    "countdownToday": "¡Es hoy!",
+    "countdownDays": "Faltan {days} días"
   },
   "eventTabs": {
     "invitados": "Invitados",
@@ -94,6 +96,7 @@
     "presupuesto": "Presupuesto",
     "timeline": "Agenda",
     "proveedores": "Proveedores",
+    "documentos": "Documentos",
     "estilo": "Estilo",
     "mensajes": "Mensajes",
     "actividad": "Actividad",
@@ -249,7 +252,11 @@
     "notes": "Notas",
     "createAndAdd": "Crear y agregar",
     "alsoSavedPrefix": "Este proveedor también quedará guardado en tu",
-    "generalDirectory": "directorio general"
+    "generalDirectory": "directorio general",
+    "vendorConfirmed": "Proveedor confirmó",
+    "vendorDeclined": "Proveedor declinó",
+    "vendorPending": "Proveedor: pendiente",
+    "copyConfirmationLink": "Copiar link de confirmación"
   },
   "eventSettings": {
     "statusPlanning": "Planeación",
@@ -292,7 +299,40 @@
     "activateCalendar": "Activar calendario",
     "downloadIcs": "Descargar .ics",
     "subscribeWebcal": "Suscribirse (webcal)",
-    "copyLink": "Copiar link"
+    "copyLink": "Copiar link",
+    "satisfactionTitle": "Satisfacción del cliente",
+    "satisfactionRatingLine": "Calificación: {rating}/5",
+    "satisfactionWouldRecommend": "Recomendaría nuestros servicios",
+    "satisfactionWouldNotRecommend": "No recomendaría nuestros servicios"
+  },
+  "documents": {
+    "contracts": "Contratos",
+    "noContracts": "Todavía no hay contratos para este evento.",
+    "signedOn": "Firmado el {date}",
+    "pendingSignature": "Pendiente de firma",
+    "viewDownload": "Ver / descargar →",
+    "invoices": "Facturas",
+    "noInvoices": "Todavía no hay facturas para este evento.",
+    "paid": "Pagada",
+    "pendingPayment": "Pendiente de pago",
+    "view": "Ver →",
+    "files": "Archivos",
+    "nameOptional": "Nombre (opcional)",
+    "file": "Archivo",
+    "upload": "Subir",
+    "sizeLimit": "Tamaño máximo: 5MB.",
+    "download": "Descargar",
+    "delete": "Eliminar"
+  },
+  "vendorPortal": {
+    "title": "Confirmación de proveedor",
+    "greeting": "Hola {name}, aquí está el cronograma del evento.",
+    "schedule": "Cronograma del día",
+    "noSchedule": "Todavía no hay actividades programadas.",
+    "youConfirmed": "Confirmaste tu participación en este evento.",
+    "youDeclined": "Indicaste que no podrás asistir.",
+    "confirmParticipation": "Confirmar participación",
+    "cantAttend": "No podré asistir"
   },
   "templateEditor": {
     "preview": "Vista previa"
@@ -439,7 +479,9 @@
     "confirmed": "Confirmados",
     "declined": "No asisten",
     "pending": "Pendientes",
-    "totalAttendees": "Total asistentes"
+    "totalAttendees": "Total asistentes",
+    "countdownToday": "¡Es hoy! Tu evento es hoy.",
+    "countdownDays": "Faltan {days} días para tu evento"
   },
   "shared": {
     "copied": "¡Copiado!",
@@ -623,7 +665,12 @@
     "leadsByStage": "Leads por etapa",
     "upcomingPending": "Próximos pagos pendientes",
     "noPendingInvoices": "No hay facturas pendientes.",
-    "due": "Vence {date}"
+    "due": "Vence {date}",
+    "satisfaction": "Satisfacción",
+    "noSurveys": "Todavía no hay encuestas respondidas.",
+    "averageRating": "Calificación promedio",
+    "responses": "Respuestas",
+    "ratingOf5": "{rating}/5"
   },
   "reportsPrint": {
     "stageNew": "Nuevo",
@@ -862,7 +909,20 @@
     "images": "Imágenes",
     "organizer": "Organizador",
     "you": "Tú",
-    "commentPlaceholder": "Escribe un comentario..."
+    "commentPlaceholder": "Escribe un comentario...",
+    "satisfactionTitle": "¿Cómo fue tu experiencia?",
+    "satisfactionThanks": "¡Gracias por tu respuesta!",
+    "satisfactionRating": "Calificación",
+    "satisfactionRatingPlaceholder": "Elige una calificación...",
+    "satisfactionRating5": "5 - Excelente",
+    "satisfactionRating4": "4 - Muy bien",
+    "satisfactionRating3": "3 - Bien",
+    "satisfactionRating2": "2 - Regular",
+    "satisfactionRating1": "1 - Mala",
+    "satisfactionRecommend": "¿Recomendarías nuestros servicios?",
+    "satisfactionCommentsLabel": "Comentarios (opcional)",
+    "satisfactionCommentsPlaceholder": "Cuéntanos más sobre tu experiencia...",
+    "satisfactionSubmit": "Enviar respuesta"
   },
   "eventPrint": {
     "backToEvent": "← Volver al evento",

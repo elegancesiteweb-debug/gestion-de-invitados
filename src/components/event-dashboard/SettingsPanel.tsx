@@ -1,4 +1,4 @@
-import type { AccountType, Event } from "@prisma/client";
+import type { AccountType, Event, SatisfactionSurvey } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import {
   updateEventSettings,
@@ -20,10 +20,12 @@ export async function SettingsPanel({
   event,
   baseUrl,
   accountType,
+  satisfactionSurvey,
 }: {
   event: Event;
   baseUrl: string;
   accountType: AccountType;
+  satisfactionSurvey: SatisfactionSurvey | null;
 }) {
   const t = await getTranslations("eventSettings");
   const STATUS_LABELS: Record<string, string> = {
@@ -253,6 +255,23 @@ export async function SettingsPanel({
           {portalUrl && (
             <div className="mt-4 flex items-center gap-4 border-t border-gold/15 pt-4">
               <CopyLinkButton url={portalUrl} />
+            </div>
+          )}
+
+          {satisfactionSurvey && (
+            <div className="mt-4 border-t border-gold/15 pt-4">
+              <p className="text-sm font-medium text-ink">{t("satisfactionTitle")}</p>
+              <p className="mt-1 text-sm text-ink">
+                {t("satisfactionRatingLine", { rating: satisfactionSurvey.rating })}
+                {satisfactionSurvey.wouldRecommend != null && (
+                  <span className="ml-2 text-ink-muted">
+                    {satisfactionSurvey.wouldRecommend ? t("satisfactionWouldRecommend") : t("satisfactionWouldNotRecommend")}
+                  </span>
+                )}
+              </p>
+              {satisfactionSurvey.comments && (
+                <p className="mt-1 text-sm italic text-ink-muted">“{satisfactionSurvey.comments}”</p>
+              )}
             </div>
           )}
         </div>
