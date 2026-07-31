@@ -1,4 +1,5 @@
 import type { Event, Guest } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 import { sendAllPendingEmails, sendGuestEmail } from "@/lib/actions/guests";
 import { sendRemindersNow } from "@/lib/actions/reminders";
 import { getReminderEligibleGuests } from "@/lib/reminders";
@@ -6,7 +7,7 @@ import { buildWhatsAppLink, buildRsvpMessage } from "@/lib/whatsapp";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { formatDate } from "@/lib/dates";
 
-export function SendsPanel({
+export async function SendsPanel({
   event,
   guests,
   baseUrl,
@@ -15,6 +16,7 @@ export function SendsPanel({
   guests: Guest[];
   baseUrl: string;
 }) {
+  const t = await getTranslations("sends");
   const template = event.messageTemplate || DEFAULT_MESSAGE_TEMPLATE;
   const notSent = guests.filter((g) => !g.invitationSentAt);
   const reminderEligible = getReminderEligibleGuests(event, guests);
@@ -23,17 +25,15 @@ export function SendsPanel({
     <div className="space-y-6 py-6">
       <div className="flex items-center justify-between rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
         <div>
-          <p className="font-medium">{notSent.length} invitado(s) sin contactar</p>
-          <p className="text-xs text-ink-muted">
-            El mensaje se toma de la plantilla configurada en la pestaña Configuración.
-          </p>
+          <p className="font-medium">{t("notContacted", { count: notSent.length })}</p>
+          <p className="text-xs text-ink-muted">{t("templateHint")}</p>
         </div>
         <form action={sendAllPendingEmails.bind(null, event.id)}>
           <button
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2 text-sm font-medium text-white hover:shadow-lg"
           >
-            Enviar email a pendientes
+            {t("sendToPending")}
           </button>
         </form>
       </div>
@@ -41,10 +41,9 @@ export function SendsPanel({
       {event.reminderDaysAfter != null && (
         <div className="flex items-center justify-between rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
           <div>
-            <p className="font-medium">{reminderEligible.length} invitado(s) listos para recordatorio</p>
+            <p className="font-medium">{t("readyForReminder", { count: reminderEligible.length })}</p>
             <p className="text-xs text-ink-muted">
-              Sin responder hace {event.reminderDaysAfter}+ día(s) desde la invitación o el último
-              recordatorio.
+              {t("reminderHint", { days: event.reminderDaysAfter })}
             </p>
           </div>
           <form action={sendRemindersNow.bind(null, event.id)}>
@@ -53,22 +52,22 @@ export function SendsPanel({
               disabled={reminderEligible.length === 0}
               className="rounded-lg border border-gold/30 bg-white/70 px-4 py-2 text-sm font-medium text-gold-dark hover:bg-warm disabled:opacity-50"
             >
-              Enviar recordatorio ahora
+              {t("sendReminderNow")}
             </button>
           </form>
         </div>
       )}
 
       {notSent.length === 0 ? (
-        <p className="text-sm text-ink-muted">Ya se contactó a todos los invitados.</p>
+        <p className="text-sm text-ink-muted">{t("allContacted")}</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gold/20 bg-white/60 shadow-md backdrop-blur-xl">
           <table className="w-full text-sm">
             <thead className="bg-warm text-left text-xs uppercase text-ink-muted">
               <tr>
-                <th className="px-4 py-2">Nombre</th>
-                <th className="px-4 py-2">Contacto</th>
-                <th className="px-4 py-2">Enviar</th>
+                <th className="px-4 py-2">{t("name")}</th>
+                <th className="px-4 py-2">{t("contact")}</th>
+                <th className="px-4 py-2">{t("send")}</th>
               </tr>
             </thead>
             <tbody>

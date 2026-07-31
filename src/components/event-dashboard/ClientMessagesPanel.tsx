@@ -1,14 +1,14 @@
 import type { ClientComment } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 import { formatDateTime } from "@/lib/dates";
 
-export function ClientMessagesPanel({ comments }: { comments: ClientComment[] }) {
+export async function ClientMessagesPanel({ comments }: { comments: ClientComment[] }) {
+  const t = await getTranslations("clientMessages");
   return (
     <div className="space-y-3 py-6">
-      <h2 className="font-serif text-lg font-medium text-ink">Mensajes del cliente</h2>
+      <h2 className="font-serif text-lg font-medium text-ink">{t("title")}</h2>
       {comments.length === 0 ? (
-        <p className="text-sm text-ink-muted">
-          Todavía no hay mensajes desde el portal del cliente.
-        </p>
+        <p className="text-sm text-ink-muted">{t("empty")}</p>
       ) : (
         <ul className="space-y-2">
           {comments.map((comment) => (

@@ -23,6 +23,9 @@ model Organizer {
   eventsCreatedCount Int         @default(0)
   isAdmin            Boolean     @default(false)
 
+  // Idioma preferido del dashboard ("es" | "en").
+  locale String @default("es")
+
   // Credenciales propias del organizador para sus integraciones (cifradas, salvo resendFromEmail).
   // Si están vacías, la app usa las variables de entorno globales como respaldo.
   resendApiKey           String?
@@ -37,6 +40,8 @@ model Organizer {
   brandColor    String?
   brandLogo     Bytes?
   brandLogoType String?
+  businessPhone String?
+  businessEmail String?
 
   // Link público de "solicitar cotización" (cuestionario de onboarding).
   leadIntakeToken String? @unique
@@ -401,6 +406,13 @@ model Lead {
   convertedEventId String?
   intakeAnswers    Json?
   createdAt        DateTime  @default(now())
+
+  // Datos extendidos de la boda/evento del cliente (para propuestas más completas).
+  partnerName     String?
+  eventType       String?
+  tentativeDate   DateTime?
+  location        String?
+  estimatedBudget Float?
 
   proposals Proposal[]
   contracts Contract[]

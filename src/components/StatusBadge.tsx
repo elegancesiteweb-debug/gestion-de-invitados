@@ -1,16 +1,18 @@
-const STYLES: Record<string, string> = {
-  PENDING: "bg-warning-bg text-warning",
-  CONFIRMED: "bg-success-bg text-success",
-  DECLINED: "bg-danger-bg text-danger",
-};
+import { getTranslations } from "next-intl/server";
 
-const LABELS: Record<string, string> = {
-  PENDING: "Pendiente",
-  CONFIRMED: "Confirmado",
-  DECLINED: "No asiste",
-};
+export async function StatusBadge({ status }: { status: string }) {
+  const t = await getTranslations("shared");
+  const STYLES: Record<string, string> = {
+    PENDING: "bg-warning-bg text-warning",
+    CONFIRMED: "bg-success-bg text-success",
+    DECLINED: "bg-danger-bg text-danger",
+  };
+  const LABELS: Record<string, string> = {
+    PENDING: t("statusPending"),
+    CONFIRMED: t("statusConfirmed"),
+    DECLINED: t("statusDeclined"),
+  };
 
-export function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${

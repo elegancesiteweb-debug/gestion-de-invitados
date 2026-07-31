@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import QRCode from "qrcode";
+import { useTranslations } from "next-intl";
 
 type QrKind = "rsvp" | "checkin";
 
@@ -15,6 +16,7 @@ export function GuestQrButton({
   rsvpUrl: string;
   checkinUrl: string;
 }) {
+  const t = useTranslations("shared");
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<QrKind>("rsvp");
   const [dataUrls, setDataUrls] = useState<Partial<Record<QrKind, string>>>({});
@@ -46,7 +48,7 @@ export function GuestQrButton({
         type="button"
         className="text-sm text-gold-dark hover:underline"
       >
-        Ver QR
+        {t("viewQr")}
       </button>
 
       {open &&
@@ -67,26 +69,28 @@ export function GuestQrButton({
                   onClick={() => switchTo("rsvp")}
                   className={`rounded-full px-3 py-1 ${kind === "rsvp" ? "bg-gradient-to-br from-gold-dark to-gold-deep text-white" : "bg-warm text-ink-muted"}`}
                 >
-                  Confirmación
+                  {t("rsvpQr")}
                 </button>
                 <button
                   type="button"
                   onClick={() => switchTo("checkin")}
                   className={`rounded-full px-3 py-1 ${kind === "checkin" ? "bg-gradient-to-br from-gold-dark to-gold-deep text-white" : "bg-warm text-ink-muted"}`}
                 >
-                  Acceso (día del evento)
+                  {t("checkinQr")}
                 </button>
               </div>
 
               {dataUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={dataUrl} alt={`QR de ${kind === "rsvp" ? "confirmación" : "acceso"} para ${guestName}`} className="mx-auto" />
+                <img
+                  src={dataUrl}
+                  alt={`QR ${kind === "rsvp" ? t("rsvpQr") : t("checkinQr")} - ${guestName}`}
+                  className="mx-auto"
+                />
               )}
 
               <p className="mt-3 text-xs text-ink-muted">
-                {kind === "rsvp"
-                  ? "Pega este QR en la invitación para que el invitado confirme su asistencia."
-                  : "Este QR es solo para el día del evento: al escanearlo con la cámara del celular se registra la llegada."}
+                {kind === "rsvp" ? t("rsvpQrHint") : t("checkinQrHint")}
               </p>
 
               <div className="mt-4 flex justify-center gap-3">
@@ -96,7 +100,7 @@ export function GuestQrButton({
                     download={`qr-${kind}-${guestName.replace(/\s+/g, "-").toLowerCase()}.png`}
                     className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm text-white hover:shadow-lg"
                   >
-                    Descargar
+                    {t("download")}
                   </a>
                 )}
                 <button
@@ -104,7 +108,7 @@ export function GuestQrButton({
                   type="button"
                   className="rounded-lg border border-gold/25 px-3 py-1.5 text-sm hover:bg-warm"
                 >
-                  Cerrar
+                  {t("close")}
                 </button>
               </div>
             </div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Stage, Layer, Image as KonvaImage, Line, Rect, Circle, Text } from "react-konva";
 import type Konva from "konva";
+import { useTranslations } from "next-intl";
 import { saveFloorPlanData } from "@/lib/actions/floorPlan";
 
 export type FloorPlanShape = {
@@ -22,33 +23,37 @@ type Tool = "select" | "pencil" | "rect" | "circle" | "text";
 
 const COLORS = ["#B8935F", "#7c9885", "#5b7c99", "#c97b63", "#8a6bbd", "#333333"];
 
-const TEMPLATES: { name: string; shapes: Omit<FloorPlanShape, "id">[] }[] = [
-  {
-    name: "Salón rectangular",
-    shapes: [
-      { type: "rect", label: "Zona de mesas", color: "#7c9885", x: 40, y: 40, width: 400, height: 260 },
-      { type: "circle", label: "Pista de baile", color: "#5b7c99", x: 540, y: 170, radius: 80 },
-      { type: "rect", label: "Barra", color: "#c97b63", x: 480, y: 320, width: 160, height: 60 },
-    ],
-  },
-  {
-    name: "Ceremonia + recepción",
-    shapes: [
-      { type: "rect", label: "Ceremonia", color: "#8a6bbd", x: 40, y: 40, width: 250, height: 200 },
-      { type: "rect", label: "Recepción / mesas", color: "#7c9885", x: 320, y: 40, width: 340, height: 300 },
-      { type: "circle", label: "Pista de baile", color: "#5b7c99", x: 490, y: 220, radius: 60 },
-    ],
-  },
-  {
-    name: "Salón en U",
-    shapes: [
-      { type: "rect", label: "Mesa principal", color: "#B8935F", x: 200, y: 30, width: 300, height: 50 },
-      { type: "rect", label: "Mesas laterales izq.", color: "#7c9885", x: 40, y: 100, width: 100, height: 300 },
-      { type: "rect", label: "Mesas laterales der.", color: "#7c9885", x: 560, y: 100, width: 100, height: 300 },
-      { type: "circle", label: "Pista de baile", color: "#5b7c99", x: 350, y: 260, radius: 90 },
-    ],
-  },
-];
+function buildTemplates(
+  t: ReturnType<typeof useTranslations>
+): { name: string; shapes: Omit<FloorPlanShape, "id">[] }[] {
+  return [
+    {
+      name: t("templates.rectangular.name"),
+      shapes: [
+        { type: "rect", label: t("templates.rectangular.tablesZone"), color: "#7c9885", x: 40, y: 40, width: 400, height: 260 },
+        { type: "circle", label: t("templates.rectangular.danceFloor"), color: "#5b7c99", x: 540, y: 170, radius: 80 },
+        { type: "rect", label: t("templates.rectangular.bar"), color: "#c97b63", x: 480, y: 320, width: 160, height: 60 },
+      ],
+    },
+    {
+      name: t("templates.ceremonyReception.name"),
+      shapes: [
+        { type: "rect", label: t("templates.ceremonyReception.ceremony"), color: "#8a6bbd", x: 40, y: 40, width: 250, height: 200 },
+        { type: "rect", label: t("templates.ceremonyReception.receptionTables"), color: "#7c9885", x: 320, y: 40, width: 340, height: 300 },
+        { type: "circle", label: t("templates.ceremonyReception.danceFloor"), color: "#5b7c99", x: 490, y: 220, radius: 60 },
+      ],
+    },
+    {
+      name: t("templates.uShape.name"),
+      shapes: [
+        { type: "rect", label: t("templates.uShape.mainTable"), color: "#B8935F", x: 200, y: 30, width: 300, height: 50 },
+        { type: "rect", label: t("templates.uShape.sideTablesLeft"), color: "#7c9885", x: 40, y: 100, width: 100, height: 300 },
+        { type: "rect", label: t("templates.uShape.sideTablesRight"), color: "#7c9885", x: 560, y: 100, width: 100, height: 300 },
+        { type: "circle", label: t("templates.uShape.danceFloor"), color: "#5b7c99", x: 350, y: 260, radius: 90 },
+      ],
+    },
+  ];
+}
 
 const STAGE_WIDTH = 700;
 const STAGE_HEIGHT = 500;
@@ -68,6 +73,8 @@ export function FloorPlanEditorInner({
   hasImage: boolean;
   initialShapes: FloorPlanShape[];
 }) {
+  const t = useTranslations("floorPlanEditor");
+  const TEMPLATES = buildTemplates(t);
   const [shapes, setShapes] = useState<FloorPlanShape[]>(initialShapes);
   const [tool, setTool] = useState<Tool>("select");
   const [color, setColor] = useState(COLORS[0]);
@@ -97,7 +104,7 @@ export function FloorPlanEditorInner({
     if (!pos) return;
 
     if (tool === "text") {
-      const label = window.prompt("Texto de la etiqueta:");
+      const label = window.prompt(t("promptTextLabel"));
       if (label) {
         setShapes((prev) => [...prev, { id: nextId(), type: "text", label, color, x: pos.x, y: pos.y }]);
       }
@@ -148,14 +155,14 @@ export function FloorPlanEditorInner({
     if (current.type === "rect" && (!current.width || Math.abs(current.width) < 5)) return;
     if (current.type === "circle" && (!current.radius || current.radius < 5)) return;
 
-    const label = window.prompt("Etiqueta para esta zona (opcional):") ?? undefined;
+    const label = window.prompt(t("promptZoneLabel")) ?? undefined;
     setShapes((prev) => [...prev, { ...current, label: label || undefined }]);
   }
 
   function applyTemplate(templateName: string) {
-    const template = TEMPLATES.find((t) => t.name === templateName);
+    const template = TEMPLATES.find((tpl) => tpl.name === templateName);
     if (!template) return;
-    if (shapes.length > 0 && !window.confirm("Esto reemplaza el diseño actual. ¿Continuar?")) return;
+    if (shapes.length > 0 && !window.confirm(t("confirmReplace"))) return;
     setShapes(template.shapes.map((s) => ({ ...s, id: nextId() })));
   }
 
@@ -164,7 +171,7 @@ export function FloorPlanEditorInner({
   }
 
   function clearAll() {
-    if (shapes.length > 0 && !window.confirm("¿Borrar todas las formas?")) return;
+    if (shapes.length > 0 && !window.confirm(t("confirmClear"))) return;
     setShapes([]);
   }
 
@@ -175,9 +182,9 @@ export function FloorPlanEditorInner({
     formData.set("data", JSON.stringify(shapes));
     try {
       await saveFloorPlanData(eventId, formData);
-      setSavedMsg("Guardado");
+      setSavedMsg(t("saved"));
     } catch {
-      setSavedMsg("No se pudo guardar");
+      setSavedMsg(t("saveError"));
     }
     setSaving(false);
   }
@@ -188,19 +195,19 @@ export function FloorPlanEditorInner({
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2 rounded-lg border border-gold/20 bg-white/60 p-3 shadow-sm backdrop-blur-xl">
         <ToolButton active={tool === "select"} onClick={() => setTool("select")}>
-          Seleccionar
+          {t("select")}
         </ToolButton>
         <ToolButton active={tool === "pencil"} onClick={() => setTool("pencil")}>
-          ✏️ Lápiz
+          ✏️ {t("pencil")}
         </ToolButton>
         <ToolButton active={tool === "rect"} onClick={() => setTool("rect")}>
-          ▭ Rectángulo
+          ▭ {t("rect")}
         </ToolButton>
         <ToolButton active={tool === "circle"} onClick={() => setTool("circle")}>
-          ◯ Círculo
+          ◯ {t("circle")}
         </ToolButton>
         <ToolButton active={tool === "text"} onClick={() => setTool("text")}>
-          🔤 Texto
+          🔤 {t("text")}
         </ToolButton>
 
         <div className="mx-2 flex items-center gap-1">
@@ -211,7 +218,7 @@ export function FloorPlanEditorInner({
               onClick={() => setColor(c)}
               className={`h-6 w-6 rounded-full border-2 ${color === c ? "border-ink" : "border-transparent"}`}
               style={{ backgroundColor: c }}
-              aria-label={`Color ${c}`}
+              aria-label={t("colorLabel", { color: c })}
             />
           ))}
         </div>
@@ -224,10 +231,10 @@ export function FloorPlanEditorInner({
           defaultValue=""
           className="rounded-lg border border-gold/30 px-2 py-1 text-sm"
         >
-          <option value="">Plantilla…</option>
-          {TEMPLATES.map((t) => (
-            <option key={t.name} value={t.name}>
-              {t.name}
+          <option value="">{t("templatePlaceholder")}</option>
+          {TEMPLATES.map((tpl) => (
+            <option key={tpl.name} value={tpl.name}>
+              {tpl.name}
             </option>
           ))}
         </select>
@@ -237,14 +244,14 @@ export function FloorPlanEditorInner({
           onClick={undo}
           className="rounded-lg border border-gold/30 px-3 py-1 text-sm hover:bg-warm"
         >
-          Deshacer
+          {t("undo")}
         </button>
         <button
           type="button"
           onClick={clearAll}
           className="rounded-lg border border-danger/30 px-3 py-1 text-sm text-danger hover:bg-danger-bg"
         >
-          Limpiar
+          {t("clear")}
         </button>
 
         <button
@@ -253,7 +260,7 @@ export function FloorPlanEditorInner({
           disabled={saving}
           className="ml-auto rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg disabled:opacity-50"
         >
-          {saving ? "Guardando..." : "Guardar diseño"}
+          {saving ? t("saving") : t("saveDesign")}
         </button>
         {savedMsg && <span className="text-sm text-ink-muted">{savedMsg}</span>}
       </div>
@@ -275,10 +282,7 @@ export function FloorPlanEditorInner({
           </Layer>
         </Stage>
       </div>
-      <p className="text-xs text-ink-muted">
-        Elige una herramienta, dibuja sobre el lienzo y ponle una etiqueta a cada zona. No olvides
-        &quot;Guardar diseño&quot;.
-      </p>
+      <p className="text-xs text-ink-muted">{t("hint")}</p>
     </div>
   );
 }

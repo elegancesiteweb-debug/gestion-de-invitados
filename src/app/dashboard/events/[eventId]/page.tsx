@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteEvent } from "@/lib/actions/events";
@@ -37,6 +38,7 @@ export default async function EventDetailPage({
   if (!session?.user?.id) {
     redirect("/login");
   }
+  const t = await getTranslations("eventDetail");
 
   const event = await prisma.event.findFirst({
     where: { id: eventId, organizerId: session.user.id },
@@ -90,7 +92,7 @@ export default async function EventDetailPage({
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 md:flex-row">
       <aside className="w-full md:w-48 md:flex-none">
         <Link href="/dashboard" className="text-sm text-gold-dark hover:underline">
-          ← Tus eventos
+          {t("backToEvents")}
         </Link>
         <div className="mt-4 md:sticky md:top-6">
           <EventTabsNav activeTab={activeTab} accountType={session.user.accountType} />
@@ -140,17 +142,17 @@ export default async function EventDetailPage({
           {session.user.teamRole !== "COLLABORATOR" && (
             <form action={deleteEvent.bind(null, event.id)}>
               <button type="submit" className="text-sm text-danger hover:underline">
-                Eliminar evento
+                {t("deleteEvent")}
               </button>
             </form>
           )}
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard label="Confirmados" value={confirmed.length} />
-          <StatCard label="No asisten" value={declined.length} />
-          <StatCard label="Pendientes" value={pending.length} />
-          <StatCard label="Total asistentes" value={totalAttendees} />
+          <StatCard label={t("confirmed")} value={confirmed.length} />
+          <StatCard label={t("declined")} value={declined.length} />
+          <StatCard label={t("pending")} value={pending.length} />
+          <StatCard label={t("totalAttendees")} value={totalAttendees} />
         </div>
 
         {activeTab === "confirmaciones" ? (

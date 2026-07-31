@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useTransition, type FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import { uploadFloorPlanImage, removeFloorPlanImage } from "@/lib/actions/floorPlan";
 import { convertPdfPageToImageBlob } from "@/lib/pdfToImage";
 
 export function FloorPlanUploadForm({ eventId, hasImage }: { eventId: string; hasImage: boolean }) {
+  const t = useTranslations("floorPlanUpload");
   const [error, setError] = useState<string | null>(null);
   const [converting, setConverting] = useState(false);
   const [, startTransition] = useTransition();
@@ -16,7 +18,7 @@ export function FloorPlanUploadForm({ eventId, hasImage }: { eventId: string; ha
     const fileInput = form.elements.namedItem("file") as HTMLInputElement;
     const file = fileInput.files?.[0];
     if (!file) {
-      setError("Selecciona un archivo");
+      setError(t("selectFile"));
       return;
     }
 
@@ -27,20 +29,20 @@ export function FloorPlanUploadForm({ eventId, hasImage }: { eventId: string; ha
         const blob = await convertPdfPageToImageBlob(file);
         imageFile = new File([blob], "plano.png", { type: "image/png" });
       } catch {
-        setError("No se pudo convertir el PDF. Intenta subir una imagen.");
+        setError(t("pdfError"));
         setConverting(false);
         return;
       }
       setConverting(false);
     } else if (!file.type.startsWith("image/")) {
-      setError("Solo se aceptan imágenes o PDF");
+      setError(t("invalidType"));
       return;
     }
 
     const formData = new FormData();
     formData.set("image", imageFile);
     startTransition(() => {
-      uploadFloorPlanImage(eventId, formData).catch(() => setError("No se pudo subir el archivo"));
+      uploadFloorPlanImage(eventId, formData).catch(() => setError(t("uploadError")));
     });
   }
 
@@ -52,7 +54,7 @@ export function FloorPlanUploadForm({ eventId, hasImage }: { eventId: string; ha
       >
         {error && <p className="w-full text-sm text-danger">{error}</p>}
         <div>
-          <label className="block text-xs font-medium mb-1">Imagen o PDF del salón</label>
+          <label className="block text-xs font-medium mb-1">{t("label")}</label>
           <input
             type="file"
             name="file"
@@ -66,7 +68,7 @@ export function FloorPlanUploadForm({ eventId, hasImage }: { eventId: string; ha
           disabled={converting}
           className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg disabled:opacity-50"
         >
-          {converting ? "Convirtiendo..." : "Subir"}
+          {converting ? t("converting") : t("upload")}
         </button>
       </form>
       {hasImage && (
@@ -75,7 +77,7 @@ export function FloorPlanUploadForm({ eventId, hasImage }: { eventId: string; ha
             type="submit"
             className="rounded-lg border border-danger/30 px-3 py-1.5 text-sm text-danger hover:bg-danger-bg"
           >
-            Quitar imagen
+            {t("removeImage")}
           </button>
         </form>
       )}

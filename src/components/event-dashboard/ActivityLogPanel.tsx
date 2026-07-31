@@ -1,15 +1,15 @@
 import type { ActivityLogEntry } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 import { formatDateTime } from "@/lib/dates";
 
-export function ActivityLogPanel({ entries }: { entries: ActivityLogEntry[] }) {
+export async function ActivityLogPanel({ entries }: { entries: ActivityLogEntry[] }) {
+  const t = await getTranslations("activity");
   return (
     <div className="space-y-3 py-6">
-      <h2 className="font-serif text-lg font-medium text-ink">Actividad</h2>
-      <p className="text-xs text-ink-muted">
-        Registro de las acciones más importantes de este evento — quién y cuándo.
-      </p>
+      <h2 className="font-serif text-lg font-medium text-ink">{t("title")}</h2>
+      <p className="text-xs text-ink-muted">{t("subtitle")}</p>
       {entries.length === 0 ? (
-        <p className="text-sm text-ink-muted">Todavía no hay actividad registrada.</p>
+        <p className="text-sm text-ink-muted">{t("empty")}</p>
       ) : (
         <ul className="space-y-2">
           {entries.map((entry) => (

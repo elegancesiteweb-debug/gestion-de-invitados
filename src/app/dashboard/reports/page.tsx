@@ -1,22 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeature } from "@/lib/features";
 import { StatCard } from "@/components/event-dashboard/StatCard";
 import { formatDate } from "@/lib/dates";
-
-const STAGE_LABELS: Record<string, string> = {
-  NEW: "Nuevo",
-  CONTACTED: "Contactado",
-  QUOTED: "Cotizado",
-  WON: "Ganado",
-  LOST: "Perdido",
-};
-
-const MONTH_LABELS = [
-  "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic",
-];
 
 export default async function ReportsPage() {
   const session = await auth();
@@ -26,6 +15,16 @@ export default async function ReportsPage() {
   if (!hasFeature(session.user.accountType, "business_reports")) {
     notFound();
   }
+  const t = await getTranslations("reportsPage");
+  const MONTH_LABELS = t.raw("monthLabels") as string[];
+
+  const STAGE_LABELS: Record<string, string> = {
+    NEW: t("stageNew"),
+    CONTACTED: t("stageContacted"),
+    QUOTED: t("stageQuoted"),
+    WON: t("stageWon"),
+    LOST: t("stageLost"),
+  };
 
   const leads = await prisma.lead.findMany({
     where: { organizerId: session.user.id },
@@ -65,35 +64,35 @@ export default async function ReportsPage() {
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10">
       <Link href="/dashboard" className="text-sm text-gold-dark hover:underline">
-        ← Tus eventos
+        {t("backToEvents")}
       </Link>
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif text-2xl font-medium text-ink">Reportes</h1>
+        <h1 className="font-serif text-2xl font-medium text-ink">{t("title")}</h1>
         <div className="flex gap-4">
           <Link href="/dashboard/reports/print" className="text-sm text-gold-dark hover:underline">
-            Imprimir →
+            {t("print")}
           </Link>
           <a href="/api/reports/export-csv" className="text-sm text-gold-dark hover:underline">
-            Exportar CSV →
+            {t("exportCsv")}
           </a>
         </div>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard
-          label="Ingresos totales"
+          label={t("totalRevenue")}
           value={totalRevenue.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
         />
-        <StatCard label="Leads" value={leads.length} />
-        <StatCard label="Ganados" value={won} />
-        <StatCard label="Tasa de conversión" value={conversionRate !== null ? `${conversionRate}%` : "—"} />
+        <StatCard label={t("leads")} value={leads.length} />
+        <StatCard label={t("won")} value={won} />
+        <StatCard label={t("conversionRate")} value={conversionRate !== null ? `${conversionRate}%` : "—"} />
       </div>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Ingresos por mes</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("revenueByMonth")}</h2>
         {sortedMonths.length === 0 ? (
-          <p className="text-sm text-ink-muted">Todavía no hay facturas pagadas.</p>
+          <p className="text-sm text-ink-muted">{t("noPaidInvoices")}</p>
         ) : (
           <div className="space-y-2 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-sm backdrop-blur-xl">
             {sortedMonths.map(([key, amount]) => {
@@ -120,7 +119,7 @@ export default async function ReportsPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Leads por etapa</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("leadsByStage")}</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {Object.entries(STAGE_LABELS).map(([stage, label]) => (
             <div
@@ -135,9 +134,9 @@ export default async function ReportsPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Próximos pagos pendientes</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("upcomingPending")}</h2>
         {pendingInvoices.length === 0 ? (
-          <p className="text-sm text-ink-muted">No hay facturas pendientes.</p>
+          <p className="text-sm text-ink-muted">{t("noPendingInvoices")}</p>
         ) : (
           <div className="space-y-2">
             {pendingInvoices.slice(0, 10).map((invoice) => (
@@ -151,7 +150,7 @@ export default async function ReportsPage() {
                   </p>
                   <p className="text-xs text-ink-muted">
                     {invoice.amount.toLocaleString("es-MX", { style: "currency", currency: invoice.currency })}
-                    {invoice.dueDate ? ` · Vence ${formatDate(invoice.dueDate)}` : ""}
+                    {invoice.dueDate ? ` · ${t("due", { date: formatDate(invoice.dueDate) })}` : ""}
                   </p>
                 </div>
               </div>

@@ -1,17 +1,19 @@
 import type { Event } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 import {
   updateStyleGuide,
   uploadStyleGuideImage,
   deleteStyleGuideImage,
 } from "@/lib/actions/styleGuide";
 
-export function StyleGuidePanel({
+export async function StyleGuidePanel({
   event,
   images,
 }: {
   event: Event;
   images: { id: string; imageType: string; uploadedBy: "ORGANIZER" | "CLIENT" }[];
 }) {
+  const t = await getTranslations("styleGuide");
   const colors = (event.colorPalette ?? "")
     .split(",")
     .map((c) => c.trim())
@@ -20,15 +22,13 @@ export function StyleGuidePanel({
   return (
     <div className="space-y-6 py-6">
       <section>
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Paleta de colores y notas</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("paletteTitle")}</h2>
         <form
           action={updateStyleGuide.bind(null, event.id)}
           className="space-y-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
         >
           <div>
-            <label className="block text-xs font-medium mb-1">
-              Colores (códigos hex separados por coma)
-            </label>
+            <label className="block text-xs font-medium mb-1">{t("colorsLabel")}</label>
             <input
               name="colorPalette"
               defaultValue={event.colorPalette ?? ""}
@@ -53,12 +53,12 @@ export function StyleGuidePanel({
             )}
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Notas de estilo</label>
+            <label className="block text-xs font-medium mb-1">{t("notesLabel")}</label>
             <textarea
               name="styleNotes"
               defaultValue={event.styleNotes ?? ""}
               rows={3}
-              placeholder="Ej. Estilo romántico, flores blancas, iluminación cálida..."
+              placeholder={t("notesPlaceholder")}
               className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
             />
           </div>
@@ -66,13 +66,13 @@ export function StyleGuidePanel({
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
           >
-            Guardar
+            {t("save")}
           </button>
         </form>
       </section>
 
       <section>
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Imágenes de referencia</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("imagesTitle")}</h2>
         <form
           action={uploadStyleGuideImage.bind(null, event.id)}
           className="flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
@@ -82,12 +82,12 @@ export function StyleGuidePanel({
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
           >
-            Subir
+            {t("upload")}
           </button>
         </form>
 
         {images.length === 0 ? (
-          <p className="mt-4 text-sm text-ink-muted">Todavía no subiste imágenes de referencia.</p>
+          <p className="mt-4 text-sm text-ink-muted">{t("noImages")}</p>
         ) : (
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {images.map((image) => (
@@ -100,7 +100,7 @@ export function StyleGuidePanel({
                 />
                 {image.uploadedBy === "CLIENT" && (
                   <span className="absolute left-1 top-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
-                    Subida por la pareja
+                    {t("uploadedByClient")}
                   </span>
                 )}
                 <form
@@ -108,7 +108,7 @@ export function StyleGuidePanel({
                   className="absolute inset-x-0 bottom-0 bg-black/50 p-1 text-center opacity-0 transition group-hover:opacity-100"
                 >
                   <button type="submit" className="text-xs text-white hover:underline">
-                    Eliminar
+                    {t("delete")}
                   </button>
                 </form>
               </div>

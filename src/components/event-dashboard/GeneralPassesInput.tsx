@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function GeneralPassesInput({ initialValue }: { initialValue: number | null }) {
   const [unlimited, setUnlimited] = useState(initialValue === null);
+  const t = useTranslations("generalPassesInput");
 
   return (
     <div>
       <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
-        Acompañantes máximos en el formulario general
+        {t("label")}
       </label>
       <div className="flex items-center gap-3">
         <input
@@ -26,12 +28,10 @@ export function GeneralPassesInput({ initialValue }: { initialValue: number | nu
             checked={unlimited}
             onChange={(e) => setUnlimited(e.target.checked)}
           />
-          Sin límite
+          {t("unlimited")}
         </label>
       </div>
-      <p className="mt-1 text-xs text-ink-muted">
-        Pon 0 para que el formulario general no permita acompañantes (solo el titular).
-      </p>
+      <p className="mt-1 text-xs text-ink-muted">{t("hint")}</p>
     </div>
   );
 }

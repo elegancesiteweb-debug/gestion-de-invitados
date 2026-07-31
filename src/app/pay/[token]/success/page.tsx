@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { getGateway, resolvePaymentCredential } from "@/lib/payments";
 import { notifyOrganizer } from "@/lib/email";
@@ -13,6 +14,7 @@ export default async function PaySuccessPage({
 }) {
   const { token } = await params;
   const rawSearchParams = await searchParams;
+  const t = await getTranslations("payPage");
 
   const invoice = await prisma.invoice.findUnique({
     where: { token },
@@ -74,15 +76,13 @@ export default async function PaySuccessPage({
         {paid ? (
           <>
             <p className="text-4xl">✓</p>
-            <p className="mt-2 font-serif text-xl font-medium text-success">¡Pago recibido!</p>
-            <p className="mt-1 text-sm text-ink-muted">Gracias, tu pago fue confirmado.</p>
+            <p className="mt-2 font-serif text-xl font-medium text-success">{t("paymentReceived")}</p>
+            <p className="mt-1 text-sm text-ink-muted">{t("paymentConfirmed")}</p>
           </>
         ) : (
           <>
-            <p className="font-serif text-xl font-medium text-danger">No se pudo confirmar el pago</p>
-            <p className="mt-1 text-sm text-ink-muted">
-              Si ya pagaste, espera un momento y recarga esta página.
-            </p>
+            <p className="font-serif text-xl font-medium text-danger">{t("couldNotConfirm")}</p>
+            <p className="mt-1 text-sm text-ink-muted">{t("ifAlreadyPaid")}</p>
           </>
         )}
       </div>

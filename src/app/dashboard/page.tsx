@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/dates";
@@ -13,6 +14,7 @@ export default async function DashboardPage() {
   if (!session?.user?.id) {
     redirect("/login");
   }
+  const t = await getTranslations("dashboardHome");
 
   const organizer = await prisma.organizer.findUniqueOrThrow({ where: { id: session.user.id } });
 
@@ -44,17 +46,15 @@ export default async function DashboardPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.png" alt="Elegance Site" className="h-12 w-12 flex-none" />
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">
-              Elegance Site · Panel de organizador
-            </p>
-            <h1 className="mt-1 font-serif text-2xl font-medium text-ink">Tus eventos</h1>
+            <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">{t("panelLabel")}</p>
+            <h1 className="mt-1 font-serif text-2xl font-medium text-ink">{t("title")}</h1>
             <p className="text-sm text-ink-muted">
-              Hola, {session.user.name}
+              {t("greeting", { name: session.user.name ?? "" })}
               {session.user.teamMemberName && (
                 <span className="text-ink-light">
                   {" "}
-                  (conectado como {session.user.teamMemberName}
-                  {isCollaborator ? ", solo lectura" : ""})
+                  ({t("connectedAs", { name: session.user.teamMemberName })}
+                  {isCollaborator ? t("readOnlySuffix") : ""})
                 </span>
               )}
             </p>
@@ -66,13 +66,13 @@ export default async function DashboardPage() {
               href="/dashboard/events/new"
               className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2 text-sm font-medium text-white shadow-md shadow-gold/30 transition hover:shadow-lg hover:shadow-gold/40"
             >
-              + Nuevo evento
+              {t("newEvent")}
             </Link>
           ) : (
             <p className="text-xs text-ink-muted">
-              Tu plan permite un solo evento.
+              {t("planLimitLine1")}
               <br />
-              Contáctanos para pasar a Wedding Planner.
+              {t("planLimitLine2")}
             </p>
           )}
         </div>
@@ -80,10 +80,8 @@ export default async function DashboardPage() {
 
       {showMultiEventStats && (
         <div className="mb-6 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-sm backdrop-blur-xl">
-          <p className="font-medium text-ink">Calendario maestro (todos tus eventos)</p>
-          <p className="mt-1 text-xs text-ink-muted">
-            Un solo link con las fechas límite y agendas de todos tus eventos activos.
-          </p>
+          <p className="font-medium text-ink">{t("masterCalendarTitle")}</p>
+          <p className="mt-1 text-xs text-ink-muted">{t("masterCalendarSubtitle")}</p>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             {organizer.masterCalendarToken ? (
               <form action={toggleMasterCalendar}>
@@ -92,7 +90,7 @@ export default async function DashboardPage() {
                   type="submit"
                   className="rounded-lg border border-danger/30 bg-danger-bg px-3 py-1.5 text-sm text-danger hover:bg-danger-bg/80"
                 >
-                  Desactivar
+                  {t("deactivate")}
                 </button>
               </form>
             ) : (
@@ -102,19 +100,17 @@ export default async function DashboardPage() {
                   type="submit"
                   className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm text-white hover:shadow-lg"
                 >
-                  Activar
+                  {t("activate")}
                 </button>
               </form>
             )}
-            {masterCalendarUrl && <CopyLinkButton url={masterCalendarUrl} label="Copiar link" />}
+            {masterCalendarUrl && <CopyLinkButton url={masterCalendarUrl} label={t("copyLink")} />}
           </div>
         </div>
       )}
 
       {events.length === 0 ? (
-        <p className="text-ink-muted">
-          Aún no tienes eventos. Crea el primero para empezar a gestionar invitados.
-        </p>
+        <p className="text-ink-muted">{t("noEvents")}</p>
       ) : (
         <ul className="space-y-3">
           {events.map((event) => {
@@ -153,20 +149,20 @@ export default async function DashboardPage() {
                       </div>
                     </div>
                     <div className="flex flex-none items-center gap-3">
-                      <p className="text-sm text-ink-muted">
-                        {confirmed}/{total} confirmados
-                      </p>
+                      <p className="text-sm text-ink-muted">{t("confirmedOf", { confirmed, total })}</p>
                       <EventStatusBadge status={event.status} />
                     </div>
                   </div>
 
                   {showMultiEventStats && (
                     <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-gold/15 pt-2 text-xs text-ink-muted">
-                      <span>{daysUntil >= 0 ? `${daysUntil} día(s) para el evento` : "Ya pasó"}</span>
-                      <span>{pendingTasks} tarea(s) pendiente(s)</span>
+                      <span>{daysUntil >= 0 ? t("daysUntil", { days: daysUntil }) : t("eventPassed")}</span>
+                      <span>{t("pendingTasks", { count: pendingTasks })}</span>
                       <span>
-                        Presupuesto: {totalActual.toLocaleString("es-ES")} /{" "}
-                        {totalEstimated.toLocaleString("es-ES")}
+                        {t("budgetLabel", {
+                          actual: totalActual.toLocaleString("es-ES"),
+                          estimated: totalEstimated.toLocaleString("es-ES"),
+                        })}
                       </span>
                     </div>
                   )}

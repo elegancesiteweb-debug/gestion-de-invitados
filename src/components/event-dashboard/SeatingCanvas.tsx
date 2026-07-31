@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition, type DragEvent, type PointerEvent } from "react";
 import type { Companion, Guest, Table as TableModel } from "@prisma/client";
+import { useTranslations } from "next-intl";
 import {
   createTable,
   updateTableDetails,
@@ -45,6 +46,7 @@ export function SeatingCanvas({
   initialTables: TableModel[];
   initialGuests: GuestWithCompanions[];
 }) {
+  const t = useTranslations("seatingCanvas");
   const [tables, setTables] = useState(initialTables);
   const [prevInitialTables, setPrevInitialTables] = useState(initialTables);
   if (initialTables !== prevInitialTables) {
@@ -123,9 +125,7 @@ export function SeatingCanvas({
     const table = tables.find((t) => t.id === tableId);
     if (!table) return;
     startTransition(() => {
-      updateTablePosition(table.id, table.x, table.y).catch(() =>
-        setError("No se pudo guardar la posición de la mesa")
-      );
+      updateTablePosition(table.id, table.x, table.y).catch(() => setError(t("errorSavePosition")));
     });
   }
 
@@ -135,7 +135,7 @@ export function SeatingCanvas({
       prev.map((g) => (g.id === guestId ? { ...g, tableId, tableName: table?.name ?? null } : g))
     );
     startTransition(() => {
-      assignGuestToTable(guestId, tableId).catch(() => setError("No se pudo asignar el invitado"));
+      assignGuestToTable(guestId, tableId).catch(() => setError(t("errorAssign")));
     });
   }
 
@@ -159,7 +159,7 @@ export function SeatingCanvas({
     try {
       await deleteTable(tableId);
     } catch {
-      setError("No se pudo eliminar la mesa");
+      setError(t("errorDelete"));
     }
   }
 
@@ -173,44 +173,44 @@ export function SeatingCanvas({
 
       {selectedGuest && (
         <p className="flex flex-wrap items-center gap-2 rounded-lg border border-gold/30 bg-warm px-3 py-2 text-sm text-ink">
-          Invitado seleccionado: <span className="font-medium">{selectedGuest.name}</span> — tocá
-          una mesa para asignarlo (o el panel &quot;Sin mesa&quot; para quitarlo).
+          {t("selectedGuest")} <span className="font-medium">{selectedGuest.name}</span> —{" "}
+          {t("tapToAssign")}
           <button
             type="button"
             onClick={() => setSelectedGuestId(null)}
             className="text-gold-dark hover:underline"
           >
-            Cancelar
+            {t("cancel")}
           </button>
         </p>
       )}
 
       <details className="rounded-lg border border-gold/20 bg-white/60 px-4 py-2 shadow-sm backdrop-blur-xl">
-        <summary className="cursor-pointer text-sm font-medium">+ Agregar mesa</summary>
+        <summary className="cursor-pointer text-sm font-medium">{t("addTable")}</summary>
         <form
           action={async (formData) => {
             setError(null);
             try {
               await createTable(eventId, formData);
             } catch {
-              setError("No se pudo crear la mesa");
+              setError(t("errorCreate"));
             }
           }}
           className="mt-3 flex flex-wrap items-end gap-3"
         >
           <div>
-            <label className="block text-xs font-medium mb-1">Nombre</label>
-            <input name="name" required placeholder="Mesa 1" className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
+            <label className="block text-xs font-medium mb-1">{t("name")}</label>
+            <input name="name" required placeholder={t("namePlaceholder")} className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Forma</label>
+            <label className="block text-xs font-medium mb-1">{t("shape")}</label>
             <select name="shape" className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm">
-              <option value="ROUND">Redonda</option>
-              <option value="RECT">Rectangular</option>
+              <option value="ROUND">{t("round")}</option>
+              <option value="RECT">{t("rect")}</option>
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Puestos</label>
+            <label className="block text-xs font-medium mb-1">{t("seats")}</label>
             <input
               name="seats"
               type="number"
@@ -223,28 +223,19 @@ export function SeatingCanvas({
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
           >
-            Agregar
+            {t("add")}
           </button>
         </form>
       </details>
 
-      {tables.length > 0 && (
-        <p className="text-xs text-ink-muted lg:hidden">
-          Deslizá dentro del recuadro para ver todas tus mesas — tocá un invitado y después una
-          mesa para asignarlo.
-        </p>
-      )}
+      {tables.length > 0 && <p className="text-xs text-ink-muted lg:hidden">{t("swipeHint")}</p>}
 
       <div className="flex flex-col gap-4 lg:flex-row">
         <div
           ref={canvasRef}
           className="relative h-[420px] flex-1 overflow-auto rounded-lg border border-gold/20 bg-white/40 shadow-md backdrop-blur-xl sm:h-[520px] lg:h-[640px]"
         >
-          {tables.length === 0 && (
-            <p className="p-6 text-sm text-ink-muted">
-              Todavía no hay mesas. Agregá la primera arriba y arrastrala para ubicarla.
-            </p>
-          )}
+          {tables.length === 0 && <p className="p-6 text-sm text-ink-muted">{t("noTables")}</p>}
           {tables.map((table) => {
             const occupancy = calcTableOccupancy(table.id, guests);
             const overCapacity = occupancy > table.seats;
@@ -259,7 +250,7 @@ export function SeatingCanvas({
                     await updateTableDetails(table.id, formData);
                     setEditingId(null);
                   } catch {
-                    setError("No se pudo actualizar la mesa");
+                    setError(t("errorUpdate"));
                   }
                 }}
                 className="absolute z-10 flex flex-col gap-1 rounded-lg border border-gold/20 bg-white p-2 shadow-lg"
@@ -279,8 +270,8 @@ export function SeatingCanvas({
                   defaultValue={table.shape}
                   className="rounded border border-gold/25 px-1.5 py-1 text-xs"
                 >
-                  <option value="ROUND">Redonda</option>
-                  <option value="RECT">Rectangular</option>
+                  <option value="ROUND">{t("round")}</option>
+                  <option value="RECT">{t("rect")}</option>
                 </select>
                 <input
                   name="seats"
@@ -290,7 +281,7 @@ export function SeatingCanvas({
                   className="rounded border border-gold/25 px-1.5 py-1 text-xs"
                 />
                 <button type="submit" className="rounded bg-gold-dark px-2 py-1 text-xs text-white">
-                  Guardar
+                  {t("save")}
                 </button>
               </form>
             );
@@ -338,7 +329,7 @@ export function SeatingCanvas({
                         }}
                         className="text-gold-dark hover:underline"
                       >
-                        Editar
+                        {t("edit")}
                       </button>
                       <button
                         type="button"
@@ -348,7 +339,7 @@ export function SeatingCanvas({
                         }}
                         className="text-danger hover:underline"
                       >
-                        Eliminar
+                        {t("delete")}
                       </button>
                     </div>
                   </div>
@@ -388,7 +379,7 @@ export function SeatingCanvas({
                             assignGuest(guest.id, null);
                           }}
                           className="text-ink-muted hover:text-danger"
-                          aria-label={`Quitar a ${guest.name} de la mesa`}
+                          aria-label={t("removeFromTable", { name: guest.name })}
                         >
                           ×
                         </button>
@@ -442,7 +433,7 @@ export function SeatingCanvas({
                         }}
                         className="text-gold-dark hover:underline"
                       >
-                        Editar
+                        {t("edit")}
                       </button>
                       <button
                         type="button"
@@ -452,7 +443,7 @@ export function SeatingCanvas({
                         }}
                         className="text-danger hover:underline"
                       >
-                        Eliminar
+                        {t("delete")}
                       </button>
                     </div>
                   </div>
@@ -492,7 +483,7 @@ export function SeatingCanvas({
                             assignGuest(guest.id, null);
                           }}
                           className="text-ink-muted hover:text-danger"
-                          aria-label={`Quitar a ${guest.name} de la mesa`}
+                          aria-label={t("removeFromTable", { name: guest.name })}
                         >
                           ×
                         </button>
@@ -514,7 +505,7 @@ export function SeatingCanvas({
           onClick={handleSidebarTap}
         >
           <h3 className="mb-2 font-serif text-base font-medium text-ink">
-            Sin mesa ({unassigned.length})
+            {t("unassignedTitle", { count: unassigned.length })}
           </h3>
           <div className="space-y-2">
             {unassigned.map((guest) => (
@@ -529,13 +520,11 @@ export function SeatingCanvas({
               >
                 {guestLabel(guest)}
                 {guest.tableName && (
-                  <p className="text-[11px] text-ink-muted">mesa (texto): {guest.tableName}</p>
+                  <p className="text-[11px] text-ink-muted">{t("legacyTableText", { name: guest.tableName })}</p>
                 )}
               </div>
             ))}
-            {unassigned.length === 0 && (
-              <p className="text-xs text-ink-muted">Todos los invitados tienen mesa asignada.</p>
-            )}
+            {unassigned.length === 0 && <p className="text-xs text-ink-muted">{t("allAssigned")}</p>}
           </div>
         </div>
       </div>

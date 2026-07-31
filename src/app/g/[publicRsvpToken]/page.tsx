@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { GeneralRsvpForm } from "@/components/GeneralRsvpForm";
 import { EmbedTransparentBackground } from "@/components/EmbedTransparentBackground";
 import { BrandHeader } from "@/components/BrandHeader";
 import { BrandFooter } from "@/components/BrandFooter";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { formatDateTime } from "@/lib/dates";
+import type { AppLocale } from "@/lib/locale";
 
 export default async function GeneralConfirmAttendancePage({
   params,
@@ -16,6 +19,8 @@ export default async function GeneralConfirmAttendancePage({
   const { publicRsvpToken } = await params;
   const { embed } = await searchParams;
   const isEmbed = embed === "1";
+  const t = await getTranslations("publicRsvp");
+  const locale = (await getLocale()) as AppLocale;
 
   const event = await prisma.event.findUnique({
     where: { publicRsvpToken },
@@ -34,6 +39,11 @@ export default async function GeneralConfirmAttendancePage({
     >
       {isEmbed && <EmbedTransparentBackground />}
       <div className="rounded-2xl border border-gold/20 bg-warm/90 p-7 shadow-lg backdrop-blur-xl">
+        {!isEmbed && (
+          <div className="mb-2 flex justify-end">
+            <LanguageSwitcher currentLocale={locale} />
+          </div>
+        )}
         <BrandHeader organizer={event.organizer} />
         {event.logoImageType && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -47,7 +57,7 @@ export default async function GeneralConfirmAttendancePage({
           className="text-xs uppercase tracking-[0.2em] text-gold-dark"
           style={event.organizer.brandColor ? { color: event.organizer.brandColor } : undefined}
         >
-          Confirmación de asistencia
+          {t("title")}
         </p>
         <h1 className="mt-1 font-serif text-2xl font-medium text-ink">{event.title}</h1>
         <p className="mt-1 text-sm text-ink-muted">
@@ -57,7 +67,7 @@ export default async function GeneralConfirmAttendancePage({
         {event.notes && <p className="mt-2 text-sm text-ink-muted">{event.notes}</p>}
 
         <div className="mt-4 border-t border-gold/15 pt-4">
-          <p className="text-sm text-ink-muted">Por favor confirma tu asistencia.</p>
+          <p className="text-sm text-ink-muted">{t("pleaseConfirm")}</p>
           {event.invitationLinkUrl && (
             <a
               href={event.invitationLinkUrl}
@@ -65,7 +75,7 @@ export default async function GeneralConfirmAttendancePage({
               rel="noopener noreferrer"
               className="mt-2 inline-block text-sm font-medium text-gold-dark hover:underline"
             >
-              Ver invitación →
+              {t("viewInvitation")}
             </a>
           )}
         </div>

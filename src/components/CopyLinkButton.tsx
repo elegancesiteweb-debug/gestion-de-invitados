@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
-export function CopyLinkButton({ url, label = "Copiar link" }: { url: string; label?: string }) {
+export function CopyLinkButton({ url, label }: { url: string; label?: string }) {
+  const t = useTranslations("shared");
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -17,7 +19,7 @@ export function CopyLinkButton({ url, label = "Copiar link" }: { url: string; la
       type="button"
       className="text-sm text-gold-dark hover:underline"
     >
-      {copied ? "¡Copiado!" : label}
+      {copied ? t("copied") : label ?? t("copyLink")}
     </button>
   );
 }

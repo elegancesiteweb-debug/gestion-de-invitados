@@ -1,8 +1,10 @@
+import { getTranslations } from "next-intl/server";
 import type { Task } from "@prisma/client";
 import { createTask, toggleTask, deleteTask } from "@/lib/actions/tasks";
 import { TaskCalendar } from "@/components/event-dashboard/TaskCalendar";
 
-export function TasksPanel({ eventId, tasks }: { eventId: string; tasks: Task[] }) {
+export async function TasksPanel({ eventId, tasks }: { eventId: string; tasks: Task[] }) {
+  const t = await getTranslations("tasks");
   const done = tasks.filter((t) => t.done).length;
   const withDate = tasks.filter((t) => t.dueDate);
   const withoutDate = tasks.filter((t) => !t.dueDate);
@@ -10,22 +12,22 @@ export function TasksPanel({ eventId, tasks }: { eventId: string; tasks: Task[] 
   return (
     <div className="space-y-6 py-6">
       <section>
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Agregar tarea</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("addTitle")}</h2>
         <form
           action={createTask.bind(null, eventId)}
           className="flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
         >
           <div className="flex-1">
-            <label className="block text-xs font-medium mb-1">Título</label>
+            <label className="block text-xs font-medium mb-1">{t("titleLabel")}</label>
             <input
               name="title"
               required
-              placeholder="Ej. Reservar catering"
+              placeholder={t("titlePlaceholder")}
               className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Fecha (opcional)</label>
+            <label className="block text-xs font-medium mb-1">{t("dueDate")}</label>
             <input
               name="dueDate"
               type="date"
@@ -36,22 +38,22 @@ export function TasksPanel({ eventId, tasks }: { eventId: string; tasks: Task[] 
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
           >
-            Agregar
+            {t("add")}
           </button>
         </form>
       </section>
 
       <section>
         <h2 className="mb-3 font-serif text-lg font-medium text-ink">
-          Calendario ({done}/{tasks.length} completadas)
+          {t("calendarTitle", { done, total: tasks.length })}
         </h2>
         <TaskCalendar eventId={eventId} tasks={withDate} />
       </section>
 
       <section>
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Tareas sin fecha</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("noDateTitle")}</h2>
         {withoutDate.length === 0 ? (
-          <p className="text-sm text-ink-muted">No hay tareas sin fecha.</p>
+          <p className="text-sm text-ink-muted">{t("noDateEmpty")}</p>
         ) : (
           <ul className="space-y-2">
             {withoutDate.map((task) => (
@@ -80,7 +82,7 @@ export function TasksPanel({ eventId, tasks }: { eventId: string; tasks: Task[] 
                 </form>
                 <form action={deleteTask.bind(null, eventId, task.id)}>
                   <button type="submit" className="text-sm text-danger hover:underline">
-                    Eliminar
+                    {t("delete")}
                   </button>
                 </form>
               </li>

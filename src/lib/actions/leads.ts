@@ -57,10 +57,27 @@ export async function updateLead(leadId: string, formData: FormData) {
   const email = (formData.get("email") as string | null)?.trim() || null;
   const phone = (formData.get("phone") as string | null)?.trim() || null;
   const notes = (formData.get("notes") as string | null)?.trim() || null;
+  const partnerName = (formData.get("partnerName") as string | null)?.trim() || null;
+  const eventType = (formData.get("eventType") as string | null)?.trim() || null;
+  const location = (formData.get("location") as string | null)?.trim() || null;
+  const tentativeDateRaw = (formData.get("tentativeDate") as string | null)?.trim();
+  const tentativeDate = tentativeDateRaw ? new Date(tentativeDateRaw) : null;
+  const estimatedBudgetRaw = (formData.get("estimatedBudget") as string | null)?.trim();
+  const estimatedBudget = estimatedBudgetRaw ? Number(estimatedBudgetRaw) : null;
 
   await prisma.lead.update({
     where: { id: leadId },
-    data: { name, email, phone, notes },
+    data: {
+      name,
+      email,
+      phone,
+      notes,
+      partnerName,
+      eventType,
+      location,
+      tentativeDate,
+      estimatedBudget,
+    },
   });
 
   revalidatePath(`/dashboard/leads/${leadId}`);

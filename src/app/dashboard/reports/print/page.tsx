@@ -1,22 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeature } from "@/lib/features";
 import { PrintButton } from "@/components/PrintButton";
 import { formatDate } from "@/lib/dates";
-
-const STAGE_LABELS: Record<string, string> = {
-  NEW: "Nuevo",
-  CONTACTED: "Contactado",
-  QUOTED: "Cotizado",
-  WON: "Ganado",
-  LOST: "Perdido",
-};
-
-const MONTH_LABELS = [
-  "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic",
-];
 
 export default async function PrintReportsPage() {
   const session = await auth();
@@ -26,6 +15,16 @@ export default async function PrintReportsPage() {
   if (!hasFeature(session.user.accountType, "business_reports")) {
     notFound();
   }
+  const t = await getTranslations("reportsPrint");
+  const MONTH_LABELS = t.raw("monthLabels") as string[];
+
+  const STAGE_LABELS: Record<string, string> = {
+    NEW: t("stageNew"),
+    CONTACTED: t("stageContacted"),
+    QUOTED: t("stageQuoted"),
+    WON: t("stageWon"),
+    LOST: t("stageLost"),
+  };
 
   const leads = await prisma.lead.findMany({
     where: { organizerId: session.user.id },
@@ -64,14 +63,14 @@ export default async function PrintReportsPage() {
     <div className="mx-auto w-full max-w-3xl px-4 py-10 print:px-0 print:py-0">
       <div className="mb-6 flex items-center justify-between print:hidden">
         <Link href="/dashboard/reports" className="text-sm text-gold-dark hover:underline">
-          ← Volver a reportes
+          {t("backToReports")}
         </Link>
         <PrintButton />
       </div>
 
       <header className="mb-6 border-b border-gold/20 pb-4 text-center">
-        <h1 className="font-serif text-2xl font-medium text-ink">Reportes de negocio</h1>
-        <p className="mt-1 text-sm text-ink-muted">Generado el {formatDate(new Date())}</p>
+        <h1 className="font-serif text-2xl font-medium text-ink">{t("title")}</h1>
+        <p className="mt-1 text-sm text-ink-muted">{t("generatedOn", { date: formatDate(new Date()) })}</p>
       </header>
 
       <div className="mb-6 grid grid-cols-4 gap-3 text-center">
@@ -79,31 +78,31 @@ export default async function PrintReportsPage() {
           <p className="font-serif text-2xl font-medium text-ink">
             {totalRevenue.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
           </p>
-          <p className="text-xs text-ink-muted">Ingresos totales</p>
+          <p className="text-xs text-ink-muted">{t("totalRevenue")}</p>
         </div>
         <div>
           <p className="font-serif text-2xl font-medium text-ink">{leads.length}</p>
-          <p className="text-xs text-ink-muted">Leads</p>
+          <p className="text-xs text-ink-muted">{t("leads")}</p>
         </div>
         <div>
           <p className="font-serif text-2xl font-medium text-success">{won}</p>
-          <p className="text-xs text-ink-muted">Ganados</p>
+          <p className="text-xs text-ink-muted">{t("won")}</p>
         </div>
         <div>
           <p className="font-serif text-2xl font-medium text-ink">
             {conversionRate !== null ? `${conversionRate}%` : "—"}
           </p>
-          <p className="text-xs text-ink-muted">Conversión</p>
+          <p className="text-xs text-ink-muted">{t("conversion")}</p>
         </div>
       </div>
 
       <section className="mb-6">
-        <h2 className="mb-2 font-serif text-lg font-medium text-ink">Ingresos por mes</h2>
+        <h2 className="mb-2 font-serif text-lg font-medium text-ink">{t("revenueByMonth")}</h2>
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-ink/20 text-left text-xs uppercase text-ink-muted">
-              <th className="py-1">Mes</th>
-              <th className="py-1 text-right">Monto</th>
+              <th className="py-1">{t("month")}</th>
+              <th className="py-1 text-right">{t("amount")}</th>
             </tr>
           </thead>
           <tbody>
@@ -123,7 +122,7 @@ export default async function PrintReportsPage() {
       </section>
 
       <section className="mb-6">
-        <h2 className="mb-2 font-serif text-lg font-medium text-ink">Leads por etapa</h2>
+        <h2 className="mb-2 font-serif text-lg font-medium text-ink">{t("leadsByStage")}</h2>
         <table className="w-full border-collapse text-sm">
           <tbody>
             {Object.entries(STAGE_LABELS).map(([stage, label]) => (
@@ -137,14 +136,14 @@ export default async function PrintReportsPage() {
       </section>
 
       <section>
-        <h2 className="mb-2 font-serif text-lg font-medium text-ink">Pagos pendientes</h2>
+        <h2 className="mb-2 font-serif text-lg font-medium text-ink">{t("pendingPayments")}</h2>
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-ink/20 text-left text-xs uppercase text-ink-muted">
-              <th className="py-1">Descripción</th>
-              <th className="py-1">Lead</th>
-              <th className="py-1 text-right">Monto</th>
-              <th className="py-1 text-right">Vence</th>
+              <th className="py-1">{t("description")}</th>
+              <th className="py-1">{t("lead")}</th>
+              <th className="py-1 text-right">{t("amount")}</th>
+              <th className="py-1 text-right">{t("due")}</th>
             </tr>
           </thead>
           <tbody>

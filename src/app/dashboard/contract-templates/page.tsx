@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeature } from "@/lib/features";
@@ -13,6 +14,7 @@ export default async function ContractTemplatesPage() {
   if (!hasFeature(session.user.accountType, "crm_contracts")) {
     notFound();
   }
+  const t = await getTranslations("contractTemplatesPage");
 
   const templates = await prisma.contractTemplate.findMany({
     where: { organizerId: session.user.id },
@@ -22,32 +24,29 @@ export default async function ContractTemplatesPage() {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
       <Link href="/dashboard/leads" className="text-sm text-gold-dark hover:underline">
-        ← Leads
+        {t("backToLeads")}
       </Link>
 
-      <h1 className="mt-2 font-serif text-2xl font-medium text-ink">Plantillas de contrato</h1>
-      <p className="mt-1 text-sm text-ink-muted">
-        Guarda textos base (términos y condiciones estándar) para no reescribirlos en cada contrato
-        nuevo.
-      </p>
+      <h1 className="mt-2 font-serif text-2xl font-medium text-ink">{t("title")}</h1>
+      <p className="mt-1 text-sm text-ink-muted">{t("subtitle")}</p>
 
       <section className="mt-6">
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Crear plantilla</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("createTemplate")}</h2>
         <form
           action={createContractTemplate}
           className="space-y-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
         >
           <div>
-            <label className="block text-xs font-medium mb-1">Nombre</label>
+            <label className="block text-xs font-medium mb-1">{t("name")}</label>
             <input
               name="name"
               required
-              placeholder="Contrato estándar de boda"
+              placeholder={t("namePlaceholder")}
               className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Contenido</label>
+            <label className="block text-xs font-medium mb-1">{t("content")}</label>
             <textarea
               name="content"
               required
@@ -59,14 +58,14 @@ export default async function ContractTemplatesPage() {
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
           >
-            Crear
+            {t("create")}
           </button>
         </form>
       </section>
 
       <section className="mt-8 space-y-2">
         {templates.length === 0 ? (
-          <p className="text-sm text-ink-muted">Todavía no creaste ninguna plantilla.</p>
+          <p className="text-sm text-ink-muted">{t("noTemplates")}</p>
         ) : (
           templates.map((template) => (
             <div
@@ -83,7 +82,7 @@ export default async function ContractTemplatesPage() {
               </div>
               <form action={deleteContractTemplate.bind(null, template.id)}>
                 <button type="submit" className="text-sm text-danger hover:underline">
-                  Eliminar
+                  {t("delete")}
                 </button>
               </form>
             </div>

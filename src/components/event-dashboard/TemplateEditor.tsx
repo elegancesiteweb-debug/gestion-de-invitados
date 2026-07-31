@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { renderTemplate, TEMPLATE_VARIABLES } from "@/lib/messageTemplate";
 
 const SAMPLE_VARS = {
@@ -14,6 +15,7 @@ const SAMPLE_VARS = {
 };
 
 export function TemplateEditor({ initialTemplate }: { initialTemplate: string }) {
+  const t = useTranslations("templateEditor");
   const [value, setValue] = useState(initialTemplate);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -59,7 +61,7 @@ export function TemplateEditor({ initialTemplate }: { initialTemplate: string })
       />
 
       <div>
-        <p className="mb-1 text-xs font-medium text-ink-muted">Vista previa:</p>
+        <p className="mb-1 text-xs font-medium text-ink-muted">{t("preview")}:</p>
         <pre className="whitespace-pre-wrap rounded-lg border border-gold/20 bg-warm p-3 text-sm text-ink">
           {renderTemplate(value, SAMPLE_VARS)}
         </pre>

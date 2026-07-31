@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { Companion, Guest, Table } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 import { SeatingCanvas } from "@/components/event-dashboard/SeatingCanvas";
 
-export function TablesPanel({
+export async function TablesPanel({
   eventId,
   tables,
   guests,
@@ -11,6 +12,7 @@ export function TablesPanel({
   tables: Table[];
   guests: (Guest & { companions: Companion[] })[];
 }) {
+  const t = await getTranslations("tables");
   return (
     <div>
       <div className="flex justify-end pt-6">
@@ -18,7 +20,7 @@ export function TablesPanel({
           href={`/dashboard/events/${eventId}/tables/print`}
           className="text-sm text-gold-dark hover:underline"
         >
-          Imprimir plano →
+          {t("printPlan")}
         </Link>
       </div>
       <SeatingCanvas eventId={eventId} initialTables={tables} initialGuests={guests} />

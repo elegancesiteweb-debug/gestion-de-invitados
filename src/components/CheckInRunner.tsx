@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { checkInGuest } from "@/lib/actions/checkin";
 
 type Result =
@@ -19,6 +20,7 @@ export function CheckInRunner({
   guestName: string;
   tableName: string | null;
 }) {
+  const t = useTranslations("checkinPage");
   const [result, setResult] = useState<Result>({ kind: "loading" });
 
   useEffect(() => {
@@ -51,16 +53,16 @@ export function CheckInRunner({
 
       <div className="mt-5">
         {result.kind === "loading" && (
-          <p className="text-sm text-ink-muted">Registrando llegada...</p>
+          <p className="text-sm text-ink-muted">{t("registeringArrival")}</p>
         )}
 
         {result.kind === "ok" && (
           <div className="rounded-xl bg-success-bg p-5">
             <div className="mb-1 text-4xl">✓</div>
-            <p className="text-base font-medium text-success">Acceso registrado</p>
+            <p className="text-base font-medium text-success">{t("accessRegistered")}</p>
             <p className="mt-1 text-sm text-success">
-              Entrada a las {result.arrivedAtLabel} · {result.passes} pase
-              {result.passes !== 1 ? "s" : ""}
+              {t("entryAt", { time: result.arrivedAtLabel })} ·{" "}
+              {t("passCount", { count: result.passes })}
             </p>
           </div>
         )}
@@ -68,23 +70,23 @@ export function CheckInRunner({
         {result.kind === "already" && (
           <div className="rounded-xl bg-warning-bg p-5">
             <div className="mb-1 text-4xl">⚠</div>
-            <p className="text-base font-medium text-warning">Ya registrado</p>
+            <p className="text-base font-medium text-warning">{t("alreadyRegistered")}</p>
             <p className="mt-1 text-sm text-warning">
-              Ingreso previo a las {result.arrivedAtLabel}
+              {t("previousEntryAt", { time: result.arrivedAtLabel })}
             </p>
           </div>
         )}
 
         {result.kind === "not_found" && (
           <div className="rounded-xl bg-danger-bg p-5">
-            <p className="text-base font-medium text-danger">Código no encontrado</p>
+            <p className="text-base font-medium text-danger">{t("codeNotFound")}</p>
           </div>
         )}
 
         {result.kind === "error" && (
           <div className="rounded-xl bg-danger-bg p-5">
-            <p className="text-base font-medium text-danger">Error al registrar</p>
-            <p className="mt-1 text-sm text-danger">Verifica tu conexión e intenta de nuevo.</p>
+            <p className="text-base font-medium text-danger">{t("registrationError")}</p>
+            <p className="mt-1 text-sm text-danger">{t("checkConnection")}</p>
           </div>
         )}
       </div>

@@ -1,4 +1,5 @@
 import type { Event, Guest, Table } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 import {
   createGuest,
   updateGuest,
@@ -15,16 +16,24 @@ import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { GuestQrButton } from "@/components/GuestQrButton";
 import { EmbedCodeButton } from "@/components/EmbedCodeButton";
 
-function GuestEditForm({ eventId, guest }: { eventId: string; guest: Guest }) {
+function GuestEditForm({
+  eventId,
+  guest,
+  t,
+}: {
+  eventId: string;
+  guest: Guest;
+  t: Awaited<ReturnType<typeof getTranslations>>;
+}) {
   return (
     <details className="mt-2">
-      <summary className="cursor-pointer text-sm text-gold-dark hover:underline">Editar</summary>
+      <summary className="cursor-pointer text-sm text-gold-dark hover:underline">{t("edit")}</summary>
       <form
         action={updateGuest.bind(null, eventId, guest.id)}
         className="mt-2 flex flex-wrap items-end gap-2 rounded-lg border border-gold/20 bg-white p-3"
       >
         <div>
-          <label className="block text-xs font-medium mb-1">Nombre</label>
+          <label className="block text-xs font-medium mb-1">{t("name")}</label>
           <input
             name="name"
             required
@@ -33,7 +42,7 @@ function GuestEditForm({ eventId, guest }: { eventId: string; guest: Guest }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1">Email</label>
+          <label className="block text-xs font-medium mb-1">{t("email")}</label>
           <input
             name="email"
             type="email"
@@ -42,7 +51,7 @@ function GuestEditForm({ eventId, guest }: { eventId: string; guest: Guest }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1">Teléfono</label>
+          <label className="block text-xs font-medium mb-1">{t("phone")}</label>
           <input
             name="phone"
             defaultValue={guest.phone ?? ""}
@@ -50,7 +59,7 @@ function GuestEditForm({ eventId, guest }: { eventId: string; guest: Guest }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1">Mesa</label>
+          <label className="block text-xs font-medium mb-1">{t("table")}</label>
           <input
             name="tableName"
             list="table-names"
@@ -59,7 +68,7 @@ function GuestEditForm({ eventId, guest }: { eventId: string; guest: Guest }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1">Acompañantes</label>
+          <label className="block text-xs font-medium mb-1">{t("companions")}</label>
           <input
             name="maxCompanions"
             type="number"
@@ -69,7 +78,7 @@ function GuestEditForm({ eventId, guest }: { eventId: string; guest: Guest }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1">Link de invitación</label>
+          <label className="block text-xs font-medium mb-1">{t("invitationLink")}</label>
           <input
             name="invitationLinkUrl"
             type="url"
@@ -81,14 +90,14 @@ function GuestEditForm({ eventId, guest }: { eventId: string; guest: Guest }) {
           type="submit"
           className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm font-medium text-white hover:shadow-lg"
         >
-          Guardar
+          {t("save")}
         </button>
       </form>
     </details>
   );
 }
 
-export function GuestsPanel({
+export async function GuestsPanel({
   event,
   guests,
   tables,
@@ -99,6 +108,7 @@ export function GuestsPanel({
   tables: Table[];
   baseUrl: string;
 }) {
+  const t = await getTranslations("guests");
   const tableNames = tables.map((t) => t.name);
   const template = event.messageTemplate || DEFAULT_MESSAGE_TEMPLATE;
 
@@ -131,19 +141,19 @@ export function GuestsPanel({
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2 text-sm font-medium text-white hover:shadow-lg"
           >
-            Enviar email a pendientes
+            {t("sendToPending")}
           </button>
         </form>
         <details className="rounded-lg border border-gold/20 bg-white/60 px-4 py-2 shadow-sm backdrop-blur-xl">
-          <summary className="cursor-pointer text-sm font-medium">Importar CSV</summary>
+          <summary className="cursor-pointer text-sm font-medium">{t("importCsv")}</summary>
           <form action={importGuestsCsv.bind(null, event.id)} className="mt-3 space-y-2">
-            <p className="text-xs text-ink-muted">Columnas: name, email, phone, maxCompanions, mesa</p>
+            <p className="text-xs text-ink-muted">{t("csvColumns")}</p>
             <input type="file" name="file" accept=".csv" required className="text-sm" />
             <button
               type="submit"
               className="block rounded-lg border border-gold/25 px-3 py-1.5 text-sm hover:bg-warm"
             >
-              Importar
+              {t("import")}
             </button>
           </form>
         </details>
@@ -156,21 +166,21 @@ export function GuestsPanel({
       </datalist>
 
       <section>
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Agregar invitado</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("addGuest")}</h2>
         <form
           action={createGuest.bind(null, event.id)}
           className="flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
         >
           <div>
-            <label className="block text-xs font-medium mb-1">Nombre</label>
+            <label className="block text-xs font-medium mb-1">{t("name")}</label>
             <input name="name" required className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Email</label>
+            <label className="block text-xs font-medium mb-1">{t("email")}</label>
             <input name="email" type="email" className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Teléfono</label>
+            <label className="block text-xs font-medium mb-1">{t("phone")}</label>
             <input
               name="phone"
               className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
@@ -178,16 +188,16 @@ export function GuestsPanel({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Mesa</label>
+            <label className="block text-xs font-medium mb-1">{t("table")}</label>
             <input
               name="tableName"
               list="table-names"
-              placeholder="Mesa 1"
+              placeholder={t("tablePlaceholder")}
               className="w-28 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Acompañantes</label>
+            <label className="block text-xs font-medium mb-1">{t("companions")}</label>
             <input
               name="maxCompanions"
               type="number"
@@ -197,7 +207,7 @@ export function GuestsPanel({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Link de invitación (opcional)</label>
+            <label className="block text-xs font-medium mb-1">{t("invitationLinkOptional")}</label>
             <input
               name="invitationLinkUrl"
               type="url"
@@ -209,24 +219,26 @@ export function GuestsPanel({
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
           >
-            Agregar
+            {t("add")}
           </button>
         </form>
       </section>
 
       <section>
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Invitados ({guests.length})</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">
+          {t("guestsTitle", { count: guests.length })}
+        </h2>
 
         <div className="hidden overflow-x-auto rounded-lg border border-gold/20 bg-white/60 shadow-md backdrop-blur-xl md:block">
           <table className="w-full text-sm">
             <thead className="bg-warm text-left text-xs uppercase text-ink-muted">
               <tr>
-                <th className="px-4 py-2">Nombre</th>
-                <th className="px-4 py-2">Mesa</th>
-                <th className="px-4 py-2">Estado</th>
-                <th className="px-4 py-2">Acompañantes</th>
-                <th className="px-4 py-2">Confirmación</th>
-                <th className="px-4 py-2">Enviar</th>
+                <th className="px-4 py-2">{t("name")}</th>
+                <th className="px-4 py-2">{t("table")}</th>
+                <th className="px-4 py-2">{t("status")}</th>
+                <th className="px-4 py-2">{t("companions")}</th>
+                <th className="px-4 py-2">{t("confirmation")}</th>
+                <th className="px-4 py-2">{t("send")}</th>
                 <th className="px-4 py-2"></th>
               </tr>
             </thead>
@@ -246,7 +258,7 @@ export function GuestsPanel({
                   <td className="px-4 py-2">
                     {guest.status === "CONFIRMED"
                       ? `${guest.companionsConfirmed ?? 0}/${guest.maxCompanions}`
-                      : `máx. ${guest.maxCompanions}`}
+                      : t("maxCompanions", { count: guest.maxCompanions })}
                   </td>
                   <td className="px-4 py-2 space-x-3 whitespace-nowrap">
                     <CopyLinkButton url={confirmUrl} />
@@ -257,7 +269,7 @@ export function GuestsPanel({
                     />
                     <EmbedCodeButton
                       url={confirmUrl}
-                      title={`Confirmar asistencia - ${guest.name}`}
+                      title={`${t("embedTitlePrefix")} - ${guest.name}`}
                     />
                   </td>
                   <td className="px-4 py-2 space-x-3 whitespace-nowrap">
@@ -279,16 +291,16 @@ export function GuestsPanel({
                       </a>
                     )}
                     {guest.invitationSentAt && (
-                      <span className="block text-xs text-ink-light">Enviado</span>
+                      <span className="block text-xs text-ink-light">{t("sent")}</span>
                     )}
                   </td>
                   <td className="px-4 py-2">
                     <form action={deleteGuest.bind(null, event.id, guest.id)}>
                       <button type="submit" className="text-sm text-danger hover:underline">
-                        Eliminar
+                        {t("delete")}
                       </button>
                     </form>
-                    <GuestEditForm eventId={event.id} guest={guest} />
+                    <GuestEditForm eventId={event.id} guest={guest} t={t} />
                   </td>
                 </tr>
               ))}
@@ -313,11 +325,13 @@ export function GuestsPanel({
               </div>
 
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-muted">
-                <span>Mesa: {guest.tableName || "—"}</span>
+                <span>
+                  {t("table")}: {guest.tableName || "—"}
+                </span>
                 <span>
                   {guest.status === "CONFIRMED"
-                    ? `${guest.companionsConfirmed ?? 0}/${guest.maxCompanions} acompañantes`
-                    : `máx. ${guest.maxCompanions} acompañantes`}
+                    ? t("companionsOf", { count: guest.companionsConfirmed ?? 0, max: guest.maxCompanions })
+                    : t("maxCompanionsLabel", { count: guest.maxCompanions })}
                 </span>
               </div>
 
@@ -328,7 +342,7 @@ export function GuestsPanel({
                   rsvpUrl={confirmUrl}
                   checkinUrl={`${baseUrl}/checkin/${guest.checkinToken}`}
                 />
-                <EmbedCodeButton url={confirmUrl} title={`Confirmar asistencia - ${guest.name}`} />
+                <EmbedCodeButton url={confirmUrl} title={`${t("embedTitlePrefix")} - ${guest.name}`} />
               </div>
 
               <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -349,15 +363,15 @@ export function GuestsPanel({
                     WhatsApp
                   </a>
                 )}
-                {guest.invitationSentAt && <span className="text-xs text-ink-light">Enviado</span>}
+                {guest.invitationSentAt && <span className="text-xs text-ink-light">{t("sent")}</span>}
                 <form action={deleteGuest.bind(null, event.id, guest.id)}>
                   <button type="submit" className="text-sm text-danger hover:underline">
-                    Eliminar
+                    {t("delete")}
                   </button>
                 </form>
               </div>
 
-              <GuestEditForm eventId={event.id} guest={guest} />
+              <GuestEditForm eventId={event.id} guest={guest} t={t} />
             </div>
           ))}
         </div>

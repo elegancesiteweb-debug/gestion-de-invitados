@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 type Template = { id: string; name: string; content: string };
 
 export function ContractTemplatePicker({ templates }: { templates: Template[] }) {
+  const t = useTranslations("contractTemplatePicker");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
@@ -20,13 +22,13 @@ export function ContractTemplatePicker({ templates }: { templates: Template[] })
     <>
       {templates.length > 0 && (
         <div>
-          <label className="block text-xs font-medium mb-1">Usar plantilla (opcional)</label>
+          <label className="block text-xs font-medium mb-1">{t("useTemplate")}</label>
           <select
             onChange={(e) => applyTemplate(e.target.value)}
             defaultValue=""
             className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
           >
-            <option value="">Elegir plantilla...</option>
+            <option value="">{t("chooseTemplate")}</option>
             {templates.map((template) => (
               <option key={template.id} value={template.id}>
                 {template.name}
@@ -36,7 +38,7 @@ export function ContractTemplatePicker({ templates }: { templates: Template[] })
         </div>
       )}
       <div>
-        <label className="block text-xs font-medium mb-1">Título</label>
+        <label className="block text-xs font-medium mb-1">{t("title")}</label>
         <input
           name="title"
           required
@@ -46,7 +48,7 @@ export function ContractTemplatePicker({ templates }: { templates: Template[] })
         />
       </div>
       <div>
-        <label className="block text-xs font-medium mb-1">Contenido</label>
+        <label className="block text-xs font-medium mb-1">{t("content")}</label>
         <textarea
           name="content"
           required

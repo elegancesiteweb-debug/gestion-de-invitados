@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeature } from "@/lib/features";
@@ -12,14 +13,6 @@ import { addPackageToProposal } from "@/lib/actions/packages";
 import { PROVIDER_LABELS } from "@/lib/payments";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { formatDateTime } from "@/lib/dates";
-
-const STAGE_LABELS: Record<string, string> = {
-  NEW: "Nuevo",
-  CONTACTED: "Contactado",
-  QUOTED: "Cotizado",
-  WON: "Ganado",
-  LOST: "Perdido",
-};
 
 export default async function LeadDetailPage({
   params,
@@ -34,6 +27,15 @@ export default async function LeadDetailPage({
   if (!hasFeature(session.user.accountType, "crm_leads")) {
     notFound();
   }
+  const t = await getTranslations("leadDetail");
+
+  const STAGE_LABELS: Record<string, string> = {
+    NEW: t("stageNew"),
+    CONTACTED: t("stageContacted"),
+    QUOTED: t("stageQuoted"),
+    WON: t("stageWon"),
+    LOST: t("stageLost"),
+  };
 
   const lead = await prisma.lead.findFirst({
     where: { id: leadId, organizerId: session.user.id },
@@ -63,14 +65,14 @@ export default async function LeadDetailPage({
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10">
       <Link href="/dashboard/leads" className="text-sm text-gold-dark hover:underline">
-        ← Leads
+        {t("backToLeads")}
       </Link>
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
         <h1 className="font-serif text-2xl font-medium text-ink">{lead.name}</h1>
         <form action={deleteLead.bind(null, lead.id)}>
           <button type="submit" className="text-sm text-danger hover:underline">
-            Eliminar lead
+            {t("deleteLead")}
           </button>
         </form>
       </div>
@@ -80,9 +82,9 @@ export default async function LeadDetailPage({
           action={updateLead.bind(null, lead.id)}
           className="space-y-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
         >
-          <p className="font-medium text-ink">Datos de contacto</p>
+          <p className="font-medium text-ink">{t("contactData")}</p>
           <div>
-            <label className="block text-xs font-medium mb-1">Nombre</label>
+            <label className="block text-xs font-medium mb-1">{t("name")}</label>
             <input
               name="name"
               defaultValue={lead.name}
@@ -91,7 +93,7 @@ export default async function LeadDetailPage({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Teléfono</label>
+            <label className="block text-xs font-medium mb-1">{t("phone")}</label>
             <input
               name="phone"
               defaultValue={lead.phone ?? ""}
@@ -99,7 +101,7 @@ export default async function LeadDetailPage({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Email</label>
+            <label className="block text-xs font-medium mb-1">{t("email")}</label>
             <input
               name="email"
               type="email"
@@ -108,7 +110,7 @@ export default async function LeadDetailPage({
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Notas</label>
+            <label className="block text-xs font-medium mb-1">{t("notes")}</label>
             <textarea
               name="notes"
               defaultValue={lead.notes ?? ""}
@@ -116,11 +118,59 @@ export default async function LeadDetailPage({
               className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
             />
           </div>
+
+          <p className="pt-2 font-medium text-ink">{t("weddingEventData")}</p>
+          <div>
+            <label className="block text-xs font-medium mb-1">{t("partnerName")}</label>
+            <input
+              name="partnerName"
+              defaultValue={lead.partnerName ?? ""}
+              className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">{t("eventType")}</label>
+            <input
+              name="eventType"
+              defaultValue={lead.eventType ?? ""}
+              placeholder={t("eventTypePlaceholder")}
+              className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">{t("tentativeDate")}</label>
+            <input
+              name="tentativeDate"
+              type="date"
+              defaultValue={lead.tentativeDate ? lead.tentativeDate.toISOString().slice(0, 10) : ""}
+              className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">{t("location")}</label>
+            <input
+              name="location"
+              defaultValue={lead.location ?? ""}
+              className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">{t("estimatedBudget")}</label>
+            <input
+              name="estimatedBudget"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={lead.estimatedBudget ?? ""}
+              className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+            />
+          </div>
+
           <button
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
           >
-            Guardar
+            {t("save")}
           </button>
         </form>
 
@@ -129,7 +179,7 @@ export default async function LeadDetailPage({
             action={updateLeadStage.bind(null, lead.id)}
             className="space-y-2 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
           >
-            <p className="font-medium text-ink">Etapa</p>
+            <p className="font-medium text-ink">{t("stage")}</p>
             <select
               name="stage"
               defaultValue={lead.stage}
@@ -145,25 +195,25 @@ export default async function LeadDetailPage({
               type="submit"
               className="rounded-lg border border-gold/25 px-3 py-1.5 text-sm hover:bg-warm"
             >
-              Actualizar etapa
+              {t("updateStage")}
             </button>
           </form>
 
           <div className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
-            <p className="font-medium text-ink">Evento</p>
+            <p className="font-medium text-ink">{t("event")}</p>
             {lead.convertedEventId ? (
               <Link
                 href={`/dashboard/events/${lead.convertedEventId}`}
                 className="mt-2 inline-block text-sm text-gold-dark hover:underline"
               >
-                Ver evento convertido →
+                {t("viewConvertedEvent")}
               </Link>
             ) : (
               <Link
                 href={`/dashboard/events/new?leadId=${lead.id}&title=${encodeURIComponent(lead.name)}`}
                 className="mt-2 inline-block rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm font-medium text-white hover:shadow-lg"
               >
-                Convertir en evento
+                {t("convertToEvent")}
               </Link>
             )}
           </div>
@@ -172,7 +222,7 @@ export default async function LeadDetailPage({
 
       {Array.isArray(lead.intakeAnswers) && lead.intakeAnswers.length > 0 && (
         <section className="mt-4 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
-          <p className="font-medium text-ink">Respuestas del cuestionario</p>
+          <p className="font-medium text-ink">{t("intakeAnswers")}</p>
           <dl className="mt-2 space-y-2">
             {(lead.intakeAnswers as unknown as { questionId: string; label: string; value: string }[]).map(
               (answer) => (
@@ -188,24 +238,24 @@ export default async function LeadDetailPage({
 
       {showProposals && (
         <section className="mt-8">
-          <h2 className="mb-3 font-serif text-lg font-medium text-ink">Propuestas</h2>
+          <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("proposals")}</h2>
           <form
             action={createProposal.bind(null, lead.id)}
             className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
           >
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1">Título</label>
+              <label className="block text-xs font-medium mb-1">{t("title")}</label>
               <input name="title" required className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1">Notas</label>
+              <label className="block text-xs font-medium mb-1">{t("notes")}</label>
               <input name="notes" className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
             </div>
             <button
               type="submit"
               className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
             >
-              Crear propuesta
+              {t("createProposal")}
             </button>
           </form>
 
@@ -227,11 +277,11 @@ export default async function LeadDetailPage({
                         href={`/dashboard/leads/${lead.id}/proposals/${proposal.id}/print`}
                         className="text-sm text-gold-dark hover:underline"
                       >
-                        Imprimir
+                        {t("print")}
                       </Link>
                       <form action={deleteProposal.bind(null, lead.id, proposal.id)}>
                         <button type="submit" className="text-sm text-danger hover:underline">
-                          Eliminar
+                          {t("delete")}
                         </button>
                       </form>
                     </div>
@@ -247,7 +297,7 @@ export default async function LeadDetailPage({
                           </span>
                           <form action={deleteProposalItem.bind(null, lead.id, item.id)}>
                             <button type="submit" className="text-xs text-danger hover:underline">
-                              quitar
+                              {t("remove")}
                             </button>
                           </form>
                         </span>
@@ -255,7 +305,7 @@ export default async function LeadDetailPage({
                     ))}
                   </ul>
                   <p className="mt-2 text-right text-sm font-medium text-ink">
-                    Total: {total.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                    {t("total")}: {total.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
                   </p>
 
                   <form
@@ -266,7 +316,7 @@ export default async function LeadDetailPage({
                       <input
                         name="description"
                         required
-                        placeholder="Descripción"
+                        placeholder={t("description")}
                         className="w-full rounded-lg border border-gold/25 px-2 py-1 text-sm"
                       />
                     </div>
@@ -277,7 +327,7 @@ export default async function LeadDetailPage({
                         step="0.01"
                         min="0"
                         required
-                        placeholder="Monto"
+                        placeholder={t("amount")}
                         className="w-full rounded-lg border border-gold/25 px-2 py-1 text-sm"
                       />
                     </div>
@@ -285,7 +335,7 @@ export default async function LeadDetailPage({
                       type="submit"
                       className="rounded-lg border border-gold/25 px-3 py-1 text-sm hover:bg-warm"
                     >
-                      + Ítem
+                      {t("addItem")}
                     </button>
                   </form>
 
@@ -311,7 +361,7 @@ export default async function LeadDetailPage({
                         type="submit"
                         className="rounded-lg border border-gold/25 px-3 py-1 text-sm hover:bg-warm"
                       >
-                        + Agregar paquete
+                        {t("addPackage")}
                       </button>
                     </form>
                   )}
@@ -324,7 +374,7 @@ export default async function LeadDetailPage({
 
       {showContracts && (
         <section className="mt-8">
-          <h2 className="mb-3 font-serif text-lg font-medium text-ink">Contratos</h2>
+          <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("contracts")}</h2>
           <form
             action={createContract.bind(null, lead.id)}
             className="mb-4 space-y-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
@@ -334,7 +384,7 @@ export default async function LeadDetailPage({
               type="submit"
               className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
             >
-              Crear contrato
+              {t("createContract")}
             </button>
           </form>
 
@@ -348,15 +398,15 @@ export default async function LeadDetailPage({
                   <p className="font-medium text-ink">{contract.title}</p>
                   <p className="text-xs text-ink-muted">
                     {contract.signedAt
-                      ? `Firmado el ${formatDateTime(contract.signedAt)} por ${contract.signerName}`
-                      : "Pendiente de firma"}
+                      ? t("signedOn", { date: formatDateTime(contract.signedAt), name: contract.signerName ?? "" })
+                      : t("pendingSignature")}
                   </p>
                 </div>
                 <div className="flex flex-none items-center gap-3">
-                  <CopyLinkButton url={`${baseUrl}/sign/${contract.token}`} label="Copiar link de firma" />
+                  <CopyLinkButton url={`${baseUrl}/sign/${contract.token}`} label={t("copySignLink")} />
                   <form action={deleteContract.bind(null, lead.id, contract.id)}>
                     <button type="submit" className="text-sm text-danger hover:underline">
-                      Eliminar
+                      {t("delete")}
                     </button>
                   </form>
                 </div>
@@ -368,13 +418,13 @@ export default async function LeadDetailPage({
 
       {showInvoices && (
         <section className="mt-8">
-          <h2 className="mb-3 font-serif text-lg font-medium text-ink">Facturas</h2>
+          <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("invoices")}</h2>
           <form
             action={createInvoice.bind(null, lead.id)}
             className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
           >
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1">Descripción</label>
+              <label className="block text-xs font-medium mb-1">{t("description")}</label>
               <input
                 name="description"
                 required
@@ -382,7 +432,7 @@ export default async function LeadDetailPage({
               />
             </div>
             <div className="w-28">
-              <label className="block text-xs font-medium mb-1">Monto</label>
+              <label className="block text-xs font-medium mb-1">{t("amount")}</label>
               <input
                 name="amount"
                 type="number"
@@ -393,7 +443,7 @@ export default async function LeadDetailPage({
               />
             </div>
             <div className="w-20">
-              <label className="block text-xs font-medium mb-1">Moneda</label>
+              <label className="block text-xs font-medium mb-1">{t("currency")}</label>
               <input
                 name="currency"
                 defaultValue="mxn"
@@ -401,7 +451,7 @@ export default async function LeadDetailPage({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Pasarela</label>
+              <label className="block text-xs font-medium mb-1">{t("gateway")}</label>
               <select
                 name="provider"
                 className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
@@ -417,7 +467,7 @@ export default async function LeadDetailPage({
               type="submit"
               className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
             >
-              Crear factura
+              {t("createInvoice")}
             </button>
           </form>
 
@@ -425,9 +475,9 @@ export default async function LeadDetailPage({
             action={createPaymentPlan.bind(null, lead.id)}
             className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
           >
-            <p className="w-full text-sm font-medium text-ink">Crear plan de pagos</p>
+            <p className="w-full text-sm font-medium text-ink">{t("createPaymentPlan")}</p>
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1">Descripción</label>
+              <label className="block text-xs font-medium mb-1">{t("description")}</label>
               <input
                 name="description"
                 required
@@ -435,7 +485,7 @@ export default async function LeadDetailPage({
               />
             </div>
             <div className="w-28">
-              <label className="block text-xs font-medium mb-1">Monto total</label>
+              <label className="block text-xs font-medium mb-1">{t("totalAmount")}</label>
               <input
                 name="totalAmount"
                 type="number"
@@ -446,7 +496,7 @@ export default async function LeadDetailPage({
               />
             </div>
             <div className="w-24">
-              <label className="block text-xs font-medium mb-1">Cuotas</label>
+              <label className="block text-xs font-medium mb-1">{t("installments")}</label>
               <select name="installments" defaultValue="2" className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm">
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -454,7 +504,7 @@ export default async function LeadDetailPage({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">1ra cuota</label>
+              <label className="block text-xs font-medium mb-1">{t("firstInstallment")}</label>
               <input
                 name="firstDueDate"
                 type="date"
@@ -462,7 +512,7 @@ export default async function LeadDetailPage({
               />
             </div>
             <div className="w-20">
-              <label className="block text-xs font-medium mb-1">Moneda</label>
+              <label className="block text-xs font-medium mb-1">{t("currency")}</label>
               <input
                 name="currency"
                 defaultValue="mxn"
@@ -470,7 +520,7 @@ export default async function LeadDetailPage({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Pasarela</label>
+              <label className="block text-xs font-medium mb-1">{t("gateway")}</label>
               <select name="provider" className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm">
                 {Object.entries(PROVIDER_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -483,7 +533,7 @@ export default async function LeadDetailPage({
               type="submit"
               className="rounded-lg border border-gold/25 px-4 py-1.5 text-sm font-medium hover:bg-warm"
             >
-              Crear plan
+              {t("createPlan")}
             </button>
           </form>
 
@@ -512,24 +562,26 @@ export default async function LeadDetailPage({
                   <p className="text-xs text-ink-muted">
                     {PROVIDER_LABELS[invoice.provider]} ·{" "}
                     {invoice.status === "paid"
-                      ? `Pagada${invoice.paidAt ? ` el ${formatDateTime(invoice.paidAt)}` : ""}`
+                      ? invoice.paidAt
+                        ? t("paidOn", { date: formatDateTime(invoice.paidAt) })
+                        : t("paid")
                       : invoice.dueDate
-                        ? `Vence el ${formatDateTime(invoice.dueDate)}`
-                        : "Pendiente de pago"}
+                        ? t("dueOn", { date: formatDateTime(invoice.dueDate) })
+                        : t("pendingPayment")}
                   </p>
                 </div>
                 <div className="flex flex-none items-center gap-3">
-                  <CopyLinkButton url={`${baseUrl}/pay/${invoice.token}`} label="Copiar link de pago" />
+                  <CopyLinkButton url={`${baseUrl}/pay/${invoice.token}`} label={t("copyPayLink")} />
                   {invoice.status !== "paid" && lead.email && (
                     <form action={sendInvoiceReminder.bind(null, lead.id, invoice.id)}>
                       <button type="submit" className="text-sm text-gold-dark hover:underline">
-                        Enviar recordatorio
+                        {t("sendReminder")}
                       </button>
                     </form>
                   )}
                   <form action={deleteInvoice.bind(null, lead.id, invoice.id)}>
                     <button type="submit" className="text-sm text-danger hover:underline">
-                      Eliminar
+                      {t("delete")}
                     </button>
                   </form>
                 </div>

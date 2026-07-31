@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PrintButton } from "@/components/PrintButton";
@@ -24,6 +25,7 @@ export default async function PrintTablesPage({
   if (!session?.user?.id) {
     redirect("/login");
   }
+  const t = await getTranslations("tablesPrint");
 
   const event = await prisma.event.findFirst({
     where: { id: eventId, organizerId: session.user.id },
@@ -62,7 +64,7 @@ export default async function PrintTablesPage({
           href={`/dashboard/events/${eventId}?tab=mesas`}
           className="text-sm text-gold-dark hover:underline"
         >
-          ← Volver al evento
+          {t("backToEvent")}
         </Link>
         <PrintButton />
       </div>
@@ -70,17 +72,17 @@ export default async function PrintTablesPage({
       <header className="mb-6 border-b border-gold/20 pb-4 text-center">
         <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
         <p className="mt-1 text-sm text-ink-muted">
-          Plano de mesas · {formatDate(event.eventDate)}
+          {t("tablesPlan")} · {formatDate(event.eventDate)}
           {event.location ? ` · ${event.location}` : ""}
         </p>
         <p className="mt-1 text-xs text-ink-light">
-          {event.tables.length} mesa(s) · {event.guests.length} invitado(s)
+          {t("tablesGuestsSummary", { tables: event.tables.length, guests: event.guests.length })}
         </p>
       </header>
 
       {(event.floorPlanImageType || floorPlanShapes.length > 0) && (
         <section className="mb-10 break-inside-avoid">
-          <h2 className="mb-2 text-center font-serif text-lg font-medium text-ink">Plano del salón</h2>
+          <h2 className="mb-2 text-center font-serif text-lg font-medium text-ink">{t("floorPlanTitle")}</h2>
           <div className="relative mx-auto overflow-hidden rounded-lg border border-gold/20" style={{ width: 700, height: 500 }}>
             {event.floorPlanImageType && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -226,13 +228,13 @@ export default async function PrintTablesPage({
       </div>
 
       {event.tables.length === 0 && (
-        <p className="text-center text-sm text-ink-muted">Todavía no hay mesas creadas.</p>
+        <p className="text-center text-sm text-ink-muted">{t("noTables")}</p>
       )}
 
       {unassigned.length > 0 && (
         <section className="mt-10 border-t border-gold/15 pt-4">
           <h2 className="mb-2 font-serif text-lg font-medium text-ink">
-            Sin mesa asignada ({unassigned.length})
+            {t("unassignedTitle", { count: unassigned.length })}
           </h2>
           <p className="text-sm text-ink-muted">
             {unassigned.map((g) => g.name).join(", ")}
@@ -241,7 +243,7 @@ export default async function PrintTablesPage({
       )}
 
       <p className="mt-8 text-center text-xs text-ink-light">
-        Generado el {formatDate(new Date())}
+        {t("generatedOn", { date: formatDate(new Date()) })}
       </p>
     </div>
   );

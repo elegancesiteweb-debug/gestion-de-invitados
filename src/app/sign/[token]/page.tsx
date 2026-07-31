@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/dates";
 import { signContract } from "@/lib/actions/contracts";
@@ -10,6 +11,7 @@ export default async function SignContractPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  const t = await getTranslations("signPage");
 
   const contract = await prisma.contract.findUnique({ where: { token } });
   if (!contract) {
@@ -30,9 +32,9 @@ export default async function SignContractPage({
 
         {contract.signedAt ? (
           <div className="mt-6 rounded-lg border border-success/30 bg-success-bg p-4 text-sm text-success">
-            <p className="font-medium">Este contrato ya fue firmado.</p>
+            <p className="font-medium">{t("alreadySigned")}</p>
             <p className="mt-1">
-              Firmado por {contract.signerName} el {formatDateTime(contract.signedAt)}.
+              {t("signedBy", { name: contract.signerName ?? "", date: formatDateTime(contract.signedAt) })}
             </p>
           </div>
         ) : (
@@ -40,9 +42,9 @@ export default async function SignContractPage({
             action={signContract.bind(null, token)}
             className="mt-6 space-y-3 rounded-lg border border-gold/20 bg-white/70 p-4"
           >
-            <p className="font-medium text-ink">Firma electrónica</p>
+            <p className="font-medium text-ink">{t("electronicSignature")}</p>
             <div>
-              <label className="block text-xs font-medium mb-1">Nombre completo</label>
+              <label className="block text-xs font-medium mb-1">{t("fullName")}</label>
               <input
                 name="signerName"
                 required
@@ -51,13 +53,13 @@ export default async function SignContractPage({
             </div>
             <label className="flex items-start gap-2 text-sm text-ink-muted">
               <input name="agreed" type="checkbox" required className="mt-0.5" />
-              Firmo electrónicamente este contrato y confirmo que he leído y acepto su contenido.
+              {t("agreementText")}
             </label>
             <button
               type="submit"
               className="w-full rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2 text-sm font-medium text-white hover:shadow-lg"
             >
-              Firmar contrato
+              {t("signContract")}
             </button>
           </form>
         )}

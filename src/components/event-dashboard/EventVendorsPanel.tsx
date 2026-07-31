@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { EventVendor, Vendor } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 import {
   assignVendorToEvent,
   unassignVendorFromEvent,
@@ -8,7 +9,7 @@ import {
 
 type EventVendorWithVendor = EventVendor & { vendor: Vendor };
 
-export function EventVendorsPanel({
+export async function EventVendorsPanel({
   eventId,
   eventVendors,
   availableVendors,
@@ -17,19 +18,16 @@ export function EventVendorsPanel({
   eventVendors: EventVendorWithVendor[];
   availableVendors: Vendor[];
 }) {
+  const t = await getTranslations("eventVendors");
   const assignedIds = new Set(eventVendors.map((ev) => ev.vendorId));
   const unassigned = availableVendors.filter((v) => !assignedIds.has(v.id));
 
   return (
     <div className="space-y-6 py-6">
       <section>
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">
-          Proveedores de este evento
-        </h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("assignedTitle")}</h2>
         {eventVendors.length === 0 ? (
-          <p className="text-sm text-ink-muted">
-            Todavía no agregaste proveedores a este evento.
-          </p>
+          <p className="text-sm text-ink-muted">{t("noneAssigned")}</p>
         ) : (
           <div className="space-y-2">
             {eventVendors.map((ev) => (
@@ -47,12 +45,12 @@ export function EventVendorsPanel({
                     )}
                     {ev.clientApproved === true && (
                       <span className="ml-2 rounded-full bg-success-bg px-2 py-0.5 text-xs text-success">
-                        Aprobado por el cliente
+                        {t("approvedByClient")}
                       </span>
                     )}
                     {ev.clientApproved === false && (
                       <span className="ml-2 rounded-full bg-danger-bg px-2 py-0.5 text-xs text-danger">
-                        Rechazado por el cliente
+                        {t("rejectedByClient")}
                       </span>
                     )}
                   </p>
@@ -62,7 +60,7 @@ export function EventVendorsPanel({
                 </div>
                 <form action={unassignVendorFromEvent.bind(null, eventId, ev.vendorId)}>
                   <button type="submit" className="text-sm text-danger hover:underline">
-                    Quitar
+                    {t("remove")}
                   </button>
                 </form>
               </div>
@@ -73,15 +71,13 @@ export function EventVendorsPanel({
 
       {unassigned.length > 0 && (
         <section>
-          <h2 className="mb-3 font-serif text-lg font-medium text-ink">
-            Agregar de tu directorio
-          </h2>
+          <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("addFromDirectory")}</h2>
           <form
             action={assignVendorToEvent.bind(null, eventId)}
             className="flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
           >
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1">Proveedor</label>
+              <label className="block text-xs font-medium mb-1">{t("vendor")}</label>
               <select
                 name="vendorId"
                 required
@@ -99,53 +95,53 @@ export function EventVendorsPanel({
               type="submit"
               className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
             >
-              Agregar
+              {t("add")}
             </button>
           </form>
         </section>
       )}
 
       <section>
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Nuevo proveedor</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("newVendor")}</h2>
         <form
           action={createVendorForEvent.bind(null, eventId)}
           className="flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
         >
           <div>
-            <label className="block text-xs font-medium mb-1">Nombre</label>
+            <label className="block text-xs font-medium mb-1">{t("name")}</label>
             <input name="name" required className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Categoría</label>
+            <label className="block text-xs font-medium mb-1">{t("category")}</label>
             <input
               name="category"
-              placeholder="Ej. Catering"
+              placeholder={t("categoryPlaceholder")}
               className="w-36 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Teléfono</label>
+            <label className="block text-xs font-medium mb-1">{t("phone")}</label>
             <input name="phone" className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Email</label>
+            <label className="block text-xs font-medium mb-1">{t("email")}</label>
             <input name="email" type="email" className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
           </div>
           <div className="flex-1">
-            <label className="block text-xs font-medium mb-1">Notas</label>
+            <label className="block text-xs font-medium mb-1">{t("notes")}</label>
             <input name="notes" className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
           </div>
           <button
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
           >
-            Crear y agregar
+            {t("createAndAdd")}
           </button>
         </form>
         <p className="mt-2 text-xs text-ink-muted">
-          Este proveedor también quedará guardado en tu{" "}
+          {t("alsoSavedPrefix")}{" "}
           <Link href="/dashboard/vendors" className="text-gold-dark hover:underline">
-            directorio general
+            {t("generalDirectory")}
           </Link>
           .
         </p>

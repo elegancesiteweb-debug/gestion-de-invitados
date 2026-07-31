@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import type { Task } from "@prisma/client";
+import { useLocale, useTranslations } from "next-intl";
 import { toggleTask, deleteTask } from "@/lib/actions/tasks";
 import { APP_TIMEZONE } from "@/lib/dates";
 
@@ -14,13 +15,13 @@ function isOverdue(task: Task, todayKey: string): boolean {
   return !task.done && !!task.dueDate && dateKey(new Date(task.dueDate)) < todayKey;
 }
 
-const MONTH_NAMES = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-];
-const WEEKDAY_LABELS = ["D", "L", "M", "M", "J", "V", "S"];
-
 export function TaskCalendar({ eventId, tasks }: { eventId: string; tasks: Task[] }) {
+  const t = useTranslations("taskCalendar");
+  const locale = useLocale();
+  const monthNames = t.raw("monthNames") as string[];
+  const weekdayLabels = t.raw("weekdayLabels") as string[];
+  const dateLocale = locale === "en" ? "en-US" : "es-ES";
+
   const today = new Date();
   const [monthCursor, setMonthCursor] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1)
@@ -67,7 +68,7 @@ export function TaskCalendar({ eventId, tasks }: { eventId: string; tasks: Task[
           ←
         </button>
         <p className="font-serif text-lg font-medium capitalize text-ink">
-          {MONTH_NAMES[month]} {year}
+          {monthNames[month]} {year}
         </p>
         <button
           type="button"
@@ -79,7 +80,7 @@ export function TaskCalendar({ eventId, tasks }: { eventId: string; tasks: Task[
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-ink-muted">
-        {WEEKDAY_LABELS.map((w, i) => (
+        {weekdayLabels.map((w, i) => (
           <div key={i}>{w}</div>
         ))}
       </div>
@@ -133,14 +134,14 @@ export function TaskCalendar({ eventId, tasks }: { eventId: string; tasks: Task[
               <p className="font-serif text-xl font-medium text-ink">{selected.title}</p>
               <p className="mt-1 text-sm text-ink-muted">
                 {selected.dueDate
-                  ? new Date(selected.dueDate).toLocaleDateString("es-ES", {
+                  ? new Date(selected.dueDate).toLocaleDateString(dateLocale, {
                       timeZone: APP_TIMEZONE,
                       dateStyle: "long",
                     })
-                  : "Sin fecha"}
+                  : t("noDate")}
               </p>
               <p className="mt-3 text-sm">
-                Estado:{" "}
+                {t("status")}:{" "}
                 <span
                   className={
                     selected.done
@@ -150,7 +151,7 @@ export function TaskCalendar({ eventId, tasks }: { eventId: string; tasks: Task[
                         : "text-warning"
                   }
                 >
-                  {selected.done ? "Completada" : isOverdue(selected, todayKey) ? "Vencida" : "Pendiente"}
+                  {selected.done ? t("completed") : isOverdue(selected, todayKey) ? t("overdue") : t("pending")}
                 </span>
               </p>
               <div className="mt-5 flex gap-2">
@@ -159,12 +160,12 @@ export function TaskCalendar({ eventId, tasks }: { eventId: string; tasks: Task[
                     type="submit"
                     className="w-full rounded-lg border border-gold/25 px-3 py-1.5 text-sm hover:bg-warm"
                   >
-                    {selected.done ? "Marcar pendiente" : "Marcar completada"}
+                    {selected.done ? t("markPending") : t("markDone")}
                   </button>
                 </form>
                 <form action={deleteTask.bind(null, eventId, selected.id)}>
                   <button type="submit" className="rounded-lg px-3 py-1.5 text-sm text-danger hover:underline">
-                    Eliminar
+                    {t("delete")}
                   </button>
                 </form>
               </div>
@@ -173,7 +174,7 @@ export function TaskCalendar({ eventId, tasks }: { eventId: string; tasks: Task[
                 onClick={() => setSelected(null)}
                 className="mt-3 w-full rounded-lg border border-gold/25 px-3 py-1.5 text-sm hover:bg-warm"
               >
-                Cerrar
+                {t("close")}
               </button>
             </div>
           </div>,

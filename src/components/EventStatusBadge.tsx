@@ -1,11 +1,5 @@
 import type { EventStatus } from "@prisma/client";
-
-const STATUS_LABELS: Record<EventStatus, string> = {
-  PLANNING: "Planeación",
-  CONFIRMED: "Confirmado",
-  COMPLETED: "Completado",
-  CANCELLED: "Cancelado",
-};
+import { getTranslations } from "next-intl/server";
 
 const STATUS_STYLES: Record<EventStatus, string> = {
   PLANNING: "bg-warm text-ink-muted",
@@ -14,7 +8,14 @@ const STATUS_STYLES: Record<EventStatus, string> = {
   CANCELLED: "bg-danger-bg text-danger",
 };
 
-export function EventStatusBadge({ status }: { status: EventStatus }) {
+export async function EventStatusBadge({ status }: { status: EventStatus }) {
+  const t = await getTranslations("shared");
+  const STATUS_LABELS: Record<EventStatus, string> = {
+    PLANNING: t("eventStatusPlanning"),
+    CONFIRMED: t("eventStatusConfirmed"),
+    COMPLETED: t("eventStatusCompleted"),
+    CANCELLED: t("eventStatusCancelled"),
+  };
   return (
     <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[status]}`}>
       {STATUS_LABELS[status]}

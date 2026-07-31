@@ -22,6 +22,8 @@ export async function updateBrand(formData: FormData) {
 
   const brandName = (formData.get("brandName") as string | null)?.trim() || null;
   const brandColor = (formData.get("brandColor") as string | null)?.trim() || null;
+  const businessPhone = (formData.get("businessPhone") as string | null)?.trim() || null;
+  const businessEmail = (formData.get("businessEmail") as string | null)?.trim() || null;
 
   const file = formData.get("brandLogo");
   if (file instanceof File && file.size > 0) {
@@ -34,12 +36,12 @@ export async function updateBrand(formData: FormData) {
     const buffer = Buffer.from(await file.arrayBuffer());
     await prisma.organizer.update({
       where: { id: organizerId },
-      data: { brandName, brandColor, brandLogo: buffer, brandLogoType: file.type },
+      data: { brandName, brandColor, businessPhone, businessEmail, brandLogo: buffer, brandLogoType: file.type },
     });
   } else {
     await prisma.organizer.update({
       where: { id: organizerId },
-      data: { brandName, brandColor },
+      data: { brandName, brandColor, businessPhone, businessEmail },
     });
   }
 

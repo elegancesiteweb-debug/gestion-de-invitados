@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 import { submitRsvp } from "@/lib/actions/rsvp";
 import { RsvpQrReveal } from "@/components/RsvpQrReveal";
 
@@ -33,6 +34,7 @@ export function RsvpForm({
   checkinUrl: string;
   showQr: boolean;
 }) {
+  const t = useTranslations("rsvpForm");
   const [status, setStatus] = useState(
     currentStatus === "DECLINED" ? "DECLINED" : "CONFIRMED"
   );
@@ -59,7 +61,7 @@ export function RsvpForm({
             onChange={() => setStatus("CONFIRMED")}
             className="sr-only"
           />
-          Asistiré
+          {t("willAttend")}
         </label>
         <label
           className={`cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm font-medium transition ${
@@ -76,14 +78,14 @@ export function RsvpForm({
             onChange={() => setStatus("DECLINED")}
             className="sr-only"
           />
-          No podré asistir
+          {t("wontAttend")}
         </label>
       </div>
 
       {status === "CONFIRMED" && !askCompanionNames && (
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
-            Acompañantes (máx. {maxCompanions})
+            {t("companionsMax", { max: maxCompanions })}
           </label>
           <input
             type="number"
@@ -101,7 +103,7 @@ export function RsvpForm({
         <div>
           <input type="hidden" name="companionCount" value={maxCompanions} />
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
-            Acompañantes (hasta {maxCompanions})
+            {t("companionsUpTo", { max: maxCompanions })}
           </label>
           <div className="space-y-2">
             {Array.from({ length: maxCompanions }, (_, i) => (
@@ -110,7 +112,7 @@ export function RsvpForm({
                   type="text"
                   name={`companion_${i}_name`}
                   defaultValue={currentCompanionNames[i]?.name ?? ""}
-                  placeholder={`Nombre del acompañante ${i + 1}`}
+                  placeholder={t("companionNamePlaceholder", { index: i + 1 })}
                   className="flex-1 rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
                 />
                 <label className="flex items-center gap-1 text-xs text-ink-muted">
@@ -119,7 +121,7 @@ export function RsvpForm({
                     name={`companion_${i}_attending`}
                     defaultChecked={currentCompanionNames[i]?.attending ?? true}
                   />
-                  asiste
+                  {t("attending")}
                 </label>
               </div>
             ))}
@@ -130,13 +132,13 @@ export function RsvpForm({
       {status === "CONFIRMED" && askDietary && (
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
-            Restricciones alimentarias (opcional)
+            {t("dietaryRestrictions")}
           </label>
           <input
             type="text"
             name="dietaryNotes"
             defaultValue={currentDietaryNotes ?? ""}
-            placeholder="Ej. Vegetariano, alergia a maní"
+            placeholder={t("dietaryPlaceholder")}
             className="w-full rounded-lg border border-gold/25 bg-white/70 px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20"
           />
         </div>
@@ -145,7 +147,7 @@ export function RsvpForm({
       {askMessage && (
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
-            Mensaje (opcional)
+            {t("message")}
           </label>
           <textarea
             name="messageFromGuest"
@@ -157,7 +159,7 @@ export function RsvpForm({
       )}
 
       {state?.error && <p className="text-sm text-danger">{state.error}</p>}
-      {state?.ok && <p className="text-sm text-success">¡Gracias! Tu respuesta fue registrada.</p>}
+      {state?.ok && <p className="text-sm text-success">{t("thankYou")}</p>}
       {state?.ok && status === "CONFIRMED" && showQr && (
         <RsvpQrReveal url={checkinUrl} fileLabel={token} />
       )}
@@ -167,7 +169,7 @@ export function RsvpForm({
         disabled={pending}
         className="w-full rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2.5 text-sm font-medium text-white shadow-md shadow-gold/30 transition hover:shadow-lg hover:shadow-gold/40 disabled:opacity-50"
       >
-        {pending ? "Enviando..." : "Confirmar"}
+        {pending ? t("sending") : t("confirm")}
       </button>
     </form>
   );

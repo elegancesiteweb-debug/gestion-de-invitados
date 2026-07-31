@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PrintButton } from "@/components/PrintButton";
@@ -15,6 +16,7 @@ export default async function PrintConfirmationsPage({
   if (!session?.user?.id) {
     redirect("/login");
   }
+  const t = await getTranslations("eventPrint");
 
   const event = await prisma.event.findFirst({
     where: { id: eventId, organizerId: session.user.id },
@@ -40,7 +42,7 @@ export default async function PrintConfirmationsPage({
           href={`/dashboard/events/${eventId}`}
           className="text-sm text-gold-dark hover:underline"
         >
-          ← Volver al evento
+          {t("backToEvent")}
         </Link>
         <PrintButton />
       </div>
@@ -56,7 +58,7 @@ export default async function PrintConfirmationsPage({
         )}
         <h1 className="font-serif text-2xl font-medium text-ink">{event.title}</h1>
         <p className="mt-1 text-sm text-ink-muted">
-          Lista de confirmaciones ·{" "}
+          {t("confirmationsList")} ·{" "}
           {formatDate(event.eventDate)}
           {event.location ? ` · ${event.location}` : ""}
         </p>
@@ -65,31 +67,31 @@ export default async function PrintConfirmationsPage({
       <div className="mb-6 grid grid-cols-4 gap-3 text-center">
         <div>
           <p className="font-serif text-2xl font-medium text-success">{confirmed.length}</p>
-          <p className="text-xs text-ink-muted">Confirmados</p>
+          <p className="text-xs text-ink-muted">{t("confirmed")}</p>
         </div>
         <div>
           <p className="font-serif text-2xl font-medium text-danger">{declined.length}</p>
-          <p className="text-xs text-ink-muted">No asisten</p>
+          <p className="text-xs text-ink-muted">{t("declined")}</p>
         </div>
         <div>
           <p className="font-serif text-2xl font-medium text-warning">{pending.length}</p>
-          <p className="text-xs text-ink-muted">Pendientes</p>
+          <p className="text-xs text-ink-muted">{t("pending")}</p>
         </div>
         <div>
           <p className="font-serif text-2xl font-medium text-ink">{totalAttendees}</p>
-          <p className="text-xs text-ink-muted">Total asistentes</p>
+          <p className="text-xs text-ink-muted">{t("totalAttendees")}</p>
         </div>
       </div>
 
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b border-ink/20 text-left text-xs uppercase text-ink-muted">
-            <th className="py-2 pr-2">Nombre</th>
-            <th className="py-2 pr-2">Mesa</th>
-            <th className="py-2 pr-2">Estado</th>
-            <th className="py-2 pr-2">Personas</th>
-            <th className="py-2 pr-2">Restricción alimentaria</th>
-            <th className="py-2">Mensaje</th>
+            <th className="py-2 pr-2">{t("name")}</th>
+            <th className="py-2 pr-2">{t("table")}</th>
+            <th className="py-2 pr-2">{t("status")}</th>
+            <th className="py-2 pr-2">{t("people")}</th>
+            <th className="py-2 pr-2">{t("dietaryRestriction")}</th>
+            <th className="py-2">{t("message")}</th>
           </tr>
         </thead>
         <tbody>
@@ -99,17 +101,17 @@ export default async function PrintConfirmationsPage({
               <td className="py-2 pr-2">{guest.tableName || "—"}</td>
               <td className="py-2 pr-2">
                 {guest.status === "CONFIRMED"
-                  ? "Confirmado"
+                  ? t("confirmed")
                   : guest.status === "DECLINED"
-                    ? "No asiste"
-                    : "Pendiente"}
+                    ? t("declined")
+                    : t("pending")}
               </td>
               <td className="py-2 pr-2">
                 {guest.status === "CONFIRMED" ? 1 + (guest.companionsConfirmed ?? 0) : "—"}
                 {guest.companions.length > 0 && (
                   <span className="block text-xs text-ink-muted">
                     {guest.companions
-                      .map((c) => `${c.name}${c.attending ? "" : " (no asiste)"}`)
+                      .map((c) => `${c.name}${c.attending ? "" : ` ${t("notAttendingSuffix")}`}`)
                       .join(", ")}
                   </span>
                 )}
@@ -122,7 +124,7 @@ export default async function PrintConfirmationsPage({
       </table>
 
       <p className="mt-6 text-center text-xs text-ink-light">
-        Generado el {formatDate(new Date())}
+        {t("generatedOn", { date: formatDate(new Date()) })}
       </p>
     </div>
   );

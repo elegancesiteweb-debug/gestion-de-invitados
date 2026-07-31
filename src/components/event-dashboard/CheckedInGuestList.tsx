@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import type { Companion, Guest } from "@prisma/client";
+import { useTranslations } from "next-intl";
 import { formatTime } from "@/lib/dates";
 
 type GuestWithCompanions = Guest & { companions: Companion[] };
 
 export function CheckedInGuestList({ guests }: { guests: GuestWithCompanions[] }) {
   const [selected, setSelected] = useState<GuestWithCompanions | null>(null);
+  const t = useTranslations("checkedInGuestList");
 
   return (
     <>
@@ -23,8 +25,7 @@ export function CheckedInGuestList({ guests }: { guests: GuestWithCompanions[] }
             <div>
               <p className="font-medium">{guest.name}</p>
               <p className="text-xs text-ink-muted">
-                {guest.tableName || "Sin mesa"} · {guest.checkedInPasses ?? 1} pase
-                {(guest.checkedInPasses ?? 1) !== 1 ? "s" : ""}
+                {guest.tableName || t("noTable")} · {t("passCount", { count: guest.checkedInPasses ?? 1 })}
               </p>
             </div>
             <p className="text-sm font-medium text-success">
@@ -53,13 +54,14 @@ export function CheckedInGuestList({ guests }: { guests: GuestWithCompanions[] }
 
               <div className="mt-4 space-y-1 text-sm">
                 <p>
-                  <span className="font-medium">Mesa:</span> {selected.tableName || "Sin mesa"}
+                  <span className="font-medium">{t("table")}:</span>{" "}
+                  {selected.tableName || t("noTable")}
                 </p>
                 <p>
-                  <span className="font-medium">Pases:</span> {selected.checkedInPasses ?? 1}
+                  <span className="font-medium">{t("passes")}:</span> {selected.checkedInPasses ?? 1}
                 </p>
                 <p>
-                  <span className="font-medium">Hora de entrada:</span>{" "}
+                  <span className="font-medium">{t("checkinTime")}:</span>{" "}
                   {formatTime(selected.checkedInAt as Date)}
                 </p>
               </div>
@@ -67,7 +69,7 @@ export function CheckedInGuestList({ guests }: { guests: GuestWithCompanions[] }
               {selected.companions.length > 0 && (
                 <div className="mt-3 border-t border-gold/15 pt-3">
                   <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
-                    Acompañantes
+                    {t("companions")}
                   </p>
                   <ul className="mt-1 text-sm">
                     {selected.companions.map((companion) => (
@@ -81,8 +83,7 @@ export function CheckedInGuestList({ guests }: { guests: GuestWithCompanions[] }
 
               {selected.dietaryNotes && (
                 <p className="mt-3 text-sm text-ink-muted">
-                  <span className="font-medium">Restricción alimentaria:</span>{" "}
-                  {selected.dietaryNotes}
+                  <span className="font-medium">{t("dietaryNotes")}:</span> {selected.dietaryNotes}
                 </p>
               )}
 
@@ -97,7 +98,7 @@ export function CheckedInGuestList({ guests }: { guests: GuestWithCompanions[] }
                 onClick={() => setSelected(null)}
                 className="mt-5 w-full rounded-lg border border-gold/25 px-3 py-1.5 text-sm hover:bg-warm"
               >
-                Cerrar
+                {t("close")}
               </button>
             </div>
           </div>,

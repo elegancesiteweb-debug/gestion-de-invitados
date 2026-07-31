@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeature } from "@/lib/features";
@@ -18,6 +19,7 @@ export default async function PackagesPage() {
   if (!hasFeature(session.user.accountType, "crm_packages")) {
     notFound();
   }
+  const t = await getTranslations("packagesPage");
 
   const packages = await prisma.package.findMany({
     where: { organizerId: session.user.id },
@@ -28,41 +30,38 @@ export default async function PackagesPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
       <Link href="/dashboard/leads" className="text-sm text-gold-dark hover:underline">
-        ← Leads
+        {t("backToLeads")}
       </Link>
 
-      <h1 className="mt-2 font-serif text-2xl font-medium text-ink">Paquetes</h1>
-      <p className="mt-1 text-sm text-ink-muted">
-        Paquetes reutilizables con sus líneas y precios, para agregarlos con un clic a las
-        propuestas de tus leads.
-      </p>
+      <h1 className="mt-2 font-serif text-2xl font-medium text-ink">{t("title")}</h1>
+      <p className="mt-1 text-sm text-ink-muted">{t("subtitle")}</p>
 
       <section className="mt-6">
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">Crear paquete</h2>
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("createPackage")}</h2>
         <form
           action={createPackage}
           className="flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
         >
           <div>
-            <label className="block text-xs font-medium mb-1">Nombre</label>
-            <input name="name" required placeholder="Paquete Oro" className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
+            <label className="block text-xs font-medium mb-1">{t("name")}</label>
+            <input name="name" required placeholder={t("namePlaceholder")} className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
           </div>
           <div className="flex-1">
-            <label className="block text-xs font-medium mb-1">Descripción</label>
+            <label className="block text-xs font-medium mb-1">{t("description")}</label>
             <input name="description" className="w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm" />
           </div>
           <button
             type="submit"
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-1.5 text-sm font-medium text-white hover:shadow-lg"
           >
-            Crear
+            {t("create")}
           </button>
         </form>
       </section>
 
       <section className="mt-8 space-y-4">
         {packages.length === 0 ? (
-          <p className="text-sm text-ink-muted">Todavía no creaste ningún paquete.</p>
+          <p className="text-sm text-ink-muted">{t("noPackages")}</p>
         ) : (
           packages.map((pkg) => {
             const total = pkg.items.reduce((sum, item) => sum + item.amount, 0);
@@ -78,7 +77,7 @@ export default async function PackagesPage() {
                   </div>
                   <form action={deletePackage.bind(null, pkg.id)}>
                     <button type="submit" className="text-sm text-danger hover:underline">
-                      Eliminar
+                      {t("delete")}
                     </button>
                   </form>
                 </div>
@@ -93,7 +92,7 @@ export default async function PackagesPage() {
                         </span>
                         <form action={deletePackageItem.bind(null, item.id)}>
                           <button type="submit" className="text-xs text-danger hover:underline">
-                            quitar
+                            {t("remove")}
                           </button>
                         </form>
                       </span>
@@ -101,7 +100,7 @@ export default async function PackagesPage() {
                   ))}
                 </ul>
                 <p className="mt-2 text-right text-sm font-medium text-ink">
-                  Total: {total.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                  {t("total")}: {total.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
                 </p>
 
                 <form
@@ -112,7 +111,7 @@ export default async function PackagesPage() {
                     <input
                       name="description"
                       required
-                      placeholder="Descripción"
+                      placeholder={t("description")}
                       className="w-full rounded-lg border border-gold/25 px-2 py-1 text-sm"
                     />
                   </div>
@@ -123,7 +122,7 @@ export default async function PackagesPage() {
                       step="0.01"
                       min="0"
                       required
-                      placeholder="Monto"
+                      placeholder={t("amount")}
                       className="w-full rounded-lg border border-gold/25 px-2 py-1 text-sm"
                     />
                   </div>
@@ -131,7 +130,7 @@ export default async function PackagesPage() {
                     type="submit"
                     className="rounded-lg border border-gold/25 px-3 py-1 text-sm hover:bg-warm"
                   >
-                    + Ítem
+                    {t("addItem")}
                   </button>
                 </form>
               </div>

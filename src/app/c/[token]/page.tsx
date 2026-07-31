@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
+import { getLocale, getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { RsvpForm } from "@/components/RsvpForm";
 import { EmbedTransparentBackground } from "@/components/EmbedTransparentBackground";
 import { BrandHeader } from "@/components/BrandHeader";
 import { BrandFooter } from "@/components/BrandFooter";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { formatDateTime } from "@/lib/dates";
+import type { AppLocale } from "@/lib/locale";
 
 export default async function ConfirmAttendancePage({
   params,
@@ -16,6 +19,8 @@ export default async function ConfirmAttendancePage({
   const { token } = await params;
   const { embed } = await searchParams;
   const isEmbed = embed === "1";
+  const t = await getTranslations("publicRsvp");
+  const locale = (await getLocale()) as AppLocale;
 
   const guest = await prisma.guest.findUnique({
     where: { token },
@@ -37,6 +42,11 @@ export default async function ConfirmAttendancePage({
     >
       {isEmbed && <EmbedTransparentBackground />}
       <div className="rounded-2xl border border-gold/20 bg-warm/90 p-7 shadow-lg backdrop-blur-xl">
+        {!isEmbed && (
+          <div className="mb-2 flex justify-end">
+            <LanguageSwitcher currentLocale={locale} />
+          </div>
+        )}
         <BrandHeader organizer={guest.event.organizer} />
         {guest.event.logoImageType && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -50,7 +60,7 @@ export default async function ConfirmAttendancePage({
           className="text-xs uppercase tracking-[0.2em] text-gold-dark"
           style={guest.event.organizer.brandColor ? { color: guest.event.organizer.brandColor } : undefined}
         >
-          Confirmación de asistencia
+          {t("title")}
         </p>
         <h1 className="mt-1 font-serif text-2xl font-medium text-ink">{guest.event.title}</h1>
         <p className="mt-1 text-sm text-ink-muted">
@@ -61,11 +71,10 @@ export default async function ConfirmAttendancePage({
 
         <div className="mt-4 border-t border-gold/15 pt-4">
           <p className="text-sm text-ink-muted">
-            Hola <span className="font-medium text-ink">{guest.name}</span>, por favor confirma tu
-            asistencia.
+            {t("greeting", { name: guest.name })}
           </p>
           {guest.event.showTableOnRsvp && guest.tableName && (
-            <p className="mt-1 text-sm text-ink-muted">Mesa asignada: {guest.tableName}</p>
+            <p className="mt-1 text-sm text-ink-muted">{t("assignedTable", { table: guest.tableName })}</p>
           )}
           {invitationUrl && (
             <a
@@ -74,7 +83,7 @@ export default async function ConfirmAttendancePage({
               rel="noopener noreferrer"
               className="mt-2 inline-block text-sm font-medium text-gold-dark hover:underline"
             >
-              Ver invitación →
+              {t("viewInvitation")}
             </a>
           )}
         </div>

@@ -4,7 +4,10 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { SignOutButton } from "@/components/SignOutButton";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import type { AppLocale } from "@/lib/locale";
 
 export type SidebarLink = { href: string; label: string };
 
@@ -37,16 +40,19 @@ export function DashboardSidebar({
   userName,
   teamMemberName,
   isCollaborator,
+  currentLocale,
 }: {
   links: SidebarLink[];
   userName: string;
   teamMemberName: string | null;
   isCollaborator: boolean;
+  currentLocale: AppLocale;
 }) {
   const [open, setOpen] = useState(false);
+  const t = useTranslations("nav");
 
   const identityLine = teamMemberName
-    ? `${teamMemberName} · ${isCollaborator ? "Colaborador (solo lectura)" : "Admin de equipo"}`
+    ? `${teamMemberName} · ${isCollaborator ? t("collaboratorReadOnly") : t("teamAdmin")}`
     : userName;
 
   return (
@@ -57,11 +63,14 @@ export function DashboardSidebar({
           type="button"
           onClick={() => setOpen(true)}
           className="flex items-center gap-2 text-sm font-medium text-ink"
-          aria-label="Abrir menú"
+          aria-label={t("openMenu")}
         >
-          <span aria-hidden>☰</span> Menú
+          <span aria-hidden>☰</span> {t("menu")}
         </button>
-        <p className="truncate text-xs text-ink-muted">{identityLine}</p>
+        <div className="flex items-center gap-2">
+          <p className="truncate text-xs text-ink-muted">{identityLine}</p>
+          <LanguageSwitcher currentLocale={currentLocale} />
+        </div>
       </div>
 
       {open &&
@@ -79,13 +88,14 @@ export function DashboardSidebar({
                   type="button"
                   onClick={() => setOpen(false)}
                   className="rounded-lg px-2 py-1 text-ink-muted hover:bg-warm"
-                  aria-label="Cerrar menú"
+                  aria-label={t("closeMenu")}
                 >
                   ×
                 </button>
               </div>
               <NavLinks links={links} onNavigate={() => setOpen(false)} />
-              <div className="mt-4 border-t border-gold/15 pt-4">
+              <div className="mt-4 border-t border-gold/15 pt-4 space-y-3">
+                <LanguageSwitcher currentLocale={currentLocale} />
                 <SignOutButton />
               </div>
             </div>
@@ -98,7 +108,8 @@ export function DashboardSidebar({
         <div className="md:sticky md:top-6 md:pl-4 md:pt-10">
           <p className="mb-3 truncate px-3 text-xs text-ink-muted">{identityLine}</p>
           <NavLinks links={links} />
-          <div className="mt-4 border-t border-gold/15 px-3 pt-4">
+          <div className="mt-4 border-t border-gold/15 px-3 pt-4 space-y-3">
+            <LanguageSwitcher currentLocale={currentLocale} />
             <SignOutButton />
           </div>
         </div>
