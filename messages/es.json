@@ -855,7 +855,10 @@
     "plannerShort": "Wedding Planner",
     "individualShort": "Particular",
     "usedBy": "Usado por {name} ({email}) · {date}",
-    "unused": "Sin usar"
+    "unused": "Sin usar",
+    "siteUrlTitle": "URL pública de la app",
+    "siteUrlHint": "Esta es la dirección real de tu app en producción (la landing page vive en la raíz).",
+    "openSite": "Abrir →"
   },
   "rsvpForm": {
     "willAttend": "Asistiré",

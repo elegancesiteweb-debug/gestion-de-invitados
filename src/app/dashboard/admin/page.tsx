@@ -28,6 +28,8 @@ export default async function AdminPage({
     include: { usedByOrganizer: { select: { name: true, email: true } } },
   });
 
+  const siteUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
       <Link href="/dashboard" className="text-sm text-gold-dark hover:underline">
@@ -35,6 +37,25 @@ export default async function AdminPage({
       </Link>
 
       <h1 className="mt-2 font-serif text-2xl font-medium text-ink">{t("title")}</h1>
+
+      <section className="mt-4 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
+        <h2 className="font-serif text-lg font-medium text-ink">{t("siteUrlTitle")}</h2>
+        <p className="mt-1 text-xs text-ink-muted">{t("siteUrlHint")}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <code className="rounded-lg border border-gold/25 bg-white px-3 py-1.5 text-sm text-ink">
+            {siteUrl}
+          </code>
+          <CopyLinkButton url={siteUrl} />
+          <a
+            href={siteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-gold-dark hover:underline"
+          >
+            {t("openSite")}
+          </a>
+        </div>
+      </section>
 
       {created && (
         <div className="mt-4 flex items-center justify-between rounded-lg border border-success/30 bg-success-bg p-4">
