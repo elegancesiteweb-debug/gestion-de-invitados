@@ -1,7 +1,9 @@
-import { getTranslations } from "next-intl/server";
+"use client";
 
-export async function StatusBadge({ status }: { status: string }) {
-  const t = await getTranslations("shared");
+import { useTranslations } from "next-intl";
+
+export function StatusBadge({ status }: { status: string }) {
+  const t = useTranslations("shared");
   const STYLES: Record<string, string> = {
     PENDING: "bg-warning-bg text-warning",
     CONFIRMED: "bg-success-bg text-success",
