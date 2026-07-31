@@ -18,7 +18,10 @@ export default async function DashboardLayout({
   const locale = await getLocale();
   const isCollaborator = session.user.teamRole === "COLLABORATOR";
 
-  const links: SidebarLink[] = [{ href: "/dashboard", label: t("yourEvents") }];
+  const links: SidebarLink[] = [
+    { href: "/dashboard", label: t("yourEvents") },
+    { href: "/dashboard/invitaciones", label: t("invitations") },
+  ];
   if (hasFeature(session.user.accountType, "vendor_directory")) {
     links.push({ href: "/dashboard/vendors", label: t("vendors") });
   }

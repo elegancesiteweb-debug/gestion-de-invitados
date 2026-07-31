@@ -22,8 +22,18 @@
     "es": "Español",
     "en": "Inglés"
   },
+  "invitationsPage": {
+    "title": "Invitaciones digitales",
+    "subtitle": "¿Necesitas invitaciones digitales para tu evento?",
+    "description": "En Elegance Site somos especialistas en crear invitaciones digitales 100% personalizadas desde cero. Cotiza directamente con nosotros por WhatsApp, o síguenos en nuestras redes.",
+    "ctaWhatsapp": "Cotizar por WhatsApp",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp"
+  },
   "nav": {
     "yourEvents": "Tus eventos",
+    "invitations": "Invitaciones",
     "vendors": "Proveedores",
     "leads": "Leads",
     "reports": "Reportes",

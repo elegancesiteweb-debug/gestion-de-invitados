@@ -22,8 +22,18 @@
     "es": "Spanish",
     "en": "English"
   },
+  "invitationsPage": {
+    "title": "Digital invitations",
+    "subtitle": "Need digital invitations for your event?",
+    "description": "At Elegance Site we specialize in creating fully custom digital invitations from scratch. Get a quote directly with us on WhatsApp, or follow us on our social media.",
+    "ctaWhatsapp": "Get a quote on WhatsApp",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp"
+  },
   "nav": {
     "yourEvents": "Your events",
+    "invitations": "Invitations",
     "vendors": "Vendors",
     "leads": "Leads",
     "reports": "Reports",

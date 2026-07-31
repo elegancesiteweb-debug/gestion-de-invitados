@@ -224,14 +224,14 @@ export default async function ClientPortalPage({
           </form>
 
           {event.styleGuideImages.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {event.styleGuideImages.map((image) => (
                 <div key={image.id} className="group relative overflow-hidden rounded-lg shadow-sm">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`/api/style-guide-images/${image.id}`}
                     alt=""
-                    className="h-32 w-full object-cover"
+                    className="h-64 w-full object-cover"
                   />
                   {image.uploadedBy === "CLIENT" && (
                     <span className="absolute left-1 top-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
