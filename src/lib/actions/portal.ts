@@ -102,3 +102,35 @@ export async function submitProposalComment(
 
   revalidatePath(`/portal/${clientPortalToken}`);
 }
+
+export async function submitProposalImageComment(
+  clientPortalToken: string,
+  proposalId: string,
+  imageId: string,
+  formData: FormData
+) {
+  const event = await requireEventByClientPortalToken(clientPortalToken);
+
+  const body = (formData.get("body") as string | null)?.trim();
+  if (!body) {
+    throw new Error("Escribe un mensaje");
+  }
+
+  // Lead.convertedEventId no es una relación real de Prisma, solo un string —
+  // hay que buscar el lead de origen manualmente para validar que la imagen es suya.
+  const lead = await prisma.lead.findFirst({ where: { convertedEventId: event.id } });
+  const image = lead
+    ? await prisma.proposalImage.findFirst({
+        where: { id: imageId, proposalId, proposal: { leadId: lead.id } },
+      })
+    : null;
+  if (!image) {
+    throw new Error("Imagen no encontrada");
+  }
+
+  await prisma.proposalComment.create({
+    data: { proposalId, imageId, authorType: "CLIENT", body },
+  });
+
+  revalidatePath(`/portal/${clientPortalToken}`);
+}

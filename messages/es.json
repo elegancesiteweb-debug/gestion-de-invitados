@@ -521,7 +521,7 @@
     "sendReminder": "Enviar recordatorio",
     "images": "Imágenes",
     "uploadImage": "Subir imagen",
-    "comments": "Comentarios",
+    "costComments": "Comentarios sobre los costos",
     "you": "Tú",
     "theCouple": "La pareja",
     "replyPlaceholder": "Escribe una respuesta...",
@@ -830,7 +830,8 @@
     "send": "Enviar",
     "proposals": "Propuestas",
     "total": "Total",
-    "proposalComments": "Comentarios",
+    "costComments": "Comentarios sobre los costos",
+    "images": "Imágenes",
     "organizer": "Organizador",
     "you": "Tú",
     "commentPlaceholder": "Escribe un comentario..."

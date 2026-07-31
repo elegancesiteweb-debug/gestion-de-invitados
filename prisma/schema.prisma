@@ -455,6 +455,8 @@ model ProposalImage {
   imageType  String
   createdAt  DateTime @default(now())
 
+  comments ProposalComment[]
+
   @@index([proposalId])
 }
 
@@ -464,14 +466,17 @@ enum CommentAuthor {
 }
 
 model ProposalComment {
-  id         String        @id @default(cuid())
+  id         String         @id @default(cuid())
   proposalId String
-  proposal   Proposal      @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  proposal   Proposal       @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  imageId    String?
+  image      ProposalImage? @relation(fields: [imageId], references: [id], onDelete: Cascade)
   authorType CommentAuthor
   body       String
-  createdAt  DateTime      @default(now())
+  createdAt  DateTime       @default(now())
 
   @@index([proposalId])
+  @@index([imageId])
 }
 
 model Contract {

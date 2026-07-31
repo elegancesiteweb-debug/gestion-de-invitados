@@ -15,6 +15,7 @@ import {
   uploadInspirationImage,
   deleteInspirationImage,
   submitProposalComment,
+  submitProposalImageComment,
 } from "@/lib/actions/portal";
 
 export default async function ClientPortalPage({
@@ -52,7 +53,11 @@ export default async function ClientPortalPage({
       invoices: { orderBy: { createdAt: "asc" } },
       proposals: {
         orderBy: { createdAt: "asc" },
-        include: { items: true, images: true, comments: { orderBy: { createdAt: "asc" } } },
+        include: {
+          items: true,
+          images: { orderBy: { createdAt: "asc" }, include: { comments: { orderBy: { createdAt: "asc" } } } },
+          comments: { where: { imageId: null }, orderBy: { createdAt: "asc" } },
+        },
       },
     },
   });
@@ -105,32 +110,6 @@ export default async function ClientPortalPage({
           <StatCard label={t("pending")} value={pending.length} />
           <StatCard label={t("totalAttendees")} value={totalAttendees} />
         </div>
-
-        <section className="mt-8">
-          <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("guests")}</h2>
-          <div className="overflow-x-auto rounded-lg border border-gold/20 bg-white/60">
-            <table className="w-full text-sm">
-              <thead className="bg-warm text-left text-xs uppercase text-ink-muted">
-                <tr>
-                  <th className="px-4 py-2">{t("name")}</th>
-                  <th className="px-4 py-2">{t("table")}</th>
-                  <th className="px-4 py-2">{t("status")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {event.guests.map((guest) => (
-                  <tr key={guest.id} className="border-t border-gold/15">
-                    <td className="px-4 py-2">{guest.name}</td>
-                    <td className="px-4 py-2 text-ink-muted">{guest.tableName || "—"}</td>
-                    <td className="px-4 py-2">
-                      <StatusBadge status={guest.status} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
 
         {event.tasks.length > 0 && (
           <section className="mt-8">
@@ -303,28 +282,9 @@ export default async function ClientPortalPage({
                       </ul>
                     )}
 
-                    {proposal.images.length > 0 && (
-                      <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                        {proposal.images.map((image) => (
-                          <ImageLightbox
-                            key={image.id}
-                            src={`/api/proposal-images/${image.id}`}
-                            alt={proposal.title}
-                          >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={`/api/proposal-images/${image.id}`}
-                              alt=""
-                              className="h-20 w-full rounded-lg object-cover shadow-sm"
-                            />
-                          </ImageLightbox>
-                        ))}
-                      </div>
-                    )}
-
                     <div className="mt-3 border-t border-gold/15 pt-3">
                       <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-ink-muted">
-                        {t("proposalComments")}
+                        {t("costComments")}
                       </p>
                       {proposal.comments.length > 0 && (
                         <ul className="mb-2 space-y-1.5">
@@ -362,6 +322,74 @@ export default async function ClientPortalPage({
                         </button>
                       </form>
                     </div>
+
+                    {proposal.images.length > 0 && (
+                      <div className="mt-4 space-y-3 border-t border-gold/15 pt-3">
+                        <p className="text-[10px] font-medium uppercase tracking-wide text-ink-muted">
+                          {t("images")}
+                        </p>
+                        {proposal.images.map((image) => (
+                          <div
+                            key={image.id}
+                            className="overflow-hidden rounded-lg border border-gold/15 bg-white"
+                          >
+                            <ImageLightbox src={`/api/proposal-images/${image.id}`} alt={proposal.title}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={`/api/proposal-images/${image.id}`}
+                                alt=""
+                                className="max-h-72 w-full object-cover"
+                              />
+                            </ImageLightbox>
+
+                            <div className="p-3">
+                              {image.comments.length > 0 && (
+                                <ul className="mb-2 space-y-1.5">
+                                  {image.comments.map((comment) => (
+                                    <li
+                                      key={comment.id}
+                                      className={`rounded-lg p-2 text-sm ${
+                                        comment.authorType === "ORGANIZER"
+                                          ? "bg-warm text-ink"
+                                          : "bg-gold/10 text-ink"
+                                      }`}
+                                    >
+                                      <p className="text-[10px] font-medium uppercase tracking-wide text-ink-muted">
+                                        {comment.authorType === "ORGANIZER" ? t("organizer") : t("you")} ·{" "}
+                                        {formatDateTime(comment.createdAt)}
+                                      </p>
+                                      <p>{comment.body}</p>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                              <form
+                                action={submitProposalImageComment.bind(
+                                  null,
+                                  clientPortalToken,
+                                  proposal.id,
+                                  image.id
+                                )}
+                                className="flex flex-wrap items-end gap-2"
+                              >
+                                <input
+                                  name="body"
+                                  required
+                                  placeholder={t("commentPlaceholder")}
+                                  className="flex-1 rounded-lg border border-gold/25 px-2 py-1 text-sm"
+                                />
+                                <button
+                                  type="submit"
+                                  className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1 text-sm font-medium text-white hover:shadow-lg"
+                                >
+                                  {t("send")}
+                                </button>
+                              </form>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -472,6 +500,32 @@ export default async function ClientPortalPage({
               ))}
             </ul>
           )}
+        </section>
+
+        <section className="mt-8">
+          <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("guests")}</h2>
+          <div className="overflow-x-auto rounded-lg border border-gold/20 bg-white/60">
+            <table className="w-full text-sm">
+              <thead className="bg-warm text-left text-xs uppercase text-ink-muted">
+                <tr>
+                  <th className="px-4 py-2">{t("name")}</th>
+                  <th className="px-4 py-2">{t("table")}</th>
+                  <th className="px-4 py-2">{t("status")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {event.guests.map((guest) => (
+                  <tr key={guest.id} className="border-t border-gold/15">
+                    <td className="px-4 py-2">{guest.name}</td>
+                    <td className="px-4 py-2 text-ink-muted">{guest.tableName || "—"}</td>
+                    <td className="px-4 py-2">
+                      <StatusBadge status={guest.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <BrandFooter />

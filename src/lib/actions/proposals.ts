@@ -152,3 +152,30 @@ export async function replyToProposalComment(leadId: string, proposalId: string,
 
   revalidatePath(`/dashboard/leads/${leadId}`);
 }
+
+export async function replyToProposalImageComment(
+  leadId: string,
+  proposalId: string,
+  imageId: string,
+  formData: FormData
+) {
+  const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
+  await requireProposalOwnedByOrganizer(proposalId, organizerId);
+
+  const image = await prisma.proposalImage.findFirst({ where: { id: imageId, proposalId } });
+  if (!image) {
+    throw new Error("Imagen no encontrada");
+  }
+
+  const body = (formData.get("body") as string | null)?.trim();
+  if (!body) {
+    throw new Error("Escribe un mensaje");
+  }
+
+  await prisma.proposalComment.create({
+    data: { proposalId, imageId, authorType: "ORGANIZER", body },
+  });
+
+  revalidatePath(`/dashboard/leads/${leadId}`);
+}

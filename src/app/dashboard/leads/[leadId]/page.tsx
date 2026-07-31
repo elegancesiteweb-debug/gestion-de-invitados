@@ -13,6 +13,7 @@ import {
   uploadProposalImage,
   deleteProposalImage,
   replyToProposalComment,
+  replyToProposalImageComment,
 } from "@/lib/actions/proposals";
 import { createContract, deleteContract } from "@/lib/actions/contracts";
 import { ContractTemplatePicker } from "@/components/event-dashboard/ContractTemplatePicker";
@@ -51,7 +52,11 @@ export default async function LeadDetailPage({
     include: {
       proposals: {
         orderBy: { createdAt: "asc" },
-        include: { items: true, images: true, comments: { orderBy: { createdAt: "asc" } } },
+        include: {
+          items: true,
+          images: { orderBy: { createdAt: "asc" }, include: { comments: { orderBy: { createdAt: "asc" } } } },
+          comments: { where: { imageId: null }, orderBy: { createdAt: "asc" } },
+        },
       },
       contracts: { orderBy: { createdAt: "asc" } },
       invoices: { orderBy: { createdAt: "asc" } },
@@ -380,49 +385,7 @@ export default async function LeadDetailPage({
 
                   <div className="mt-4 border-t border-gold/15 pt-3">
                     <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">
-                      {t("images")}
-                    </p>
-                    {proposal.images.length > 0 && (
-                      <div className="mb-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                        {proposal.images.map((image) => (
-                          <div key={image.id} className="group relative overflow-hidden rounded-lg shadow-sm">
-                            <ImageLightbox src={`/api/proposal-images/${image.id}`} alt={proposal.title}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={`/api/proposal-images/${image.id}`}
-                                alt=""
-                                className="h-20 w-full object-cover"
-                              />
-                            </ImageLightbox>
-                            <form
-                              action={deleteProposalImage.bind(null, lead.id, image.id)}
-                              className="absolute inset-x-0 bottom-0 bg-black/50 p-1 text-center opacity-0 transition group-hover:opacity-100"
-                            >
-                              <button type="submit" className="text-xs text-white hover:underline">
-                                {t("delete")}
-                              </button>
-                            </form>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <form
-                      action={uploadProposalImage.bind(null, lead.id, proposal.id)}
-                      className="flex flex-wrap items-center gap-2"
-                    >
-                      <input type="file" name="image" accept="image/*" required className="text-xs" />
-                      <button
-                        type="submit"
-                        className="rounded-lg border border-gold/25 px-3 py-1 text-xs hover:bg-warm"
-                      >
-                        {t("uploadImage")}
-                      </button>
-                    </form>
-                  </div>
-
-                  <div className="mt-4 border-t border-gold/15 pt-3">
-                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">
-                      {t("comments")}
+                      {t("costComments")}
                     </p>
                     {proposal.comments.length > 0 && (
                       <ul className="mb-2 space-y-1.5">
@@ -459,6 +422,98 @@ export default async function LeadDetailPage({
                         className="rounded-lg border border-gold/25 px-3 py-1 text-sm hover:bg-warm"
                       >
                         {t("reply")}
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="mt-4 border-t border-gold/15 pt-3">
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">
+                      {t("images")}
+                    </p>
+
+                    {proposal.images.length > 0 && (
+                      <div className="space-y-3">
+                        {proposal.images.map((image) => (
+                          <div
+                            key={image.id}
+                            className="overflow-hidden rounded-lg border border-gold/15 bg-white"
+                          >
+                            <div className="group relative">
+                              <ImageLightbox src={`/api/proposal-images/${image.id}`} alt={proposal.title}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={`/api/proposal-images/${image.id}`}
+                                  alt=""
+                                  className="max-h-72 w-full object-cover"
+                                />
+                              </ImageLightbox>
+                              <form
+                                action={deleteProposalImage.bind(null, lead.id, image.id)}
+                                className="absolute right-1 top-1 opacity-0 transition group-hover:opacity-100"
+                              >
+                                <button
+                                  type="submit"
+                                  className="rounded-full bg-black/60 px-2 py-1 text-xs text-white hover:bg-black/80"
+                                >
+                                  {t("delete")}
+                                </button>
+                              </form>
+                            </div>
+
+                            <div className="p-3">
+                              {image.comments.length > 0 && (
+                                <ul className="mb-2 space-y-1.5">
+                                  {image.comments.map((comment) => (
+                                    <li
+                                      key={comment.id}
+                                      className={`rounded-lg p-2 text-sm ${
+                                        comment.authorType === "ORGANIZER"
+                                          ? "bg-warm text-ink"
+                                          : "bg-gold/10 text-ink"
+                                      }`}
+                                    >
+                                      <p className="text-[10px] font-medium uppercase tracking-wide text-ink-muted">
+                                        {comment.authorType === "ORGANIZER" ? t("you") : t("theCouple")} ·{" "}
+                                        {formatDateTime(comment.createdAt)}
+                                      </p>
+                                      <p>{comment.body}</p>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                              <form
+                                action={replyToProposalImageComment.bind(null, lead.id, proposal.id, image.id)}
+                                className="flex flex-wrap items-end gap-2"
+                              >
+                                <input
+                                  name="body"
+                                  required
+                                  placeholder={t("replyPlaceholder")}
+                                  className="flex-1 rounded-lg border border-gold/25 px-2 py-1 text-sm"
+                                />
+                                <button
+                                  type="submit"
+                                  className="rounded-lg border border-gold/25 px-3 py-1 text-sm hover:bg-warm"
+                                >
+                                  {t("reply")}
+                                </button>
+                              </form>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <form
+                      action={uploadProposalImage.bind(null, lead.id, proposal.id)}
+                      className="mt-3 flex flex-wrap items-center gap-2"
+                    >
+                      <input type="file" name="image" accept="image/*" required className="text-xs" />
+                      <button
+                        type="submit"
+                        className="rounded-lg border border-gold/25 px-3 py-1 text-xs hover:bg-warm"
+                      >
+                        {t("uploadImage")}
                       </button>
                     </form>
                   </div>
