@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Stage, Layer, Image as KonvaImage, Line, Rect, Circle, Text } from "react-konva";
+import { Stage, Layer, Image as KonvaImage, Line, Rect, Circle, Text, Transformer } from "react-konva";
 import type Konva from "konva";
 import { useTranslations } from "next-intl";
 import { saveFloorPlanData } from "@/lib/actions/floorPlan";
@@ -17,6 +17,7 @@ export type FloorPlanShape = {
   width?: number;
   height?: number;
   radius?: number;
+  fontSize?: number;
 };
 
 type Tool = "select" | "pencil" | "rect" | "circle" | "text";
@@ -84,6 +85,8 @@ export function FloorPlanEditorInner({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const drawingRef = useRef<FloorPlanShape | null>(null);
   const [drawingShape, setDrawingShape] = useState<FloorPlanShape | null>(null);
+  const nodeRefs = useRef<Map<string, Konva.Node>>(new Map());
+  const transformerRef = useRef<Konva.Transformer>(null);
 
   useEffect(() => {
     if (!hasImage) return;
@@ -100,6 +103,21 @@ export function FloorPlanEditorInner({
   }, [eventId, hasImage]);
 
   const selectedShape = shapes.find((s) => s.id === selectedId) ?? null;
+
+  useEffect(() => {
+    const tr = transformerRef.current;
+    if (!tr) return;
+    const node = tool === "select" && selectedId ? nodeRefs.current.get(selectedId) : undefined;
+    tr.nodes(node ? [node] : []);
+    tr.getLayer()?.batchDraw();
+  }, [tool, selectedId, shapes]);
+
+  function registerNode(id: string, node: Konva.Node) {
+    nodeRefs.current.set(id, node);
+  }
+  function unregisterNode(id: string) {
+    nodeRefs.current.delete(id);
+  }
 
   function selectTool(next: Tool) {
     setTool(next);
@@ -181,6 +199,39 @@ export function FloorPlanEditorInner({
     setShapes((prev) => prev.map((s) => (s.id === id ? { ...s, x, y } : s)));
   }
 
+  function handleTransformEnd(id: string, node: Konva.Node) {
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+    const newX = node.x();
+    const newY = node.y();
+    node.scaleX(1);
+    node.scaleY(1);
+
+    setShapes((prev) =>
+      prev.map((s) => {
+        if (s.id !== id) return s;
+        if (s.type === "rect") {
+          const width = Math.max(10, Math.abs(s.width ?? 0) * scaleX);
+          const height = Math.max(10, Math.abs(s.height ?? 0) * scaleY);
+          return { ...s, x: newX, y: newY, width, height };
+        }
+        if (s.type === "circle") {
+          const radius = Math.max(8, (s.radius ?? 0) * scaleX);
+          return { ...s, x: newX, y: newY, radius };
+        }
+        if (s.type === "text") {
+          const fontSize = Math.max(8, (s.fontSize ?? 15) * scaleX);
+          return { ...s, x: newX, y: newY, fontSize };
+        }
+        if (s.type === "freehand") {
+          const points = (s.points ?? []).map((v, i) => (i % 2 === 0 ? v * scaleX : v * scaleY));
+          return { ...s, x: newX, y: newY, points };
+        }
+        return s;
+      })
+    );
+  }
+
   function updateSelectedLabel(label: string) {
     if (!selectedId) return;
     setShapes((prev) => prev.map((s) => (s.id === selectedId ? { ...s, label } : s)));
@@ -189,6 +240,11 @@ export function FloorPlanEditorInner({
   function updateSelectedColor(nextColor: string) {
     if (!selectedId) return;
     setShapes((prev) => prev.map((s) => (s.id === selectedId ? { ...s, color: nextColor } : s)));
+  }
+
+  function updateSelectedSize(patch: { width?: number; height?: number; radius?: number }) {
+    if (!selectedId) return;
+    setShapes((prev) => prev.map((s) => (s.id === selectedId ? { ...s, ...patch } : s)));
   }
 
   function deleteSelected() {
@@ -231,6 +287,7 @@ export function FloorPlanEditorInner({
   }
 
   const allShapes = drawingShape ? [...shapes, drawingShape] : shapes;
+  const keepRatio = selectedShape?.type === "circle" || selectedShape?.type === "text";
 
   return (
     <div className="flex flex-col gap-3">
@@ -318,6 +375,42 @@ export function FloorPlanEditorInner({
             placeholder={t("labelPlaceholder")}
             className="rounded-lg border border-gold/25 px-2 py-1 text-sm"
           />
+          {selectedShape.type === "rect" && (
+            <div className="flex items-center gap-1 text-xs text-ink-muted">
+              <label className="flex items-center gap-1">
+                {t("width")}
+                <input
+                  type="number"
+                  min={10}
+                  value={Math.round(Math.abs(selectedShape.width ?? 0))}
+                  onChange={(e) => updateSelectedSize({ width: Math.max(10, Number(e.target.value)) })}
+                  className="w-16 rounded-lg border border-gold/25 px-2 py-1"
+                />
+              </label>
+              <label className="flex items-center gap-1">
+                {t("height")}
+                <input
+                  type="number"
+                  min={10}
+                  value={Math.round(Math.abs(selectedShape.height ?? 0))}
+                  onChange={(e) => updateSelectedSize({ height: Math.max(10, Number(e.target.value)) })}
+                  className="w-16 rounded-lg border border-gold/25 px-2 py-1"
+                />
+              </label>
+            </div>
+          )}
+          {selectedShape.type === "circle" && (
+            <label className="flex items-center gap-1 text-xs text-ink-muted">
+              {t("radius")}
+              <input
+                type="number"
+                min={8}
+                value={Math.round(selectedShape.radius ?? 0)}
+                onChange={(e) => updateSelectedSize({ radius: Math.max(8, Number(e.target.value)) })}
+                className="w-16 rounded-lg border border-gold/25 px-2 py-1"
+              />
+            </label>
+          )}
           <div className="flex items-center gap-1">
             {COLORS.map((c) => (
               <button
@@ -349,6 +442,10 @@ export function FloorPlanEditorInner({
         </div>
       )}
 
+      {tool === "select" && (
+        <p className="text-xs text-ink-muted">{t("resizeHint")}</p>
+      )}
+
       <div className="overflow-auto rounded-lg border border-gold/20 bg-white shadow-md">
         <Stage
           width={STAGE_WIDTH}
@@ -365,11 +462,24 @@ export function FloorPlanEditorInner({
                 key={shape.id}
                 shape={shape}
                 selectable={tool === "select"}
-                isSelected={shape.id === selectedId}
                 onSelect={handleShapeSelect}
                 onMove={handleShapeMove}
+                onTransformEnd={handleTransformEnd}
+                registerNode={registerNode}
+                unregisterNode={unregisterNode}
               />
             ))}
+            <Transformer
+              ref={transformerRef}
+              keepRatio={keepRatio}
+              rotateEnabled={false}
+              boundBoxFunc={(oldBox, newBox) => {
+                if (Math.abs(newBox.width) < 12 || Math.abs(newBox.height) < 12) {
+                  return oldBox;
+                }
+                return newBox;
+              }}
+            />
           </Layer>
         </Stage>
       </div>
@@ -403,22 +513,33 @@ function ToolButton({
 function ShapeRenderer({
   shape,
   selectable,
-  isSelected,
   onSelect,
   onMove,
+  onTransformEnd,
+  registerNode,
+  unregisterNode,
 }: {
   shape: FloorPlanShape;
   selectable: boolean;
-  isSelected: boolean;
   onSelect: (id: string) => void;
   onMove: (id: string, x: number, y: number) => void;
+  onTransformEnd: (id: string, node: Konva.Node) => void;
+  registerNode: (id: string, node: Konva.Node) => void;
+  unregisterNode: (id: string) => void;
 }) {
+  function refCallback(node: Konva.Node | null) {
+    if (node) registerNode(shape.id, node);
+    else unregisterNode(shape.id);
+  }
+
   const interactionProps = selectable
     ? {
+        ref: refCallback,
         draggable: true,
         onClick: () => onSelect(shape.id),
         onTap: () => onSelect(shape.id),
         onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => onMove(shape.id, e.target.x(), e.target.y()),
+        onTransformEnd: (e: Konva.KonvaEventObject<Event>) => onTransformEnd(shape.id, e.target),
       }
     : {};
 
@@ -430,8 +551,7 @@ function ShapeRenderer({
           y={shape.y ?? 0}
           points={shape.points ?? []}
           stroke={shape.color}
-          strokeWidth={isSelected ? 5 : 3}
-          dash={isSelected ? [8, 4] : undefined}
+          strokeWidth={3}
           lineCap="round"
           lineJoin="round"
           tension={0.3}
@@ -464,8 +584,7 @@ function ShapeRenderer({
           width={Math.abs(width)}
           height={Math.abs(height)}
           stroke={shape.color}
-          strokeWidth={isSelected ? 4 : 2}
-          dash={isSelected ? [8, 4] : undefined}
+          strokeWidth={2}
           fill={`${shape.color}33`}
           cornerRadius={4}
           {...interactionProps}
@@ -485,8 +604,7 @@ function ShapeRenderer({
           y={shape.y ?? 0}
           radius={radius}
           stroke={shape.color}
-          strokeWidth={isSelected ? 4 : 2}
-          dash={isSelected ? [8, 4] : undefined}
+          strokeWidth={2}
           fill={`${shape.color}33`}
           {...interactionProps}
         />
@@ -506,27 +624,14 @@ function ShapeRenderer({
     );
   }
   return (
-    <>
-      {isSelected && (
-        <Rect
-          x={(shape.x ?? 0) - 4}
-          y={(shape.y ?? 0) - 4}
-          width={(shape.label?.length ?? 4) * 8 + 8}
-          height={24}
-          stroke={shape.color}
-          dash={[6, 3]}
-          listening={false}
-        />
-      )}
-      <Text
-        x={shape.x ?? 0}
-        y={shape.y ?? 0}
-        text={shape.label ?? ""}
-        fontSize={15}
-        fill={shape.color}
-        fontStyle="bold"
-        {...interactionProps}
-      />
-    </>
+    <Text
+      x={shape.x ?? 0}
+      y={shape.y ?? 0}
+      text={shape.label ?? ""}
+      fontSize={shape.fontSize ?? 15}
+      fill={shape.color}
+      fontStyle="bold"
+      {...interactionProps}
+    />
   );
 }

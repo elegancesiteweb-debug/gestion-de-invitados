@@ -106,7 +106,9 @@
     "empty": "Todavía no hay mensajes desde el portal del cliente."
   },
   "tables": {
-    "printPlan": "Imprimir plano →"
+    "printPlan": "Imprimir plano →",
+    "planView": "Plano visual",
+    "listView": "Lista simple"
   },
   "floorPlan": {
     "title": "Plano del salón",
@@ -334,6 +336,10 @@
     "labelPlaceholder": "Etiqueta",
     "deleteSelected": "Eliminar esta forma",
     "deselect": "Deseleccionar",
+    "width": "Ancho",
+    "height": "Alto",
+    "radius": "Radio",
+    "resizeHint": "Selecciona una forma y arrastra sus esquinas para cambiar su tamaño.",
     "templates": {
       "rectangular": {
         "name": "Salón rectangular",
@@ -393,7 +399,9 @@
     "tagFriends": "Amigos",
     "tagWork": "Trabajo",
     "searchPlaceholder": "Buscar por nombre, mesa, email o etiqueta...",
-    "noSearchResults": "No se encontraron invitados que coincidan con la búsqueda."
+    "noSearchResults": "No se encontraron invitados que coincidan con la búsqueda.",
+    "filterByTag": "Filtrar por etiqueta",
+    "clearFilter": "Quitar filtro"
   },
   "seatingCanvas": {
     "errorSavePosition": "No se pudo guardar la posición de la mesa",
@@ -420,7 +428,10 @@
     "removeFromTable": "Quitar a {name} de la mesa",
     "unassignedTitle": "Sin mesa ({count})",
     "legacyTableText": "mesa (texto): {name}",
-    "allAssigned": "Todos los invitados tienen mesa asignada."
+    "allAssigned": "Todos los invitados tienen mesa asignada.",
+    "noGuestsAtTable": "Sin invitados en esta mesa.",
+    "removeFromTableShort": "Quitar",
+    "assignToTable": "Asignar a una mesa..."
   },
   "eventDetail": {
     "backToEvents": "← Tus eventos",

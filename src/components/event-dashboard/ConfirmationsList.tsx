@@ -27,16 +27,33 @@ export function ConfirmationsList({
   const t = useTranslations("confirmations");
   const tGuests = useTranslations("guests");
   const [query, setQuery] = useState("");
+  const [activeTags, setActiveTags] = useState<string[]>([]);
 
   function tagLabel(tag: string) {
     const key = TAG_LABEL_KEYS[tag];
     return key ? tGuests(key) : tag;
   }
 
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    for (const guest of responded) {
+      for (const tag of guest.tags) set.add(tag);
+    }
+    return [...set].sort((a, b) => tagLabel(a).localeCompare(tagLabel(b)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [responded]);
+
+  function toggleTag(tag: string) {
+    setActiveTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+  }
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return responded;
     return responded.filter((guest) => {
+      if (activeTags.length > 0 && !activeTags.some((tag) => guest.tags.includes(tag))) {
+        return false;
+      }
+      if (!q) return true;
       const haystack = [
         guest.name,
         guest.email ?? "",
@@ -49,11 +66,11 @@ export function ConfirmationsList({
       return haystack.includes(q);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [responded, query]);
+  }, [responded, query, activeTags]);
 
   return (
     <div>
-      <div className="mb-3">
+      <div className="mb-3 space-y-2">
         <input
           type="search"
           value={query}
@@ -61,6 +78,34 @@ export function ConfirmationsList({
           placeholder={t("searchPlaceholder")}
           className="w-full max-w-sm rounded-lg border border-gold/25 px-3 py-1.5 text-sm"
         />
+        {allTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs text-ink-muted">{tGuests("filterByTag")}:</span>
+            {allTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => toggleTag(tag)}
+                className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                  activeTags.includes(tag)
+                    ? "bg-gold-dark text-white"
+                    : "bg-gold/10 text-gold-dark hover:bg-gold/20"
+                }`}
+              >
+                {tagLabel(tag)}
+              </button>
+            ))}
+            {activeTags.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveTags([])}
+                className="text-xs text-ink-muted hover:underline"
+              >
+                {tGuests("clearFilter")}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {filtered.length === 0 ? (

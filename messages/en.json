@@ -106,7 +106,9 @@
     "empty": "No messages from the client portal yet."
   },
   "tables": {
-    "printPlan": "Print floor plan →"
+    "printPlan": "Print floor plan →",
+    "planView": "Visual plan",
+    "listView": "Simple list"
   },
   "floorPlan": {
     "title": "Floor plan",
@@ -334,6 +336,10 @@
     "labelPlaceholder": "Label",
     "deleteSelected": "Delete this shape",
     "deselect": "Deselect",
+    "width": "Width",
+    "height": "Height",
+    "radius": "Radius",
+    "resizeHint": "Select a shape and drag its corners to resize it.",
     "templates": {
       "rectangular": {
         "name": "Rectangular hall",
@@ -393,7 +399,9 @@
     "tagFriends": "Friends",
     "tagWork": "Work",
     "searchPlaceholder": "Search by name, table, email, or tag...",
-    "noSearchResults": "No guests match your search."
+    "noSearchResults": "No guests match your search.",
+    "filterByTag": "Filter by tag",
+    "clearFilter": "Clear filter"
   },
   "seatingCanvas": {
     "errorSavePosition": "Couldn't save the table's position",
@@ -420,7 +428,10 @@
     "removeFromTable": "Remove {name} from the table",
     "unassignedTitle": "No table ({count})",
     "legacyTableText": "table (text): {name}",
-    "allAssigned": "All guests have a table assigned."
+    "allAssigned": "All guests have a table assigned.",
+    "noGuestsAtTable": "No guests at this table.",
+    "removeFromTableShort": "Remove",
+    "assignToTable": "Assign to a table..."
   },
   "eventDetail": {
     "backToEvents": "← Your events",
