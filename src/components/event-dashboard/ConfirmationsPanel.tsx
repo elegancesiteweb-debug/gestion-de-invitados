@@ -1,9 +1,7 @@
 import Link from "next/link";
 import type { Companion, Guest } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
-import { StatusBadge } from "@/components/StatusBadge";
-import { deleteGuest } from "@/lib/actions/guests";
-import { formatInAppTimezone } from "@/lib/dates";
+import { ConfirmationsList } from "@/components/event-dashboard/ConfirmationsList";
 
 export async function ConfirmationsPanel({
   eventId,
@@ -38,54 +36,7 @@ export async function ConfirmationsPanel({
         </Link>
       </div>
 
-      {responded.map((guest) => (
-        <div key={guest.id} className="rounded-lg border border-gold/20 bg-white p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">{guest.name}</p>
-              <p className="text-xs text-ink-muted">
-                {guest.status === "CONFIRMED"
-                  ? t("attending", { count: 1 + (guest.companionsConfirmed ?? 0) })
-                  : t("notAttending")}
-                {guest.respondedAt &&
-                  ` · ${formatInAppTimezone(guest.respondedAt, {
-                    day: "2-digit",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}`}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <StatusBadge status={guest.status} />
-              <form action={deleteGuest.bind(null, eventId, guest.id)}>
-                <button type="submit" className="text-sm text-danger hover:underline">
-                  {t("delete")}
-                </button>
-              </form>
-            </div>
-          </div>
-          {guest.messageFromGuest && (
-            <p className="mt-2 border-l-2 border-gold/30 pl-3 text-sm italic text-ink-muted">
-              {guest.messageFromGuest}
-            </p>
-          )}
-          {guest.dietaryNotes && (
-            <p className="mt-2 text-xs text-ink-muted">
-              <span className="font-medium">{t("dietaryNotes")}:</span> {guest.dietaryNotes}
-            </p>
-          )}
-          {guest.companions.length > 0 && (
-            <ul className="mt-2 text-xs text-ink-muted">
-              {guest.companions.map((companion) => (
-                <li key={companion.id}>
-                  {companion.attending ? "✓" : "✗"} {companion.name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
+      <ConfirmationsList eventId={eventId} responded={responded} />
     </div>
   );
 }

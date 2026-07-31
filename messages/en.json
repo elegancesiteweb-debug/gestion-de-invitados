@@ -159,7 +159,9 @@
     "attending": "Attending · {count, plural, one {# person} other {# people}}",
     "notAttending": "Can't attend",
     "delete": "Delete",
-    "dietaryNotes": "Dietary restriction"
+    "dietaryNotes": "Dietary restriction",
+    "searchPlaceholder": "Search by name, table, email, or tag...",
+    "noSearchResults": "No guests match your search."
   },
   "tasks": {
     "addTitle": "Add task",
@@ -328,6 +330,10 @@
     "promptZoneLabel": "Label for this zone (optional):",
     "confirmReplace": "This will replace the current design. Continue?",
     "confirmClear": "Delete all shapes?",
+    "editSelected": "Editing selected shape",
+    "labelPlaceholder": "Label",
+    "deleteSelected": "Delete this shape",
+    "deselect": "Deselect",
     "templates": {
       "rectangular": {
         "name": "Rectangular hall",
@@ -376,7 +382,18 @@
     "companionsOf": "{count}/{max} companions",
     "embedTitlePrefix": "RSVP",
     "sent": "Sent",
-    "delete": "Delete"
+    "delete": "Delete",
+    "downloadCsv": "Download CSV",
+    "exportPrint": "Export / print list",
+    "tags": "Tags",
+    "customTagsPlaceholder": "Other tags, comma-separated",
+    "tagVip": "VIP",
+    "tagWithKids": "With kids",
+    "tagFamily": "Family",
+    "tagFriends": "Friends",
+    "tagWork": "Work",
+    "searchPlaceholder": "Search by name, table, email, or tag...",
+    "noSearchResults": "No guests match your search."
   },
   "seatingCanvas": {
     "errorSavePosition": "Couldn't save the table's position",

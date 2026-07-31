@@ -324,10 +324,11 @@ export default async function ClientPortalPage({
                     </div>
 
                     {proposal.images.length > 0 && (
-                      <div className="mt-4 space-y-3 border-t border-gold/15 pt-3">
-                        <p className="text-[10px] font-medium uppercase tracking-wide text-ink-muted">
+                      <div className="mt-4 border-t border-gold/15 pt-3">
+                        <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-ink-muted">
                           {t("images")}
                         </p>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                         {proposal.images.map((image) => (
                           <div
                             key={image.id}
@@ -338,7 +339,7 @@ export default async function ClientPortalPage({
                               <img
                                 src={`/api/proposal-images/${image.id}`}
                                 alt=""
-                                className="max-h-72 w-full object-cover"
+                                className="h-32 w-full object-cover"
                               />
                             </ImageLightbox>
 
@@ -388,6 +389,7 @@ export default async function ClientPortalPage({
                             </div>
                           </div>
                         ))}
+                        </div>
                       </div>
                     )}
                   </div>

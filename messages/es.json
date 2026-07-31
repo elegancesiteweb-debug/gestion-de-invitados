@@ -159,7 +159,9 @@
     "attending": "Asistirá · {count, plural, one {# persona} other {# personas}}",
     "notAttending": "No podrá asistir",
     "delete": "Eliminar",
-    "dietaryNotes": "Restricción alimentaria"
+    "dietaryNotes": "Restricción alimentaria",
+    "searchPlaceholder": "Buscar por nombre, mesa, email o etiqueta...",
+    "noSearchResults": "No se encontraron invitados que coincidan con la búsqueda."
   },
   "tasks": {
     "addTitle": "Agregar tarea",
@@ -328,6 +330,10 @@
     "promptZoneLabel": "Etiqueta para esta zona (opcional):",
     "confirmReplace": "Esto reemplaza el diseño actual. ¿Continuar?",
     "confirmClear": "¿Borrar todas las formas?",
+    "editSelected": "Editando forma seleccionada",
+    "labelPlaceholder": "Etiqueta",
+    "deleteSelected": "Eliminar esta forma",
+    "deselect": "Deseleccionar",
     "templates": {
       "rectangular": {
         "name": "Salón rectangular",
@@ -376,7 +382,18 @@
     "companionsOf": "{count}/{max} acompañantes",
     "embedTitlePrefix": "Confirmar asistencia",
     "sent": "Enviado",
-    "delete": "Eliminar"
+    "delete": "Eliminar",
+    "downloadCsv": "Descargar CSV",
+    "exportPrint": "Exportar / imprimir lista",
+    "tags": "Etiquetas",
+    "customTagsPlaceholder": "Otras etiquetas, separadas por coma",
+    "tagVip": "VIP",
+    "tagWithKids": "Con niños",
+    "tagFamily": "Familia",
+    "tagFriends": "Amigos",
+    "tagWork": "Trabajo",
+    "searchPlaceholder": "Buscar por nombre, mesa, email o etiqueta...",
+    "noSearchResults": "No se encontraron invitados que coincidan con la búsqueda."
   },
   "seatingCanvas": {
     "errorSavePosition": "No se pudo guardar la posición de la mesa",

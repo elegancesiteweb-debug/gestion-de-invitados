@@ -22,6 +22,14 @@ export async function GET(
     return NextResponse.json({ error: "Evento no encontrado" }, { status: 404 });
   }
 
+  const TAG_LABELS: Record<string, string> = {
+    vip: "VIP",
+    withKids: "Con niños",
+    family: "Familia",
+    friends: "Amigos",
+    work: "Trabajo",
+  };
+
   const rows = event.guests.map((guest) => ({
     Nombre: guest.name,
     Mesa: guest.tableName ?? "",
@@ -35,6 +43,7 @@ export async function GET(
     Acompañantes: guest.companions
       .map((c) => `${c.name}${c.attending ? "" : " (no asiste)"}`)
       .join(", "),
+    Etiquetas: guest.tags.map((tag) => TAG_LABELS[tag] ?? tag).join(", "),
     "Restricción alimentaria": guest.dietaryNotes ?? "",
     Mensaje: guest.messageFromGuest ?? "",
   }));

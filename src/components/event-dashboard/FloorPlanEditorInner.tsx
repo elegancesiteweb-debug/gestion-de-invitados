@@ -81,6 +81,7 @@ export function FloorPlanEditorInner({
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const drawingRef = useRef<FloorPlanShape | null>(null);
   const [drawingShape, setDrawingShape] = useState<FloorPlanShape | null>(null);
 
@@ -98,8 +99,20 @@ export function FloorPlanEditorInner({
     };
   }, [eventId, hasImage]);
 
+  const selectedShape = shapes.find((s) => s.id === selectedId) ?? null;
+
+  function selectTool(next: Tool) {
+    setTool(next);
+    setSelectedId(null);
+  }
+
   function handleMouseDown(e: Konva.KonvaEventObject<MouseEvent>) {
-    if (tool === "select") return;
+    if (tool === "select") {
+      if (e.target === e.target.getStage()) {
+        setSelectedId(null);
+      }
+      return;
+    }
     const pos = e.target.getStage()?.getPointerPosition();
     if (!pos) return;
 
@@ -159,20 +172,48 @@ export function FloorPlanEditorInner({
     setShapes((prev) => [...prev, { ...current, label: label || undefined }]);
   }
 
+  function handleShapeSelect(id: string) {
+    if (tool !== "select") return;
+    setSelectedId(id);
+  }
+
+  function handleShapeMove(id: string, x: number, y: number) {
+    setShapes((prev) => prev.map((s) => (s.id === id ? { ...s, x, y } : s)));
+  }
+
+  function updateSelectedLabel(label: string) {
+    if (!selectedId) return;
+    setShapes((prev) => prev.map((s) => (s.id === selectedId ? { ...s, label } : s)));
+  }
+
+  function updateSelectedColor(nextColor: string) {
+    if (!selectedId) return;
+    setShapes((prev) => prev.map((s) => (s.id === selectedId ? { ...s, color: nextColor } : s)));
+  }
+
+  function deleteSelected() {
+    if (!selectedId) return;
+    setShapes((prev) => prev.filter((s) => s.id !== selectedId));
+    setSelectedId(null);
+  }
+
   function applyTemplate(templateName: string) {
     const template = TEMPLATES.find((tpl) => tpl.name === templateName);
     if (!template) return;
     if (shapes.length > 0 && !window.confirm(t("confirmReplace"))) return;
     setShapes(template.shapes.map((s) => ({ ...s, id: nextId() })));
+    setSelectedId(null);
   }
 
   function undo() {
     setShapes((prev) => prev.slice(0, -1));
+    setSelectedId(null);
   }
 
   function clearAll() {
     if (shapes.length > 0 && !window.confirm(t("confirmClear"))) return;
     setShapes([]);
+    setSelectedId(null);
   }
 
   async function handleSave() {
@@ -194,19 +235,19 @@ export function FloorPlanEditorInner({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2 rounded-lg border border-gold/20 bg-white/60 p-3 shadow-sm backdrop-blur-xl">
-        <ToolButton active={tool === "select"} onClick={() => setTool("select")}>
+        <ToolButton active={tool === "select"} onClick={() => selectTool("select")}>
           {t("select")}
         </ToolButton>
-        <ToolButton active={tool === "pencil"} onClick={() => setTool("pencil")}>
+        <ToolButton active={tool === "pencil"} onClick={() => selectTool("pencil")}>
           ✏️ {t("pencil")}
         </ToolButton>
-        <ToolButton active={tool === "rect"} onClick={() => setTool("rect")}>
+        <ToolButton active={tool === "rect"} onClick={() => selectTool("rect")}>
           ▭ {t("rect")}
         </ToolButton>
-        <ToolButton active={tool === "circle"} onClick={() => setTool("circle")}>
+        <ToolButton active={tool === "circle"} onClick={() => selectTool("circle")}>
           ◯ {t("circle")}
         </ToolButton>
-        <ToolButton active={tool === "text"} onClick={() => setTool("text")}>
+        <ToolButton active={tool === "text"} onClick={() => selectTool("text")}>
           🔤 {t("text")}
         </ToolButton>
 
@@ -265,6 +306,49 @@ export function FloorPlanEditorInner({
         {savedMsg && <span className="text-sm text-ink-muted">{savedMsg}</span>}
       </div>
 
+      {tool === "select" && selectedShape && (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-gold/30 bg-warm p-3 shadow-sm">
+          <span className="text-xs font-medium uppercase tracking-wide text-ink-muted">
+            {t("editSelected")}
+          </span>
+          <input
+            type="text"
+            value={selectedShape.label ?? ""}
+            onChange={(e) => updateSelectedLabel(e.target.value)}
+            placeholder={t("labelPlaceholder")}
+            className="rounded-lg border border-gold/25 px-2 py-1 text-sm"
+          />
+          <div className="flex items-center gap-1">
+            {COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => updateSelectedColor(c)}
+                className={`h-5 w-5 rounded-full border-2 ${
+                  selectedShape.color === c ? "border-ink" : "border-transparent"
+                }`}
+                style={{ backgroundColor: c }}
+                aria-label={t("colorLabel", { color: c })}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={deleteSelected}
+            className="rounded-lg border border-danger/30 px-3 py-1 text-sm text-danger hover:bg-danger-bg"
+          >
+            {t("deleteSelected")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedId(null)}
+            className="rounded-lg border border-gold/30 px-3 py-1 text-sm hover:bg-white"
+          >
+            {t("deselect")}
+          </button>
+        </div>
+      )}
+
       <div className="overflow-auto rounded-lg border border-gold/20 bg-white shadow-md">
         <Stage
           width={STAGE_WIDTH}
@@ -277,7 +361,14 @@ export function FloorPlanEditorInner({
           <Layer>
             {bgImage && <KonvaImage image={bgImage} width={STAGE_WIDTH} height={STAGE_HEIGHT} opacity={0.85} />}
             {allShapes.map((shape) => (
-              <ShapeRenderer key={shape.id} shape={shape} />
+              <ShapeRenderer
+                key={shape.id}
+                shape={shape}
+                selectable={tool === "select"}
+                isSelected={shape.id === selectedId}
+                onSelect={handleShapeSelect}
+                onMove={handleShapeMove}
+              />
             ))}
           </Layer>
         </Stage>
@@ -309,20 +400,53 @@ function ToolButton({
   );
 }
 
-function ShapeRenderer({ shape }: { shape: FloorPlanShape }) {
+function ShapeRenderer({
+  shape,
+  selectable,
+  isSelected,
+  onSelect,
+  onMove,
+}: {
+  shape: FloorPlanShape;
+  selectable: boolean;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+  onMove: (id: string, x: number, y: number) => void;
+}) {
+  const interactionProps = selectable
+    ? {
+        draggable: true,
+        onClick: () => onSelect(shape.id),
+        onTap: () => onSelect(shape.id),
+        onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => onMove(shape.id, e.target.x(), e.target.y()),
+      }
+    : {};
+
   if (shape.type === "freehand") {
     return (
       <>
         <Line
+          x={shape.x ?? 0}
+          y={shape.y ?? 0}
           points={shape.points ?? []}
           stroke={shape.color}
-          strokeWidth={3}
+          strokeWidth={isSelected ? 5 : 3}
+          dash={isSelected ? [8, 4] : undefined}
           lineCap="round"
           lineJoin="round"
           tension={0.3}
+          hitStrokeWidth={16}
+          {...interactionProps}
         />
         {shape.label && shape.points && shape.points.length >= 2 && (
-          <Text x={shape.points[0]} y={shape.points[1] - 16} text={shape.label} fontSize={13} fill={shape.color} />
+          <Text
+            x={(shape.x ?? 0) + shape.points[0]}
+            y={(shape.y ?? 0) + shape.points[1] - 16}
+            text={shape.label}
+            fontSize={13}
+            fill={shape.color}
+            listening={false}
+          />
         )}
       </>
     );
@@ -340,11 +464,15 @@ function ShapeRenderer({ shape }: { shape: FloorPlanShape }) {
           width={Math.abs(width)}
           height={Math.abs(height)}
           stroke={shape.color}
-          strokeWidth={2}
+          strokeWidth={isSelected ? 4 : 2}
+          dash={isSelected ? [8, 4] : undefined}
           fill={`${shape.color}33`}
           cornerRadius={4}
+          {...interactionProps}
         />
-        {shape.label && <Text x={x + 4} y={y + 4} text={shape.label} fontSize={13} fill={shape.color} />}
+        {shape.label && (
+          <Text x={x + 4} y={y + 4} text={shape.label} fontSize={13} fill={shape.color} listening={false} />
+        )}
       </>
     );
   }
@@ -352,7 +480,16 @@ function ShapeRenderer({ shape }: { shape: FloorPlanShape }) {
     const radius = shape.radius ?? 0;
     return (
       <>
-        <Circle x={shape.x ?? 0} y={shape.y ?? 0} radius={radius} stroke={shape.color} strokeWidth={2} fill={`${shape.color}33`} />
+        <Circle
+          x={shape.x ?? 0}
+          y={shape.y ?? 0}
+          radius={radius}
+          stroke={shape.color}
+          strokeWidth={isSelected ? 4 : 2}
+          dash={isSelected ? [8, 4] : undefined}
+          fill={`${shape.color}33`}
+          {...interactionProps}
+        />
         {shape.label && (
           <Text
             x={(shape.x ?? 0) - radius}
@@ -362,10 +499,34 @@ function ShapeRenderer({ shape }: { shape: FloorPlanShape }) {
             fill={shape.color}
             align="center"
             width={radius * 2}
+            listening={false}
           />
         )}
       </>
     );
   }
-  return <Text x={shape.x ?? 0} y={shape.y ?? 0} text={shape.label ?? ""} fontSize={15} fill={shape.color} fontStyle="bold" />;
+  return (
+    <>
+      {isSelected && (
+        <Rect
+          x={(shape.x ?? 0) - 4}
+          y={(shape.y ?? 0) - 4}
+          width={(shape.label?.length ?? 4) * 8 + 8}
+          height={24}
+          stroke={shape.color}
+          dash={[6, 3]}
+          listening={false}
+        />
+      )}
+      <Text
+        x={shape.x ?? 0}
+        y={shape.y ?? 0}
+        text={shape.label ?? ""}
+        fontSize={15}
+        fill={shape.color}
+        fontStyle="bold"
+        {...interactionProps}
+      />
+    </>
+  );
 }

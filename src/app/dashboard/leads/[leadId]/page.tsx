@@ -432,7 +432,7 @@ export default async function LeadDetailPage({
                     </p>
 
                     {proposal.images.length > 0 && (
-                      <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                         {proposal.images.map((image) => (
                           <div
                             key={image.id}
@@ -444,7 +444,7 @@ export default async function LeadDetailPage({
                                 <img
                                   src={`/api/proposal-images/${image.id}`}
                                   alt=""
-                                  className="max-h-72 w-full object-cover"
+                                  className="h-32 w-full object-cover"
                                 />
                               </ImageLightbox>
                               <form

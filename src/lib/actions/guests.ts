@@ -32,6 +32,15 @@ async function requireEventOwnedByOrganizer(eventId: string, organizerId: string
   return event;
 }
 
+function parseTags(formData: FormData): string[] {
+  const preset = formData.getAll("presetTags").map((v) => String(v).trim());
+  const custom = (formData.get("customTags") as string | null)
+    ?.split(",")
+    .map((v) => v.trim())
+    .filter(Boolean) ?? [];
+  return [...new Set([...preset, ...custom].filter(Boolean))];
+}
+
 export async function createGuest(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
   await requireWriteAccess();
@@ -53,6 +62,7 @@ export async function createGuest(eventId: string, formData: FormData) {
   const { name, email, phone, maxCompanions, tableName, invitationLinkUrl } = parsed.data;
 
   const table = tableName ? await findOrCreateTableByName(eventId, tableName) : null;
+  const tags = parseTags(formData);
 
   await prisma.guest.create({
     data: {
@@ -64,6 +74,7 @@ export async function createGuest(eventId: string, formData: FormData) {
       tableId: table?.id ?? null,
       tableName: table?.name ?? null,
       invitationLinkUrl: invitationLinkUrl || null,
+      tags,
       token: nanoid(12),
       checkinToken: nanoid(12),
     },
@@ -99,6 +110,7 @@ export async function updateGuest(eventId: string, guestId: string, formData: Fo
   const { name, email, phone, maxCompanions, tableName, invitationLinkUrl } = parsed.data;
 
   const table = tableName ? await findOrCreateTableByName(eventId, tableName) : null;
+  const tags = parseTags(formData);
 
   await prisma.guest.update({
     where: { id: guestId },
@@ -110,6 +122,7 @@ export async function updateGuest(eventId: string, guestId: string, formData: Fo
       tableId: table?.id ?? null,
       tableName: table?.name ?? null,
       invitationLinkUrl: invitationLinkUrl || null,
+      tags,
     },
   });
 

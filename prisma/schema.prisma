@@ -344,6 +344,8 @@ model Guest {
   checkedInAt     DateTime?
   checkedInPasses Int?
 
+  tags String[] @default([])
+
   createdAt DateTime @default(now())
 
   companions Companion[]
