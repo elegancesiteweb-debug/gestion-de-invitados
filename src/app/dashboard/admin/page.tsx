@@ -28,7 +28,8 @@ export default async function AdminPage({
     include: { usedByOrganizer: { select: { name: true, email: true } } },
   });
 
-  const siteUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const landingUrl = `${baseUrl}/landing`;
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
@@ -43,11 +44,11 @@ export default async function AdminPage({
         <p className="mt-1 text-xs text-ink-muted">{t("siteUrlHint")}</p>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <code className="rounded-lg border border-gold/25 bg-white px-3 py-1.5 text-sm text-ink">
-            {siteUrl}
+            {landingUrl}
           </code>
-          <CopyLinkButton url={siteUrl} />
+          <CopyLinkButton url={landingUrl} />
           <a
-            href={siteUrl}
+            href={landingUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-gold-dark hover:underline"

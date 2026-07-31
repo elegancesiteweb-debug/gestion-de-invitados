@@ -856,8 +856,8 @@
     "individualShort": "Particular",
     "usedBy": "Used by {name} ({email}) · {date}",
     "unused": "Unused",
-    "siteUrlTitle": "Public app URL",
-    "siteUrlHint": "This is your app's real production address (the landing page lives at the root).",
+    "siteUrlTitle": "Your landing page URL",
+    "siteUrlHint": "Share this link (social media, ads, WhatsApp) so it always shows the marketing page with pricing and features.",
     "openSite": "Open →"
   },
   "rsvpForm": {
