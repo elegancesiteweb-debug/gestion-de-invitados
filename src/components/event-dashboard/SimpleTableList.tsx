@@ -24,6 +24,7 @@ export function SimpleTableList({
 }) {
   const t = useTranslations("seatingCanvas");
   const [pendingGuestId, setPendingGuestId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const unassigned = guests.filter((g) => g.tableId == null);
 
@@ -34,6 +35,15 @@ export function SimpleTableList({
     } finally {
       setPendingGuestId(null);
     }
+  }
+
+  function toggleExpanded(tableId: string) {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(tableId)) next.delete(tableId);
+      else next.add(tableId);
+      return next;
+    });
   }
 
   return (
@@ -79,35 +89,47 @@ export function SimpleTableList({
             const occupancy = calcTableOccupancy(table.id, guests);
             const overCapacity = occupancy > table.seats;
             const seated = guests.filter((g) => g.tableId === table.id);
+            const expanded = expandedIds.has(table.id);
             return (
               <div
                 key={table.id}
-                className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-sm backdrop-blur-xl"
+                className="rounded-lg border border-gold/20 bg-white/60 shadow-sm backdrop-blur-xl"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-medium text-ink">{table.name}</p>
+                <button
+                  type="button"
+                  onClick={() => toggleExpanded(table.id)}
+                  className="flex w-full items-center justify-between gap-2 p-4 text-left"
+                >
+                  <span className="flex items-center gap-1.5 font-medium text-ink">
+                    <span className={`text-xs transition-transform ${expanded ? "rotate-90" : ""}`}>▸</span>
+                    {table.name}
+                  </span>
                   <span className={`text-xs ${overCapacity ? "text-danger" : "text-ink-muted"}`}>
                     {occupancy}/{table.seats}
                   </span>
-                </div>
-                {seated.length === 0 ? (
-                  <p className="mt-2 text-xs text-ink-muted">{t("noGuestsAtTable")}</p>
-                ) : (
-                  <ul className="mt-2 space-y-1">
-                    {seated.map((guest) => (
-                      <li key={guest.id} className="flex items-center justify-between gap-2 text-sm">
-                        <span className="text-ink">{guestLabel(guest)}</span>
-                        <button
-                          type="button"
-                          disabled={pendingGuestId === guest.id}
-                          onClick={() => reassign(guest.id, null)}
-                          className="text-xs text-danger hover:underline disabled:opacity-50"
-                        >
-                          {t("removeFromTableShort")}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                </button>
+                {expanded && (
+                  <div className="px-4 pb-4">
+                    {seated.length === 0 ? (
+                      <p className="text-xs text-ink-muted">{t("noGuestsAtTable")}</p>
+                    ) : (
+                      <ul className="space-y-1 border-t border-gold/15 pt-2">
+                        {seated.map((guest) => (
+                          <li key={guest.id} className="flex items-center justify-between gap-2 text-sm">
+                            <span className="text-ink">{guestLabel(guest)}</span>
+                            <button
+                              type="button"
+                              disabled={pendingGuestId === guest.id}
+                              onClick={() => reassign(guest.id, null)}
+                              className="text-xs text-danger hover:underline disabled:opacity-50"
+                            >
+                              {t("removeFromTableShort")}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 )}
               </div>
             );
