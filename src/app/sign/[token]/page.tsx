@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
-import { formatDateTime } from "@/lib/dates";
+import { formatDate, formatDateTime } from "@/lib/dates";
 import { signContract } from "@/lib/actions/contracts";
 import { PrintButton } from "@/components/PrintButton";
 
@@ -13,14 +13,36 @@ export default async function SignContractPage({
   const { token } = await params;
   const t = await getTranslations("signPage");
 
-  const contract = await prisma.contract.findUnique({ where: { token } });
+  const contract = await prisma.contract.findUnique({
+    where: { token },
+    include: { lead: { include: { organizer: true } } },
+  });
   if (!contract) {
     notFound();
   }
 
+  const { organizer } = contract.lead;
+
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 print:px-0 print:py-0">
       <div className="rounded-2xl border border-gold/20 bg-white/60 p-6 shadow-lg backdrop-blur-xl print:border-0 print:shadow-none">
+        <header className="mb-6 flex items-start justify-between gap-4 border-b border-gold/20 pb-4">
+          <div>
+            {organizer.brandLogoType && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`/api/organizers/${organizer.id}/brand-logo`}
+                alt=""
+                className="mb-2 h-14 w-14 rounded-lg object-cover"
+              />
+            )}
+            <p className="font-serif text-lg font-medium text-ink">{organizer.brandName || organizer.name}</p>
+            {organizer.businessPhone && <p className="text-xs text-ink-muted">{organizer.businessPhone}</p>}
+            {organizer.businessEmail && <p className="text-xs text-ink-muted">{organizer.businessEmail}</p>}
+          </div>
+          <p className="text-xs text-ink-light">{formatDate(new Date())}</p>
+        </header>
+
         <div className="flex items-start justify-between gap-3">
           <h1 className="font-serif text-2xl font-medium text-ink">{contract.title}</h1>
           {contract.signedAt && <PrintButton />}

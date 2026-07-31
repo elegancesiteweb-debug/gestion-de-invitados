@@ -518,7 +518,14 @@
     "dueOn": "Due on {date}",
     "pendingPayment": "Pending payment",
     "copyPayLink": "Copy payment link",
-    "sendReminder": "Send reminder"
+    "sendReminder": "Send reminder",
+    "images": "Images",
+    "uploadImage": "Upload image",
+    "comments": "Comments",
+    "you": "You",
+    "theCouple": "The couple",
+    "replyPlaceholder": "Write a reply...",
+    "reply": "Reply"
   },
   "leadQuestions": {
     "shortText": "Short text",
@@ -820,7 +827,13 @@
     "viewDownload": "View / download →",
     "messages": "Messages",
     "messagePlaceholder": "Write a message for the organizer...",
-    "send": "Send"
+    "send": "Send",
+    "proposals": "Proposals",
+    "total": "Total",
+    "proposalComments": "Comments",
+    "organizer": "Organizer",
+    "you": "You",
+    "commentPlaceholder": "Write a comment..."
   },
   "eventPrint": {
     "backToEvent": "← Back to event",

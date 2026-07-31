@@ -73,3 +73,32 @@ export async function deleteInspirationImage(clientPortalToken: string, imageId:
 
   revalidatePath(`/portal/${clientPortalToken}`);
 }
+
+export async function submitProposalComment(
+  clientPortalToken: string,
+  proposalId: string,
+  formData: FormData
+) {
+  const event = await requireEventByClientPortalToken(clientPortalToken);
+
+  const body = (formData.get("body") as string | null)?.trim();
+  if (!body) {
+    throw new Error("Escribe un mensaje");
+  }
+
+  // Lead.convertedEventId no es una relación real de Prisma, solo un string —
+  // hay que buscar el lead de origen manualmente para validar que la propuesta es suya.
+  const lead = await prisma.lead.findFirst({ where: { convertedEventId: event.id } });
+  const proposal = lead
+    ? await prisma.proposal.findFirst({ where: { id: proposalId, leadId: lead.id } })
+    : null;
+  if (!proposal) {
+    throw new Error("Propuesta no encontrada");
+  }
+
+  await prisma.proposalComment.create({
+    data: { proposalId, authorType: "CLIENT", body },
+  });
+
+  revalidatePath(`/portal/${clientPortalToken}`);
+}

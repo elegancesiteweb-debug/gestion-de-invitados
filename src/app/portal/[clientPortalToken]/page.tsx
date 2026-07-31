@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { BrandHeader } from "@/components/BrandHeader";
 import { BrandFooter } from "@/components/BrandFooter";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { formatDateTime } from "@/lib/dates";
 import type { AppLocale } from "@/lib/locale";
 import {
@@ -13,6 +14,7 @@ import {
   setVendorApproval,
   uploadInspirationImage,
   deleteInspirationImage,
+  submitProposalComment,
 } from "@/lib/actions/portal";
 
 export default async function ClientPortalPage({
@@ -48,6 +50,10 @@ export default async function ClientPortalPage({
     include: {
       contracts: { orderBy: { createdAt: "asc" } },
       invoices: { orderBy: { createdAt: "asc" } },
+      proposals: {
+        orderBy: { createdAt: "asc" },
+        include: { items: true, images: true, comments: { orderBy: { createdAt: "asc" } } },
+      },
     },
   });
 
@@ -265,6 +271,103 @@ export default async function ClientPortalPage({
             </div>
           )}
         </section>
+
+        {lead && lead.proposals.length > 0 && (
+          <section className="mt-8">
+            <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("proposals")}</h2>
+            <div className="space-y-4">
+              {lead.proposals.map((proposal) => {
+                const total = proposal.items.reduce((sum, item) => sum + item.amount, 0);
+                return (
+                  <div
+                    key={proposal.id}
+                    className="rounded-lg border border-gold/20 bg-white/60 p-3"
+                  >
+                    <p className="text-sm font-medium text-ink">{proposal.title}</p>
+                    {proposal.notes && <p className="text-xs text-ink-muted">{proposal.notes}</p>}
+
+                    {proposal.items.length > 0 && (
+                      <ul className="mt-2 space-y-1 text-sm">
+                        {proposal.items.map((item) => (
+                          <li key={item.id} className="flex items-center justify-between gap-2">
+                            <span className="text-ink">{item.description}</span>
+                            <span className="text-ink-muted">
+                              {item.amount.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}
+                            </span>
+                          </li>
+                        ))}
+                        <li className="flex items-center justify-between gap-2 border-t border-gold/15 pt-1 font-medium text-ink">
+                          <span>{t("total")}</span>
+                          <span>{total.toLocaleString("es-MX", { style: "currency", currency: "MXN" })}</span>
+                        </li>
+                      </ul>
+                    )}
+
+                    {proposal.images.length > 0 && (
+                      <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                        {proposal.images.map((image) => (
+                          <ImageLightbox
+                            key={image.id}
+                            src={`/api/proposal-images/${image.id}`}
+                            alt={proposal.title}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={`/api/proposal-images/${image.id}`}
+                              alt=""
+                              className="h-20 w-full rounded-lg object-cover shadow-sm"
+                            />
+                          </ImageLightbox>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="mt-3 border-t border-gold/15 pt-3">
+                      <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-ink-muted">
+                        {t("proposalComments")}
+                      </p>
+                      {proposal.comments.length > 0 && (
+                        <ul className="mb-2 space-y-1.5">
+                          {proposal.comments.map((comment) => (
+                            <li
+                              key={comment.id}
+                              className={`rounded-lg p-2 text-sm ${
+                                comment.authorType === "ORGANIZER" ? "bg-warm text-ink" : "bg-gold/10 text-ink"
+                              }`}
+                            >
+                              <p className="text-[10px] font-medium uppercase tracking-wide text-ink-muted">
+                                {comment.authorType === "ORGANIZER" ? t("organizer") : t("you")} ·{" "}
+                                {formatDateTime(comment.createdAt)}
+                              </p>
+                              <p>{comment.body}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <form
+                        action={submitProposalComment.bind(null, clientPortalToken, proposal.id)}
+                        className="flex flex-wrap items-end gap-2"
+                      >
+                        <input
+                          name="body"
+                          required
+                          placeholder={t("commentPlaceholder")}
+                          className="flex-1 rounded-lg border border-gold/25 px-2 py-1 text-sm"
+                        />
+                        <button
+                          type="submit"
+                          className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1 text-sm font-medium text-white hover:shadow-lg"
+                        >
+                          {t("send")}
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {lead && lead.invoices.length > 0 && (
           <section className="mt-8">

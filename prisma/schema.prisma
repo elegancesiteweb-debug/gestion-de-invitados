@@ -429,7 +429,9 @@ model Proposal {
   notes     String?
   createdAt DateTime @default(now())
 
-  items ProposalItem[]
+  items    ProposalItem[]
+  images   ProposalImage[]
+  comments ProposalComment[]
 
   @@index([leadId])
 }
@@ -441,6 +443,33 @@ model ProposalItem {
   description String
   amount      Float
   createdAt   DateTime @default(now())
+
+  @@index([proposalId])
+}
+
+model ProposalImage {
+  id         String   @id @default(cuid())
+  proposalId String
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  image      Bytes
+  imageType  String
+  createdAt  DateTime @default(now())
+
+  @@index([proposalId])
+}
+
+enum CommentAuthor {
+  ORGANIZER
+  CLIENT
+}
+
+model ProposalComment {
+  id         String        @id @default(cuid())
+  proposalId String
+  proposal   Proposal      @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  authorType CommentAuthor
+  body       String
+  createdAt  DateTime      @default(now())
 
   @@index([proposalId])
 }

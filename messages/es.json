@@ -518,7 +518,14 @@
     "dueOn": "Vence el {date}",
     "pendingPayment": "Pendiente de pago",
     "copyPayLink": "Copiar link de pago",
-    "sendReminder": "Enviar recordatorio"
+    "sendReminder": "Enviar recordatorio",
+    "images": "Imágenes",
+    "uploadImage": "Subir imagen",
+    "comments": "Comentarios",
+    "you": "Tú",
+    "theCouple": "La pareja",
+    "replyPlaceholder": "Escribe una respuesta...",
+    "reply": "Responder"
   },
   "leadQuestions": {
     "shortText": "Texto corto",
@@ -820,7 +827,13 @@
     "viewDownload": "Ver / descargar →",
     "messages": "Mensajes",
     "messagePlaceholder": "Escribe un mensaje para el organizador...",
-    "send": "Enviar"
+    "send": "Enviar",
+    "proposals": "Propuestas",
+    "total": "Total",
+    "proposalComments": "Comentarios",
+    "organizer": "Organizador",
+    "you": "Tú",
+    "commentPlaceholder": "Escribe un comentario..."
   },
   "eventPrint": {
     "backToEvent": "← Volver al evento",

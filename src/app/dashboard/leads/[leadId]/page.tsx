@@ -5,13 +5,22 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeature } from "@/lib/features";
 import { updateLead, updateLeadStage, deleteLead } from "@/lib/actions/leads";
-import { createProposal, deleteProposal, addProposalItem, deleteProposalItem } from "@/lib/actions/proposals";
+import {
+  createProposal,
+  deleteProposal,
+  addProposalItem,
+  deleteProposalItem,
+  uploadProposalImage,
+  deleteProposalImage,
+  replyToProposalComment,
+} from "@/lib/actions/proposals";
 import { createContract, deleteContract } from "@/lib/actions/contracts";
 import { ContractTemplatePicker } from "@/components/event-dashboard/ContractTemplatePicker";
 import { createInvoice, createPaymentPlan, deleteInvoice, sendInvoiceReminder } from "@/lib/actions/invoices";
 import { addPackageToProposal } from "@/lib/actions/packages";
 import { PROVIDER_LABELS } from "@/lib/payments";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { formatDateTime } from "@/lib/dates";
 
 export default async function LeadDetailPage({
@@ -40,7 +49,10 @@ export default async function LeadDetailPage({
   const lead = await prisma.lead.findFirst({
     where: { id: leadId, organizerId: session.user.id },
     include: {
-      proposals: { orderBy: { createdAt: "asc" }, include: { items: true } },
+      proposals: {
+        orderBy: { createdAt: "asc" },
+        include: { items: true, images: true, comments: { orderBy: { createdAt: "asc" } } },
+      },
       contracts: { orderBy: { createdAt: "asc" } },
       invoices: { orderBy: { createdAt: "asc" } },
     },
@@ -365,6 +377,91 @@ export default async function LeadDetailPage({
                       </button>
                     </form>
                   )}
+
+                  <div className="mt-4 border-t border-gold/15 pt-3">
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">
+                      {t("images")}
+                    </p>
+                    {proposal.images.length > 0 && (
+                      <div className="mb-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                        {proposal.images.map((image) => (
+                          <div key={image.id} className="group relative overflow-hidden rounded-lg shadow-sm">
+                            <ImageLightbox src={`/api/proposal-images/${image.id}`} alt={proposal.title}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={`/api/proposal-images/${image.id}`}
+                                alt=""
+                                className="h-20 w-full object-cover"
+                              />
+                            </ImageLightbox>
+                            <form
+                              action={deleteProposalImage.bind(null, lead.id, image.id)}
+                              className="absolute inset-x-0 bottom-0 bg-black/50 p-1 text-center opacity-0 transition group-hover:opacity-100"
+                            >
+                              <button type="submit" className="text-xs text-white hover:underline">
+                                {t("delete")}
+                              </button>
+                            </form>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <form
+                      action={uploadProposalImage.bind(null, lead.id, proposal.id)}
+                      className="flex flex-wrap items-center gap-2"
+                    >
+                      <input type="file" name="image" accept="image/*" required className="text-xs" />
+                      <button
+                        type="submit"
+                        className="rounded-lg border border-gold/25 px-3 py-1 text-xs hover:bg-warm"
+                      >
+                        {t("uploadImage")}
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="mt-4 border-t border-gold/15 pt-3">
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">
+                      {t("comments")}
+                    </p>
+                    {proposal.comments.length > 0 && (
+                      <ul className="mb-2 space-y-1.5">
+                        {proposal.comments.map((comment) => (
+                          <li
+                            key={comment.id}
+                            className={`rounded-lg p-2 text-sm ${
+                              comment.authorType === "ORGANIZER"
+                                ? "bg-warm text-ink"
+                                : "bg-gold/10 text-ink"
+                            }`}
+                          >
+                            <p className="text-[10px] font-medium uppercase tracking-wide text-ink-muted">
+                              {comment.authorType === "ORGANIZER" ? t("you") : t("theCouple")} ·{" "}
+                              {formatDateTime(comment.createdAt)}
+                            </p>
+                            <p>{comment.body}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <form
+                      action={replyToProposalComment.bind(null, lead.id, proposal.id)}
+                      className="flex flex-wrap items-end gap-2"
+                    >
+                      <input
+                        name="body"
+                        required
+                        placeholder={t("replyPlaceholder")}
+                        className="flex-1 rounded-lg border border-gold/25 px-2 py-1 text-sm"
+                      />
+                      <button
+                        type="submit"
+                        className="rounded-lg border border-gold/25 px-3 py-1 text-sm hover:bg-warm"
+                      >
+                        {t("reply")}
+                      </button>
+                    </form>
+                  </div>
                 </div>
               );
             })}
