@@ -9,23 +9,100 @@ const INSTAGRAM_URL = "https://www.instagram.com/elegancesite.web?igsh=MWN3a2Rnc
 const PROBLEMS = [
   {
     tag: "Confirmaciones",
-    text: "Invitados confirmando por WhatsApp, Excel y llamadas sueltas — nada queda en un solo lugar.",
+    problem: "Invitados confirmando por WhatsApp, Excel y llamadas sueltas — nada queda en un solo lugar.",
+    solution: "Cada invitado tiene su propio link y QR; confirma en segundos y tú lo ves en tiempo real.",
   },
   {
     tag: "Mesas",
-    text: "Armar el acomodo a mano, sin saber en tiempo real quién falta por confirmar.",
+    problem: "Armar el acomodo a mano, sin saber en tiempo real quién falta por confirmar.",
+    solution: "Plano visual arrastrable con conteo automático, siempre sincronizado con las confirmaciones.",
   },
   {
     tag: "Ventas",
-    text: "Cotizar y dar seguimiento a clientes potenciales sin un sistema real de CRM.",
+    problem: "Cotizar y dar seguimiento a clientes potenciales sin un sistema real de CRM.",
+    solution: "Leads, propuestas y contratos con firma electrónica, todo dentro de la misma cuenta.",
   },
   {
     tag: "Cobros",
-    text: "Cobrar anticipos y pagos sin una forma profesional de facturar.",
+    problem: "Cobrar anticipos y pagos sin una forma profesional de facturar.",
+    solution: "Facturas con link de pago por tarjeta, Stripe, Mercado Pago o Clip — incluso en abonos.",
   },
   {
     tag: "Proveedores",
-    text: "Coordinar proveedores, tareas y fechas repartidos entre cinco aplicaciones distintas.",
+    problem: "Coordinar proveedores, tareas y fechas repartidos entre cinco aplicaciones distintas.",
+    solution: "Cada proveedor tiene su propio itinerario y portal para confirmar su participación.",
+  },
+];
+
+const STATS = [
+  { value: "500+", label: "Eventos realizados" },
+  { value: "2+", label: "Años de experiencia" },
+  { value: "600+", label: "Clientes atendidos" },
+];
+
+const STEPS = [
+  {
+    title: "Crea tu cuenta y tu evento",
+    text: "Elige tu plan y captura los datos básicos de la boda — toma menos de cinco minutos.",
+  },
+  {
+    title: "Agrega invitados y personaliza",
+    text: "Súbelos uno por uno o impórtalos desde un CSV que ya tengas; cada uno recibe su propio link y QR.",
+  },
+  {
+    title: "Comparte y da seguimiento",
+    text: "Pega el link o QR en tu invitación y mira las confirmaciones, mesas y presupuesto actualizarse solos.",
+  },
+];
+
+const COMPARISON = [
+  {
+    label: "Confirmaciones",
+    before: "Excel, WhatsApp y llamadas sueltas",
+    after: "Link y QR individual, en tiempo real",
+  },
+  {
+    label: "Control de acceso",
+    before: "Listas de papel el día del evento",
+    after: "El mismo QR sirve para el check-in",
+  },
+  {
+    label: "Ventas y clientes",
+    before: "Sin sistema, o una app aparte",
+    after: "CRM completo integrado",
+  },
+  {
+    label: "Proveedores",
+    before: "Grupos de WhatsApp sueltos",
+    after: "Portal propio con itinerario y confirmación",
+  },
+  {
+    label: "Precio",
+    before: "Dólares, suscripciones complejas",
+    after: "Precio simple en pesos mexicanos",
+  },
+];
+
+const FAQ = [
+  {
+    q: "¿Necesito instalar algo?",
+    a: "No, es 100% web. Funciona desde el navegador de tu celular o computadora.",
+  },
+  {
+    q: "¿Puedo importar los invitados que ya tengo en Excel?",
+    a: "Sí, puedes importarlos por CSV en cualquier momento, sin capturarlos uno por uno.",
+  },
+  {
+    q: "¿El plan Particular es una suscripción?",
+    a: "No — es un pago único de $500 MXN para tu boda, sin mensualidades.",
+  },
+  {
+    q: "¿Los invitados necesitan crear una cuenta?",
+    a: "No. Cada invitado solo usa su link o QR personal para confirmar, sin registrarse.",
+  },
+  {
+    q: "¿Qué pasa si tengo dudas?",
+    a: "Nos escribes directo por WhatsApp y te ayudamos.",
   },
 ];
 
@@ -123,18 +200,38 @@ export function LandingPage() {
         </div>
       </header>
 
+      <section className="border-y border-gold/15 bg-white py-8">
+        <div className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-4 px-4 text-center">
+          {STATS.map((stat) => (
+            <div key={stat.label}>
+              <p className="font-serif text-3xl font-medium text-gold-dark sm:text-4xl">
+                {stat.value}
+              </p>
+              <p className="mt-1 text-xs uppercase tracking-wide text-ink-muted">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="mx-auto w-full max-w-3xl px-4 py-14">
         <p className="text-center text-xs uppercase tracking-[0.25em] text-gold-dark">
-          El problema
+          El problema, resuelto
         </p>
         <h2 className="mx-auto mt-2 max-w-lg text-center font-serif text-2xl font-medium text-ink sm:text-3xl">
           Organizar un evento no debería sentirse como perseguir información.
         </h2>
-        <div className="mt-10 divide-y divide-gold/15 border-t border-gold/15">
+        <div className="mt-10 space-y-3">
           {PROBLEMS.map((item) => (
-            <div key={item.tag} className="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-              <p className="text-sm text-ink-light">{item.tag}</p>
-              <p className="text-sm text-ink-muted">{item.text}</p>
+            <div key={item.tag} className="rounded-lg border border-gold/15 bg-white p-4">
+              <p className="text-xs uppercase tracking-wide text-ink-light">{item.tag}</p>
+              <p className="mt-2 text-sm text-ink-muted">
+                <span className="mr-1.5 text-danger">✗</span>
+                {item.problem}
+              </p>
+              <p className="mt-1 text-sm text-ink">
+                <span className="mr-1.5 text-success">✓</span>
+                {item.solution}
+              </p>
             </div>
           ))}
         </div>
@@ -200,6 +297,82 @@ export function LandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-4xl px-4 py-14">
+        <p className="text-center text-xs uppercase tracking-[0.25em] text-gold-dark">
+          Cómo funciona
+        </p>
+        <h2 className="mx-auto mt-2 max-w-lg text-center font-serif text-2xl font-medium text-ink sm:text-3xl">
+          De cero a organizado, en tres pasos.
+        </h2>
+        <div className="mt-10 grid gap-6 sm:grid-cols-3">
+          {STEPS.map((step, i) => (
+            <div key={step.title} className="rounded-lg border border-gold/20 bg-white p-6">
+              <span className="font-serif text-2xl font-medium text-gold-dark">{i + 1}</span>
+              <p className="mt-3 text-sm font-semibold text-ink">{step.title}</p>
+              <p className="mt-1 text-sm leading-relaxed text-ink-muted">{step.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-white py-14">
+        <div className="mx-auto w-full max-w-3xl px-4">
+          <p className="text-center text-xs uppercase tracking-[0.25em] text-gold-dark">
+            Comparativa
+          </p>
+          <h2 className="mx-auto mt-2 max-w-lg text-center font-serif text-2xl font-medium text-ink sm:text-3xl">
+            Herramientas tradicionales vs. Elegance Site.
+          </h2>
+          <div className="mt-10 overflow-x-auto rounded-lg border border-gold/20">
+            <table className="w-full min-w-[36rem] border-collapse text-sm">
+              <thead>
+                <tr className="bg-warm text-left text-xs uppercase tracking-wide text-ink-muted">
+                  <th className="px-4 py-3 font-medium"></th>
+                  <th className="px-4 py-3 font-medium">Herramientas tradicionales</th>
+                  <th className="px-4 py-3 font-medium text-gold-dark">Elegance Site</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map((row) => (
+                  <tr key={row.label} className="border-t border-gold/15">
+                    <td className="px-4 py-3 text-xs uppercase tracking-wide text-ink-light">
+                      {row.label}
+                    </td>
+                    <td className="px-4 py-3 text-ink-muted">{row.before}</td>
+                    <td className="px-4 py-3 font-medium text-ink">{row.after}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-3xl px-4 py-14">
+        <p className="text-center text-xs uppercase tracking-[0.25em] text-gold-dark">
+          Caso real
+        </p>
+        <h2 className="mx-auto mt-2 max-w-lg text-center font-serif text-2xl font-medium text-ink sm:text-3xl">
+          Wedding planners que ya organizan con Elegance Site.
+        </h2>
+        <div className="mt-10 rounded-2xl border border-gold/20 bg-white p-7 shadow-md sm:p-8">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+            <div className="flex h-14 w-14 flex-none items-center justify-center rounded-full border border-gold/30 font-serif text-xl text-gold-dark">
+              R
+            </div>
+            <div>
+              <p className="font-serif text-lg font-medium text-ink">Ricardo</p>
+              <p className="text-xs uppercase tracking-wide text-ink-light">Wedding Planner</p>
+            </div>
+          </div>
+          <p className="mt-5 text-sm leading-relaxed text-ink-muted">
+            Ricardo ha organizado 10 bodas con Elegance Site, gestionando invitados, mesas,
+            proveedores y presupuesto de cada una desde un solo panel — sin cambiar entre
+            aplicaciones distintas por boda.
+          </p>
         </div>
       </section>
 
@@ -313,6 +486,26 @@ export function LandingPage() {
               Empezar
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-2xl px-4 py-14">
+        <p className="text-center text-xs uppercase tracking-[0.25em] text-gold-dark">
+          Preguntas frecuentes
+        </p>
+        <h2 className="mx-auto mt-2 max-w-md text-center font-serif text-2xl font-medium text-ink sm:text-3xl">
+          Lo que más nos preguntan.
+        </h2>
+        <div className="mt-10 divide-y divide-gold/15 border-t border-gold/15">
+          {FAQ.map((item) => (
+            <details key={item.q} className="group py-4">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-ink">
+                {item.q}
+                <span className="text-gold-dark transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">{item.a}</p>
+            </details>
+          ))}
         </div>
       </section>
 
