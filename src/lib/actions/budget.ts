@@ -24,6 +24,25 @@ async function requireEventOwnedByOrganizer(eventId: string, organizerId: string
   return event;
 }
 
+export async function updateTotalBudget(eventId: string, formData: FormData) {
+  const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
+  await requireEventOwnedByOrganizer(eventId, organizerId);
+
+  const raw = (formData.get("totalBudget") as string | null)?.trim();
+  const totalBudget = raw ? parseFloat(raw) : null;
+  if (totalBudget !== null && (!Number.isFinite(totalBudget) || totalBudget < 0)) {
+    throw new Error("El presupuesto total no es válido");
+  }
+
+  await prisma.event.updateMany({
+    where: { id: eventId, organizerId },
+    data: { totalBudget },
+  });
+
+  revalidatePath(`/dashboard/events/${eventId}`);
+}
+
 export async function createBudgetItem(eventId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
   await requireWriteAccess();

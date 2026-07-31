@@ -15,24 +15,24 @@ async function requireOrganizerId() {
   return session.user.id;
 }
 
-async function requireEventOwnedByOrganizer(eventId: string, organizerId: string) {
-  const event = await prisma.event.findFirst({
-    where: { id: eventId, organizerId },
+async function requireEventVendorOwnedByOrganizer(eventId: string, eventVendorId: string, organizerId: string) {
+  const eventVendor = await prisma.eventVendor.findFirst({
+    where: { id: eventVendorId, eventId, event: { organizerId } },
   });
-  if (!event) {
-    throw new Error("Evento no encontrado");
+  if (!eventVendor) {
+    throw new Error("Proveedor no encontrado");
   }
-  return event;
+  return eventVendor;
 }
 
-export async function createTimelineItem(eventId: string, formData: FormData) {
+export async function createVendorItineraryItem(eventId: string, eventVendorId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
   await requireWriteAccess();
-  await requireEventOwnedByOrganizer(eventId, organizerId);
+  await requireEventVendorOwnedByOrganizer(eventId, eventVendorId, organizerId);
 
   const time = (formData.get("time") as string | null)?.trim();
   const title = (formData.get("title") as string | null)?.trim();
-  const responsible = (formData.get("responsible") as string | null)?.trim();
+  const notes = (formData.get("notes") as string | null)?.trim();
 
   if (!time) {
     throw new Error("La hora es requerida");
@@ -41,29 +41,29 @@ export async function createTimelineItem(eventId: string, formData: FormData) {
     throw new Error("El título es requerido");
   }
 
-  await prisma.timelineItem.create({
-    data: { eventId, time, title, responsible: responsible || null },
+  await prisma.vendorItineraryItem.create({
+    data: { eventVendorId, time, title, notes: notes || null },
   });
 
-  revalidatePath(`/dashboard/events/${eventId}`);
+  revalidatePath(`/dashboard/events/${eventId}/vendors/${eventVendorId}`);
 }
 
-export async function deleteTimelineItem(eventId: string, itemId: string) {
+export async function deleteVendorItineraryItem(eventId: string, eventVendorId: string, itemId: string) {
   const organizerId = await requireOrganizerId();
   await requireWriteAccess();
-  await requireEventOwnedByOrganizer(eventId, organizerId);
+  await requireEventVendorOwnedByOrganizer(eventId, eventVendorId, organizerId);
 
-  await prisma.timelineItem.deleteMany({
-    where: { id: itemId, eventId },
+  await prisma.vendorItineraryItem.deleteMany({
+    where: { id: itemId, eventVendorId },
   });
 
-  revalidatePath(`/dashboard/events/${eventId}`);
+  revalidatePath(`/dashboard/events/${eventId}/vendors/${eventVendorId}`);
 }
 
-export async function importTimelineCsv(eventId: string, formData: FormData) {
+export async function importVendorItineraryCsv(eventId: string, eventVendorId: string, formData: FormData) {
   const organizerId = await requireOrganizerId();
   await requireWriteAccess();
-  await requireEventOwnedByOrganizer(eventId, organizerId);
+  await requireEventVendorOwnedByOrganizer(eventId, eventVendorId, organizerId);
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -81,7 +81,7 @@ export async function importTimelineCsv(eventId: string, formData: FormData) {
     .map((row) => ({
       time: (row.time || row.hora || "").trim(),
       title: (row.title || row.actividad || "").trim(),
-      responsible: (row.responsible || row.responsable || "").trim(),
+      notes: (row.notes || row.notas || "").trim(),
     }))
     .filter((row) => row.time.length > 0 && row.title.length > 0);
 
@@ -89,14 +89,14 @@ export async function importTimelineCsv(eventId: string, formData: FormData) {
     throw new Error("El CSV no contiene momentos válidos (se requieren columnas 'time'/'hora' y 'title'/'actividad')");
   }
 
-  await prisma.timelineItem.createMany({
+  await prisma.vendorItineraryItem.createMany({
     data: rows.map((row) => ({
-      eventId,
+      eventVendorId,
       time: row.time,
       title: row.title,
-      responsible: row.responsible || null,
+      notes: row.notes || null,
     })),
   });
 
-  revalidatePath(`/dashboard/events/${eventId}`);
+  revalidatePath(`/dashboard/events/${eventId}/vendors/${eventVendorId}`);
 }

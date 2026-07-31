@@ -138,9 +138,34 @@ model EventVendor {
   vendorConfirmed   Boolean?
   confirmedAt       DateTime?
 
+  itineraryItems VendorItineraryItem[]
+  comments       VendorComment[]
+
   @@unique([eventId, vendorId])
   @@index([eventId])
   @@index([vendorId])
+}
+
+model VendorItineraryItem {
+  id            String      @id @default(cuid())
+  eventVendorId String
+  eventVendor   EventVendor @relation(fields: [eventVendorId], references: [id], onDelete: Cascade)
+  time          String
+  title         String
+  notes         String?
+  createdAt     DateTime    @default(now())
+
+  @@index([eventVendorId])
+}
+
+model VendorComment {
+  id            String      @id @default(cuid())
+  eventVendorId String
+  eventVendor   EventVendor @relation(fields: [eventVendorId], references: [id], onDelete: Cascade)
+  body          String
+  createdAt     DateTime    @default(now())
+
+  @@index([eventVendorId])
 }
 
 model ClientComment {
@@ -226,6 +251,13 @@ model Event {
   publicRsvpToken   String? @unique
   clientPortalToken String? @unique
   calendarToken     String? @unique
+
+  // Portal "elige tu nombre" para proveedores: siempre presente (no es un toggle
+  // como clientPortalToken), ya que solo lista nombres y enlaza a páginas que ya
+  // son públicas individualmente por proveedor (EventVendor.confirmationToken).
+  vendorsPortalToken String @unique @default(cuid())
+
+  totalBudget Float? // presupuesto total límite de la boda, distinto de la suma de renglones
 
   generalMaxCompanions Int?    @default(5) // null = sin límite de acompañantes
 

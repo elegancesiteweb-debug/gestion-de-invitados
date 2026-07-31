@@ -155,7 +155,17 @@
     "scheduleTitle": "Agenda del día ({count})",
     "empty": "Todavía no hay momentos en la agenda.",
     "responsibleFor": "A cargo de: {name}",
-    "delete": "Eliminar"
+    "delete": "Eliminar",
+    "exportPrint": "Exportar / imprimir",
+    "importCsv": "Importar CSV",
+    "csvColumns": "Columnas: time/hora, title/actividad, responsible/responsable (opcional)",
+    "import": "Importar"
+  },
+  "timelinePrint": {
+    "backToEvent": "← Volver al evento",
+    "daySchedule": "Agenda del día",
+    "empty": "Todavía no hay momentos en la agenda.",
+    "generatedOn": "Generado el {date}"
   },
   "confirmations": {
     "empty": "Aún no hay confirmaciones. Aparecerán aquí cuando los invitados respondan.",
@@ -216,7 +226,12 @@
     "difference": "Diferencia",
     "save": "Guardar",
     "delete": "Eliminar",
-    "total": "Total"
+    "total": "Total",
+    "totalBudgetTitle": "Presupuesto total",
+    "totalBudgetLabel": "Presupuesto total de la boda",
+    "totalBudgetPlaceholder": "Ej. 150000",
+    "remaining": "Restante",
+    "overBudgetWarning": "Vas por encima de tu presupuesto total."
   },
   "taskCalendar": {
     "monthNames": [
@@ -256,7 +271,10 @@
     "vendorConfirmed": "Proveedor confirmó",
     "vendorDeclined": "Proveedor declinó",
     "vendorPending": "Proveedor: pendiente",
-    "copyConfirmationLink": "Copiar link de confirmación"
+    "copyConfirmationLink": "Copiar link de confirmación",
+    "viewItinerary": "Ver / editar itinerario →",
+    "vendorsPortalTitle": "Portal de proveedores",
+    "vendorsPortalHint": "Comparte este único link con todos tus proveedores: cada uno elige su nombre para ver su itinerario y confirmar su participación."
   },
   "eventSettings": {
     "statusPlanning": "Planeación",
@@ -332,7 +350,36 @@
     "youConfirmed": "Confirmaste tu participación en este evento.",
     "youDeclined": "Indicaste que no podrás asistir.",
     "confirmParticipation": "Confirmar participación",
-    "cantAttend": "No podré asistir"
+    "cantAttend": "No podré asistir",
+    "yourItinerary": "Tu itinerario",
+    "printItinerary": "Imprimir itinerario",
+    "comments": "Comentarios",
+    "commentPlaceholder": "Escribe un comentario...",
+    "send": "Enviar",
+    "generatedOn": "Generado el {date}"
+  },
+  "vendorsPortal": {
+    "title": "Portal de proveedores",
+    "chooseYourName": "¿Cuál es tu nombre?",
+    "noVendors": "Todavía no hay proveedores asignados a este evento."
+  },
+  "vendorItinerary": {
+    "backToVendors": "← Volver a proveedores",
+    "printItinerary": "Imprimir itinerario",
+    "addTitle": "Agregar momento al itinerario",
+    "time": "Hora",
+    "activity": "Actividad",
+    "activityPlaceholder": "Ej. Llegada al salón",
+    "notes": "Notas (opcional)",
+    "add": "Agregar",
+    "importCsv": "Importar CSV",
+    "csvColumns": "Columnas: time/hora, title/actividad, notes/notas (opcional)",
+    "import": "Importar",
+    "scheduleTitle": "Itinerario ({count})",
+    "empty": "Todavía no hay momentos en el itinerario de este proveedor.",
+    "delete": "Eliminar",
+    "comments": "Comentarios recibidos",
+    "noComments": "Todavía no hay comentarios de este proveedor."
   },
   "templateEditor": {
     "preview": "Vista previa"

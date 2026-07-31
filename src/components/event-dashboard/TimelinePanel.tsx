@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { TimelineItem } from "@prisma/client";
-import { createTimelineItem, deleteTimelineItem } from "@/lib/actions/timeline";
+import { createTimelineItem, deleteTimelineItem, importTimelineCsv } from "@/lib/actions/timeline";
 
 export async function TimelinePanel({
   eventId,
@@ -15,7 +16,15 @@ export async function TimelinePanel({
   return (
     <div className="space-y-6 py-6">
       <section>
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("addTitle")}</h2>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="font-serif text-lg font-medium text-ink">{t("addTitle")}</h2>
+          <Link
+            href={`/dashboard/events/${eventId}/timeline/print`}
+            className="text-sm text-gold-dark hover:underline"
+          >
+            {t("exportPrint")}
+          </Link>
+        </div>
         <form
           action={createTimelineItem.bind(null, eventId)}
           className="flex flex-wrap items-end gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
@@ -53,6 +62,20 @@ export async function TimelinePanel({
             {t("add")}
           </button>
         </form>
+
+        <details className="mt-3 rounded-lg border border-gold/20 bg-white/60 px-4 py-2 shadow-sm backdrop-blur-xl">
+          <summary className="cursor-pointer text-sm font-medium">{t("importCsv")}</summary>
+          <form action={importTimelineCsv.bind(null, eventId)} className="mt-3 space-y-2">
+            <p className="text-xs text-ink-muted">{t("csvColumns")}</p>
+            <input type="file" name="file" accept=".csv" required className="text-sm" />
+            <button
+              type="submit"
+              className="block rounded-lg border border-gold/25 px-3 py-1.5 text-sm hover:bg-warm"
+            >
+              {t("import")}
+            </button>
+          </form>
+        </details>
       </section>
 
       <section>

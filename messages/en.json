@@ -155,7 +155,17 @@
     "scheduleTitle": "Day-of schedule ({count})",
     "empty": "No moments in the schedule yet.",
     "responsibleFor": "In charge: {name}",
-    "delete": "Delete"
+    "delete": "Delete",
+    "exportPrint": "Export / print",
+    "importCsv": "Import CSV",
+    "csvColumns": "Columns: time/hora, title/actividad, responsible/responsable (optional)",
+    "import": "Import"
+  },
+  "timelinePrint": {
+    "backToEvent": "← Back to event",
+    "daySchedule": "Day-of schedule",
+    "empty": "No moments in the schedule yet.",
+    "generatedOn": "Generated on {date}"
   },
   "confirmations": {
     "empty": "No RSVPs yet. They'll appear here as guests respond.",
@@ -216,7 +226,12 @@
     "difference": "Difference",
     "save": "Save",
     "delete": "Delete",
-    "total": "Total"
+    "total": "Total",
+    "totalBudgetTitle": "Total budget",
+    "totalBudgetLabel": "Total wedding budget",
+    "totalBudgetPlaceholder": "E.g. 150000",
+    "remaining": "Remaining",
+    "overBudgetWarning": "You're over your total budget."
   },
   "taskCalendar": {
     "monthNames": [
@@ -256,7 +271,10 @@
     "vendorConfirmed": "Vendor confirmed",
     "vendorDeclined": "Vendor declined",
     "vendorPending": "Vendor: pending",
-    "copyConfirmationLink": "Copy confirmation link"
+    "copyConfirmationLink": "Copy confirmation link",
+    "viewItinerary": "View / edit itinerary →",
+    "vendorsPortalTitle": "Vendors portal",
+    "vendorsPortalHint": "Share this single link with all your vendors: each one picks their name to see their itinerary and confirm participation."
   },
   "eventSettings": {
     "statusPlanning": "Planning",
@@ -332,7 +350,36 @@
     "youConfirmed": "You confirmed your participation in this event.",
     "youDeclined": "You indicated you won't be able to attend.",
     "confirmParticipation": "Confirm participation",
-    "cantAttend": "I can't attend"
+    "cantAttend": "I can't attend",
+    "yourItinerary": "Your itinerary",
+    "printItinerary": "Print itinerary",
+    "comments": "Comments",
+    "commentPlaceholder": "Write a comment...",
+    "send": "Send",
+    "generatedOn": "Generated on {date}"
+  },
+  "vendorsPortal": {
+    "title": "Vendors portal",
+    "chooseYourName": "What's your name?",
+    "noVendors": "No vendors assigned to this event yet."
+  },
+  "vendorItinerary": {
+    "backToVendors": "← Back to vendors",
+    "printItinerary": "Print itinerary",
+    "addTitle": "Add itinerary moment",
+    "time": "Time",
+    "activity": "Activity",
+    "activityPlaceholder": "E.g. Arrival at the venue",
+    "notes": "Notes (optional)",
+    "add": "Add",
+    "importCsv": "Import CSV",
+    "csvColumns": "Columns: time/hora, title/actividad, notes/notas (optional)",
+    "import": "Import",
+    "scheduleTitle": "Itinerary ({count})",
+    "empty": "No moments in this vendor's itinerary yet.",
+    "delete": "Delete",
+    "comments": "Received comments",
+    "noComments": "No comments from this vendor yet."
   },
   "templateEditor": {
     "preview": "Preview"

@@ -15,11 +15,13 @@ export async function EventVendorsPanel({
   eventVendors,
   availableVendors,
   baseUrl,
+  vendorsPortalToken,
 }: {
   eventId: string;
   eventVendors: EventVendorWithVendor[];
   availableVendors: Vendor[];
   baseUrl: string;
+  vendorsPortalToken: string;
 }) {
   const t = await getTranslations("eventVendors");
   const assignedIds = new Set(eventVendors.map((ev) => ev.vendorId));
@@ -27,6 +29,16 @@ export async function EventVendorsPanel({
 
   return (
     <div className="space-y-6 py-6">
+      {eventVendors.length > 0 && (
+        <div className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-sm backdrop-blur-xl">
+          <p className="text-sm font-medium text-ink">{t("vendorsPortalTitle")}</p>
+          <p className="mt-1 text-xs text-ink-muted">{t("vendorsPortalHint")}</p>
+          <div className="mt-2">
+            <CopyLinkButton url={`${baseUrl}/vendors/${vendorsPortalToken}`} />
+          </div>
+        </div>
+      )}
+
       <section>
         <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("assignedTitle")}</h2>
         {eventVendors.length === 0 ? (
@@ -75,11 +87,17 @@ export async function EventVendorsPanel({
                   <p className="text-xs text-ink-muted">
                     {ev.vendor.phone || ""} {ev.vendor.email ? `· ${ev.vendor.email}` : ""}
                   </p>
-                  <p className="mt-1">
+                  <p className="mt-1 flex flex-wrap items-center gap-3">
                     <CopyLinkButton
                       url={`${baseUrl}/vendor/${ev.confirmationToken}`}
                       label={t("copyConfirmationLink")}
                     />
+                    <Link
+                      href={`/dashboard/events/${eventId}/vendors/${ev.id}`}
+                      className="text-sm text-gold-dark hover:underline"
+                    >
+                      {t("viewItinerary")}
+                    </Link>
                   </p>
                 </div>
                 <form action={unassignVendorFromEvent.bind(null, eventId, ev.vendorId)}>

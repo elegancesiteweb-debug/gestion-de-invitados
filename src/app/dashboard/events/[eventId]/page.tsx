@@ -204,7 +204,7 @@ export default async function EventDetailPage({
         ) : activeTab === "tareas" ? (
           <TasksPanel eventId={event.id} tasks={event.tasks} />
         ) : activeTab === "presupuesto" ? (
-          <BudgetPanel eventId={event.id} items={event.budgetItems} />
+          <BudgetPanel eventId={event.id} items={event.budgetItems} totalBudget={event.totalBudget} />
         ) : activeTab === "timeline" ? (
           <TimelinePanel eventId={event.id} items={event.timelineItems} />
         ) : activeTab === "proveedores" ? (
@@ -213,6 +213,7 @@ export default async function EventDetailPage({
             eventVendors={event.eventVendors}
             availableVendors={availableVendors}
             baseUrl={baseUrl}
+            vendorsPortalToken={event.vendorsPortalToken}
           />
         ) : activeTab === "documentos" ? (
           <DocumentsPanel
