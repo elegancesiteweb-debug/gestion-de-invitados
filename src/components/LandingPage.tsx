@@ -447,12 +447,14 @@ export function LandingPage() {
               <li className="border-b border-gold/10 pb-2">Mesas, plano del salón y presupuesto</li>
               <li className="pb-2">Checklist, recordatorios y cuenta regresiva</li>
             </ul>
-            <Link
-              href="/register"
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-6 rounded-lg border border-gold/30 bg-white px-5 py-2.5 text-center text-sm font-medium text-ink shadow-sm hover:bg-warm"
             >
               Empezar
-            </Link>
+            </a>
           </div>
 
           <div className="flex flex-col rounded-2xl border border-gold bg-white p-7 shadow-lg">
@@ -479,12 +481,14 @@ export function LandingPage() {
               <li className="border-b border-gold/10 pb-2">CRM: leads, propuestas, contratos y cobros</li>
               <li className="pb-2">Portal de cliente con tu marca y reportes de negocio</li>
             </ul>
-            <Link
-              href="/register"
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-6 rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-5 py-2.5 text-center text-sm font-medium text-white shadow-md hover:shadow-lg"
             >
               Empezar
-            </Link>
+            </a>
           </div>
         </div>
       </section>
