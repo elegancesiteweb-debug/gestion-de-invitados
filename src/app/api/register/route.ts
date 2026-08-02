@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations";
+import { extendAccess } from "@/lib/accessExpiry";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -41,8 +42,13 @@ export async function POST(request: Request) {
         where: { code: normalizedCode },
       });
 
+      const accessExpiresAt =
+        codeRow.accountType === "PLANNER" && codeRow.durationMonths
+          ? extendAccess(null, codeRow.durationMonths)
+          : null;
+
       const organizer = await tx.organizer.create({
-        data: { name, email, passwordHash, accountType: codeRow.accountType },
+        data: { name, email, passwordHash, accountType: codeRow.accountType, accessExpiresAt },
       });
 
       await tx.accessCode.update({

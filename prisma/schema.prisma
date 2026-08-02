@@ -23,6 +23,11 @@ model Organizer {
   eventsCreatedCount Int         @default(0)
   isAdmin            Boolean     @default(false)
 
+  // Vencimiento del acceso Wedding Planner (null = sin vencimiento; nunca aplica a Particular,
+  // que es un pago único de por vida). Cuentas ya existentes se quedan en null a propósito,
+  // para no bloquear retroactivamente a nadie.
+  accessExpiresAt DateTime?
+
   // Idioma preferido del dashboard ("es" | "en").
   locale String @default("es")
 
@@ -208,6 +213,10 @@ model AccessCode {
   accountType AccountType
   label       String?
   createdAt   DateTime    @default(now())
+
+  // Solo aplica a códigos Wedding Planner (1 o 12); null = sin vencimiento (siempre el caso
+  // para Particular). Fija el accessExpiresAt inicial del Organizer al redimir el código.
+  durationMonths Int?
 
   usedAt            DateTime?
   usedByOrganizerId String?    @unique

@@ -34,6 +34,7 @@
   "nav": {
     "yourEvents": "Your events",
     "invitations": "Invitations",
+    "manual": "Manual",
     "vendors": "Vendors",
     "leads": "Leads",
     "reports": "Reports",
@@ -95,7 +96,8 @@
     "pendingTasks": "{count} pending task(s)",
     "budgetLabel": "Budget: {actual} / {estimated}",
     "countdownToday": "It's today!",
-    "countdownDays": "{days} days to go"
+    "countdownDays": "{days} days to go",
+    "accessExpiresOn": "Your Wedding Planner access expires on {date} ({days} day(s) left)."
   },
   "eventTabs": {
     "invitados": "Guests",
@@ -858,7 +860,110 @@
     "unused": "Unused",
     "siteUrlTitle": "Your landing page URL",
     "siteUrlHint": "Share this link (social media, ads, WhatsApp) so it always shows the marketing page with pricing and features.",
-    "openSite": "Open →"
+    "openSite": "Open →",
+    "duration": "Access duration",
+    "durationNone": "No expiration",
+    "duration1Month": "1 month",
+    "duration1Year": "1 year",
+    "durationHint": "Only applies to Wedding Planner. Particular is a one-time payment, no expiration.",
+    "plannersTitle": "Wedding Planners ({count})",
+    "noPlanners": "No Wedding Planner accounts yet.",
+    "noExpiry": "No expiration",
+    "expiresOn": "Expires on {date}",
+    "daysRemaining": "{days} day(s) left",
+    "expiredDaysAgo": "Expired {days} day(s) ago",
+    "renew": "Renew access"
+  },
+  "accessExpiredPage": {
+    "title": "Your access expired",
+    "expiredOn": "Your Wedding Planner access expired on {date}. Contact us to renew it.",
+    "expired": "Your Wedding Planner access expired. Contact us to renew it.",
+    "renewCta": "Renew via WhatsApp"
+  },
+  "manualPage": {
+    "intro": "App usage guide, based on your plan.",
+    "title": "User manual",
+    "planLabelPlanner": "Wedding Planner plan",
+    "planLabelIndividual": "Particular plan",
+    "commonTitle": "For any plan",
+    "plannerTitle": "Wedding Planner features",
+    "generatedOn": "Generated on {date}",
+    "commonSections": [
+      {
+        "title": "Guests",
+        "text": "Add guests one by one or import them from a CSV. Each one gets a personal link and QR to confirm attendance. You can tag them (VIP, with kids, etc.) and export the list to CSV or PDF."
+      },
+      {
+        "title": "RSVPs",
+        "text": "See who has confirmed, who can't attend, and who's still pending, with search and tag filtering."
+      },
+      {
+        "title": "Tables",
+        "text": "Drag guests onto tables in the visual view, or use the simple list view. Occupancy counts update automatically."
+      },
+      {
+        "title": "Floor plan",
+        "text": "Upload an image or PDF of the venue as a reference, or draw the layout from scratch (rectangles, circles, text). You can move and resize each shape after placing it."
+      },
+      {
+        "title": "Tasks",
+        "text": "Build your checklist with due dates; they show on a calendar and overdue ones are flagged in red."
+      },
+      {
+        "title": "Budget",
+        "text": "Add line items with estimated and actual amounts. If you set a total budget, you'll see how much you've spent and how much is left, with a warning if you go over."
+      },
+      {
+        "title": "Schedule",
+        "text": "The general day-of schedule — export/print it or import moments from a CSV."
+      },
+      {
+        "title": "Access",
+        "text": "Check-in QR codes for the day of the event; each guest has their own, separate from their RSVP QR."
+      },
+      {
+        "title": "Sends",
+        "text": "Email the invitation to pending guests and trigger manual reminders whenever you need to."
+      },
+      {
+        "title": "Settings",
+        "text": "Customize the invitation message, turn on the client portal and device calendar, and set your brand (logo, colors)."
+      }
+    ],
+    "plannerSections": [
+      {
+        "title": "Vendors",
+        "text": "Add vendors from your directory, build each one's individual itinerary, and share the portal where they pick their name and confirm participation."
+      },
+      {
+        "title": "Documents",
+        "text": "Keep each wedding's contracts, invoices, and loose files in one place."
+      },
+      {
+        "title": "Style",
+        "text": "Save the color palette, style notes, and inspiration images — yours and your clients'."
+      },
+      {
+        "title": "Messages and client portal",
+        "text": "Your clients see their progress, approve vendors, upload inspiration, and leave you messages from a portal with your own brand."
+      },
+      {
+        "title": "CRM (Leads, Proposals, Contracts, Invoices)",
+        "text": "Follow up on leads, build proposals with images and comments, draft contracts with electronic signature, and collect payments by card, Stripe, Mercado Pago, or Clip — even in installments."
+      },
+      {
+        "title": "Reports",
+        "text": "See your monthly revenue, lead conversion, and client satisfaction."
+      },
+      {
+        "title": "Team",
+        "text": "Invite collaborators with admin or read-only access to your account."
+      },
+      {
+        "title": "Integrations",
+        "text": "Connect your own Resend, Stripe, Mercado Pago, or Clip accounts so emails and payments go out under your name, not Elegance Site's."
+      }
+    ]
   },
   "rsvpForm": {
     "willAttend": "I'll attend",

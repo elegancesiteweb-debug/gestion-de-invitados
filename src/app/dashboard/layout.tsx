@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { hasFeature } from "@/lib/features";
 import { DashboardSidebar, type SidebarLink } from "@/components/DashboardSidebar";
 
@@ -14,6 +15,20 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  if (!session.user.isAdmin) {
+    const organizer = await prisma.organizer.findUnique({
+      where: { id: session.user.id },
+      select: { accountType: true, accessExpiresAt: true },
+    });
+    if (
+      organizer?.accountType === "PLANNER" &&
+      organizer.accessExpiresAt &&
+      organizer.accessExpiresAt < new Date()
+    ) {
+      redirect("/access-expired");
+    }
+  }
+
   const t = await getTranslations("nav");
   const locale = await getLocale();
   const isCollaborator = session.user.teamRole === "COLLABORATOR";
@@ -21,6 +36,7 @@ export default async function DashboardLayout({
   const links: SidebarLink[] = [
     { href: "/dashboard", label: t("yourEvents") },
     { href: "/dashboard/invitaciones", label: t("invitations") },
+    { href: "/dashboard/manual", label: t("manual") },
   ];
   if (hasFeature(session.user.accountType, "vendor_directory")) {
     links.push({ href: "/dashboard/vendors", label: t("vendors") });

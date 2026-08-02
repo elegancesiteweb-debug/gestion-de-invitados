@@ -3,9 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createAccessCode } from "@/lib/actions/admin";
+import { createAccessCode, renewPlannerAccess } from "@/lib/actions/admin";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { formatDate } from "@/lib/dates";
+import { daysUntil } from "@/lib/accessExpiry";
 
 export default async function AdminPage({
   searchParams,
@@ -26,6 +27,12 @@ export default async function AdminPage({
   const codes = await prisma.accessCode.findMany({
     orderBy: { createdAt: "desc" },
     include: { usedByOrganizer: { select: { name: true, email: true } } },
+  });
+
+  const planners = await prisma.organizer.findMany({
+    where: { accountType: "PLANNER" },
+    orderBy: { createdAt: "asc" },
+    select: { id: true, name: true, email: true, accessExpiresAt: true },
   });
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -83,6 +90,20 @@ export default async function AdminPage({
               <option value="PLANNER">{t("planner")}</option>
             </select>
           </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+              {t("duration")}
+            </label>
+            <select
+              name="durationMonths"
+              className="rounded-lg border border-gold/25 px-3 py-2 text-sm"
+            >
+              <option value="">{t("durationNone")}</option>
+              <option value="1">{t("duration1Month")}</option>
+              <option value="12">{t("duration1Year")}</option>
+            </select>
+            <p className="mt-1 text-[11px] text-ink-light">{t("durationHint")}</p>
+          </div>
           <div className="flex-1">
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
               {t("label")}
@@ -100,6 +121,62 @@ export default async function AdminPage({
             {t("generate")}
           </button>
         </form>
+      </section>
+
+      <section className="mt-6">
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">
+          {t("plannersTitle", { count: planners.length })}
+        </h2>
+        {planners.length === 0 ? (
+          <p className="text-sm text-ink-muted">{t("noPlanners")}</p>
+        ) : (
+          <div className="space-y-2">
+            {planners.map((p) => {
+              const remaining = p.accessExpiresAt ? daysUntil(p.accessExpiresAt) : null;
+              return (
+                <div
+                  key={p.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-sm backdrop-blur-xl"
+                >
+                  <div>
+                    <p className="font-medium text-ink">{p.name}</p>
+                    <p className="text-xs text-ink-muted">{p.email}</p>
+                    {p.accessExpiresAt == null ? (
+                      <p className="mt-1 text-xs text-ink-light">{t("noExpiry")}</p>
+                    ) : remaining !== null && remaining < 0 ? (
+                      <p className="mt-1 text-xs font-medium text-danger">
+                        {t("expiredDaysAgo", { days: Math.abs(remaining) })}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-xs text-ink-muted">
+                        {t("expiresOn", { date: formatDate(p.accessExpiresAt, "medium") })} ·{" "}
+                        {t("daysRemaining", { days: remaining ?? 0 })}
+                      </p>
+                    )}
+                  </div>
+                  <form
+                    action={renewPlannerAccess.bind(null, p.id)}
+                    className="flex flex-none items-center gap-2"
+                  >
+                    <select
+                      name="durationMonths"
+                      className="rounded-lg border border-gold/25 px-2 py-1.5 text-xs"
+                    >
+                      <option value="1">{t("duration1Month")}</option>
+                      <option value="12">{t("duration1Year")}</option>
+                    </select>
+                    <button
+                      type="submit"
+                      className="rounded-lg border border-gold/25 px-3 py-1.5 text-xs font-medium hover:bg-warm"
+                    >
+                      {t("renew")}
+                    </button>
+                  </form>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <section className="mt-6">

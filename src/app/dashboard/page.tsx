@@ -9,6 +9,7 @@ import { EventStatusBadge } from "@/components/EventStatusBadge";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { toggleMasterCalendar } from "@/lib/actions/calendar";
 import { getCountdownMilestone } from "@/lib/eventCountdown";
+import { daysUntil as daysUntilAccessExpiry } from "@/lib/accessExpiry";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -35,6 +36,9 @@ export default async function DashboardPage() {
     !isCollaborator &&
     (organizer.accountType === "PLANNER" || organizer.eventsCreatedCount < 1);
   const showMultiEventStats = hasFeature(session.user.accountType, "multi_event_dashboard");
+  const accessRemainingDays = organizer.accessExpiresAt
+    ? daysUntilAccessExpiry(organizer.accessExpiresAt)
+    : null;
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const masterCalendarUrl = organizer.masterCalendarToken
     ? `${baseUrl}/api/calendar/organizer/${organizer.masterCalendarToken}`
@@ -78,6 +82,26 @@ export default async function DashboardPage() {
           )}
         </div>
       </header>
+
+      {organizer.accountType === "PLANNER" &&
+        organizer.accessExpiresAt &&
+        accessRemainingDays != null &&
+        accessRemainingDays >= 0 && (
+          <div
+            className={`mb-6 rounded-lg border p-4 text-sm shadow-sm backdrop-blur-xl ${
+              accessRemainingDays <= 3
+                ? "border-danger/30 bg-danger-bg text-danger"
+                : accessRemainingDays <= 14
+                  ? "border-warning/30 bg-warning-bg text-warning"
+                  : "border-gold/20 bg-white/60 text-ink"
+            }`}
+          >
+            {t("accessExpiresOn", {
+              date: formatDate(organizer.accessExpiresAt, "medium"),
+              days: accessRemainingDays,
+            })}
+          </div>
+        )}
 
       {showMultiEventStats && (
         <div className="mb-6 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-sm backdrop-blur-xl">
