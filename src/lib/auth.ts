@@ -3,7 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   trustHost: true,
   providers: [
     Credentials({
@@ -61,7 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.accountType = (user as { accountType: string }).accountType;
@@ -69,6 +69,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.teamRole = (user as { teamRole: string }).teamRole;
         token.teamMemberName = (user as { teamMemberName: string | null }).teamMemberName;
       }
+
+      if (trigger === "update" && session) {
+        const data = session as {
+          impersonateOrganizerId?: string;
+          impersonateName?: string;
+          impersonateAccountType?: "INDIVIDUAL" | "PLANNER";
+          stopImpersonation?: boolean;
+        };
+
+        // Un admin real "entra como" un cliente Particular: guarda su identidad real y la
+        // pisa temporalmente con la del cliente — así todas las verificaciones de dueño ya
+        // existentes en el resto de la app (organizerId === session.user.id) funcionan solas.
+        if (data.impersonateOrganizerId && token.isAdmin) {
+          token.realAdminId = token.id;
+          token.realAdminName = token.name;
+          token.realAdminAccountType = token.accountType;
+          token.id = data.impersonateOrganizerId;
+          token.name = data.impersonateName;
+          token.accountType = data.impersonateAccountType;
+          token.isAdmin = false;
+          token.teamRole = "OWNER";
+          token.teamMemberName = null;
+          token.impersonating = true;
+          token.impersonatedName = data.impersonateName;
+        }
+
+        if (data.stopImpersonation && token.realAdminId) {
+          token.id = token.realAdminId as string;
+          token.name = token.realAdminName as string | null | undefined;
+          token.accountType = token.realAdminAccountType as "INDIVIDUAL" | "PLANNER";
+          token.isAdmin = true;
+          token.teamRole = "OWNER";
+          token.teamMemberName = null;
+          token.impersonating = false;
+          token.impersonatedName = null;
+          delete token.realAdminId;
+          delete token.realAdminName;
+          delete token.realAdminAccountType;
+        }
+      }
+
       return token;
     },
     session({ session, token }) {
@@ -78,6 +119,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.isAdmin = token.isAdmin as boolean;
         session.user.teamRole = token.teamRole as "OWNER" | "ADMIN" | "COLLABORATOR";
         session.user.teamMemberName = token.teamMemberName as string | null;
+        session.user.impersonating = token.impersonating as boolean | undefined;
+        session.user.impersonatedName = token.impersonatedName as string | null | undefined;
       }
       return session;
     },

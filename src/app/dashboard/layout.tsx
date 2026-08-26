@@ -65,6 +65,8 @@ export default async function DashboardLayout({
         teamMemberName={session.user.teamMemberName}
         isCollaborator={isCollaborator}
         currentLocale={locale as "es" | "en"}
+        impersonating={session.user.impersonating}
+        impersonatedName={session.user.impersonatedName}
       />
       <div className="min-w-0 flex-1">{children}</div>
     </div>

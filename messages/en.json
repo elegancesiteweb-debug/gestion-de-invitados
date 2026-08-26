@@ -45,7 +45,9 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "collaboratorReadOnly": "Collaborator (read-only)",
-    "teamAdmin": "Team admin"
+    "teamAdmin": "Team admin",
+    "viewingAs": "Viewing as: {name} (Particular)",
+    "exitViewingAs": "Exit"
   },
   "auth": {
     "login": {
@@ -872,7 +874,12 @@
     "expiresOn": "Expires on {date}",
     "daysRemaining": "{days} day(s) left",
     "expiredDaysAgo": "Expired {days} day(s) ago",
-    "renew": "Renew access"
+    "renew": "Renew access",
+    "individualsTitle": "Particular clients ({count})",
+    "individualsHint": "Enter any Particular client's event to provide support — you can see and edit everything as if you owned the account.",
+    "noIndividuals": "No Particular accounts yet.",
+    "noEventYet": "No event yet",
+    "enterAs": "Enter as →"
   },
   "accessExpiredPage": {
     "title": "Your access expired",

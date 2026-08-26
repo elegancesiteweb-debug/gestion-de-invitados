@@ -45,7 +45,9 @@
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú",
     "collaboratorReadOnly": "Colaborador (solo lectura)",
-    "teamAdmin": "Admin de equipo"
+    "teamAdmin": "Admin de equipo",
+    "viewingAs": "Viendo como: {name} (Particular)",
+    "exitViewingAs": "Salir"
   },
   "auth": {
     "login": {
@@ -872,7 +874,12 @@
     "expiresOn": "Vence el {date}",
     "daysRemaining": "faltan {days} día(s)",
     "expiredDaysAgo": "Venció hace {days} día(s)",
-    "renew": "Renovar acceso"
+    "renew": "Renovar acceso",
+    "individualsTitle": "Clientes Particulares ({count})",
+    "individualsHint": "Entra al evento de cualquier cliente Particular para dar soporte — puedes ver y editar todo como si fueras el dueño de la cuenta.",
+    "noIndividuals": "Todavía no hay cuentas Particulares.",
+    "noEventYet": "Sin evento todavía",
+    "enterAs": "Entrar como →"
   },
   "accessExpiredPage": {
     "title": "Tu acceso venció",

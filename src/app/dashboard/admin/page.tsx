@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createAccessCode, renewPlannerAccess } from "@/lib/actions/admin";
+import { createAccessCode, renewPlannerAccess, impersonateOrganizer } from "@/lib/actions/admin";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { formatDate } from "@/lib/dates";
 import { daysUntil } from "@/lib/accessExpiry";
@@ -33,6 +33,12 @@ export default async function AdminPage({
     where: { accountType: "PLANNER" },
     orderBy: { createdAt: "asc" },
     select: { id: true, name: true, email: true, accessExpiresAt: true },
+  });
+
+  const individuals = await prisma.organizer.findMany({
+    where: { accountType: "INDIVIDUAL" },
+    orderBy: { createdAt: "asc" },
+    select: { id: true, name: true, email: true, events: { select: { title: true } } },
   });
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -175,6 +181,43 @@ export default async function AdminPage({
                 </div>
               );
             })}
+          </div>
+        )}
+      </section>
+
+      <section className="mt-6">
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">
+          {t("individualsTitle", { count: individuals.length })}
+        </h2>
+        <p className="mb-3 text-xs text-ink-muted">{t("individualsHint")}</p>
+        {individuals.length === 0 ? (
+          <p className="text-sm text-ink-muted">{t("noIndividuals")}</p>
+        ) : (
+          <div className="space-y-2">
+            {individuals.map((org) => (
+              <div
+                key={org.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-sm backdrop-blur-xl"
+              >
+                <div>
+                  <p className="font-medium text-ink">{org.name}</p>
+                  <p className="text-xs text-ink-muted">{org.email}</p>
+                  <p className="mt-1 text-xs text-ink-light">
+                    {org.events.length > 0
+                      ? org.events.map((e) => e.title).join(", ")
+                      : t("noEventYet")}
+                  </p>
+                </div>
+                <form action={impersonateOrganizer.bind(null, org.id)}>
+                  <button
+                    type="submit"
+                    className="rounded-lg border border-gold/25 px-3 py-1.5 text-xs font-medium hover:bg-warm"
+                  >
+                    {t("enterAs")}
+                  </button>
+                </form>
+              </div>
+            ))}
           </div>
         )}
       </section>
