@@ -463,16 +463,16 @@ export function LandingPage() {
               Para planners que manejan varias bodas y quieren un CRM completo.
             </p>
             <div className="mt-5 flex items-baseline gap-2">
-              <span className="font-serif text-4xl font-medium text-ink">$300</span>
+              <span className="font-serif text-4xl font-medium text-ink">$350</span>
               <span className="text-sm text-ink-muted">MXN / mes</span>
             </div>
             <div className="mt-3 border-t border-dashed border-gold/20 pt-3">
               <div className="flex items-baseline gap-2">
-                <span className="font-serif text-2xl font-medium text-ink">$2,400</span>
+                <span className="font-serif text-2xl font-medium text-ink">$3,000</span>
                 <span className="text-sm text-ink-muted">MXN / año</span>
               </div>
               <span className="mt-2 inline-block rounded-full bg-success-bg px-2.5 py-1 text-xs font-medium text-success">
-                Ahorras $1,200 MXN — 4 meses gratis
+                Ahorras $1,200 MXN al año (28% menos que pagando mes a mes)
               </span>
             </div>
             <ul className="mt-5 space-y-2 text-sm text-ink-muted">
