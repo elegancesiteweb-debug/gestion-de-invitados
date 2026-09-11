@@ -22,6 +22,7 @@ import { DocumentsPanel } from "@/components/event-dashboard/DocumentsPanel";
 import { ClientMessagesPanel } from "@/components/event-dashboard/ClientMessagesPanel";
 import { ActivityLogPanel } from "@/components/event-dashboard/ActivityLogPanel";
 import { FloorPlanPanel } from "@/components/event-dashboard/FloorPlanPanel";
+import { SocialPanel } from "@/components/event-dashboard/SocialPanel";
 import { EventStatusBadge } from "@/components/EventStatusBadge";
 import { formatDateTime } from "@/lib/dates";
 import { getCountdownMilestone } from "@/lib/eventCountdown";
@@ -104,6 +105,15 @@ export default async function EventDetailPage({
           where: { eventId: event.id },
           orderBy: { createdAt: "desc" },
           select: { id: true, name: true, fileSize: true, createdAt: true },
+        })
+      : [];
+
+  const socialPosts =
+    activeTab === "recuerdos"
+      ? await prisma.socialPost.findMany({
+          where: { eventId: event.id },
+          include: { identity: true },
+          orderBy: { createdAt: "desc" },
         })
       : [];
 
@@ -200,6 +210,13 @@ export default async function EventDetailPage({
             eventId={event.id}
             hasImage={Boolean(event.floorPlanImageType)}
             floorPlanData={event.floorPlanData}
+          />
+        ) : activeTab === "recuerdos" ? (
+          <SocialPanel
+            eventId={event.id}
+            socialToken={event.socialToken}
+            baseUrl={baseUrl}
+            posts={socialPosts}
           />
         ) : activeTab === "tareas" ? (
           <TasksPanel eventId={event.id} tasks={event.tasks} />

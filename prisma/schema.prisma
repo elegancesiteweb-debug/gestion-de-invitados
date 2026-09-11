@@ -261,6 +261,10 @@ model Event {
   clientPortalToken String? @unique
   calendarToken     String? @unique
 
+  // Muro de recuerdos (fotos/videos/historias de los invitados): null = desactivado.
+  // Es a la vez el interruptor de encendido y el token del link/QR público.
+  socialToken String? @unique
+
   // Portal "elige tu nombre" para proveedores: siempre presente (no es un toggle
   // como clientPortalToken), ya que solo lista nombres y enlaza a páginas que ya
   // son públicas individualmente por proveedor (EventVendor.confirmationToken).
@@ -292,6 +296,9 @@ model Event {
   activityLog        ActivityLogEntry[]
   documents          EventDocument[]
   satisfactionSurvey SatisfactionSurvey?
+  socialIdentities   SocialIdentity[]
+  socialPosts        SocialPost[]
+  socialStories      SocialStory[]
 
   @@index([organizerId])
 }
@@ -434,6 +441,87 @@ model Companion {
   createdAt DateTime @default(now())
 
   @@index([guestId])
+}
+
+enum SocialMediaType {
+  PHOTO
+  VIDEO
+}
+
+model SocialIdentity {
+  id          String @id @default(cuid())
+  eventId     String
+  event       Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  displayName String
+  // Referencia suelta (no FK real), a propósito: si el invitado se edita/elimina de la
+  // lista, sus fotos y comentarios en el muro deben seguir existiendo tal cual.
+  guestId     String?
+  deviceToken String   @unique
+  createdAt   DateTime @default(now())
+
+  posts    SocialPost[]
+  stories  SocialStory[]
+  likes    SocialLike[]
+  comments SocialComment[]
+
+  @@index([eventId])
+}
+
+model SocialPost {
+  id                   String          @id @default(cuid())
+  eventId              String
+  event                Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  identityId           String
+  identity             SocialIdentity  @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  type                 SocialMediaType
+  storageKey           String
+  caption              String?
+  hiddenFromProjection Boolean         @default(false)
+  createdAt            DateTime        @default(now())
+
+  likes    SocialLike[]
+  comments SocialComment[]
+
+  @@index([eventId])
+  @@index([identityId])
+}
+
+model SocialStory {
+  id         String          @id @default(cuid())
+  eventId    String
+  event      Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  identityId String
+  identity   SocialIdentity  @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  type       SocialMediaType
+  storageKey String
+  createdAt  DateTime        @default(now())
+
+  @@index([eventId])
+  @@index([identityId])
+}
+
+model SocialLike {
+  id         String         @id @default(cuid())
+  postId     String
+  post       SocialPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  identityId String
+  identity   SocialIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  createdAt  DateTime       @default(now())
+
+  @@unique([postId, identityId])
+  @@index([postId])
+}
+
+model SocialComment {
+  id         String         @id @default(cuid())
+  postId     String
+  post       SocialPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  identityId String
+  identity   SocialIdentity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  body       String
+  createdAt  DateTime       @default(now())
+
+  @@index([postId])
 }
 
 model Task {

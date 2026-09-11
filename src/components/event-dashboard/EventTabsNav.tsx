@@ -7,6 +7,7 @@ export const TAB_KEYS = [
   { key: "confirmaciones", feature: undefined },
   { key: "mesas", feature: undefined },
   { key: "plano", feature: undefined },
+  { key: "recuerdos", feature: undefined },
   { key: "tareas", feature: "checklist" as FeatureKey },
   { key: "presupuesto", feature: "budget_basic" as FeatureKey },
   { key: "timeline", feature: "day_timeline" as FeatureKey },
