@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { requireWriteAccess, requireAdmin } from "@/lib/actions/authz";
+import { deleteObject } from "@/lib/r2";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -57,7 +58,17 @@ export async function deleteSocialPost(eventId: string, postId: string) {
   await requireWriteAccess();
   await requireEventOwnedByOrganizer(eventId, organizerId);
 
-  await prisma.socialPost.deleteMany({ where: { id: postId, eventId } });
+  const post = await prisma.socialPost.findFirst({ where: { id: postId, eventId } });
+  if (!post) {
+    throw new Error("Publicación no encontrada");
+  }
+
+  await prisma.socialPost.delete({ where: { id: post.id } });
+  try {
+    await deleteObject(post.storageKey);
+  } catch {
+    // best-effort: si falla borrar el archivo de R2, no bloquea el borrado del registro
+  }
 
   revalidatePath(`/dashboard/events/${eventId}`);
 }

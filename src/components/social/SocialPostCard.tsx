@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useSyncExternalStore, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { toggleLike, createComment } from "@/lib/actions/socialPortal";
+import { toggleLike, createComment, deleteMyPost } from "@/lib/actions/socialPortal";
 import { MediaLightbox } from "@/components/social/MediaLightbox";
 import { formatDateTime } from "@/lib/dates";
 
@@ -50,6 +51,14 @@ function AudioWaveIcon() {
   );
 }
 
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
+      <path d="M9 3a1 1 0 0 0-1 1v1H4v2h1.1l.8 12.1A2 2 0 0 0 7.9 21h8.2a2 2 0 0 0 2-1.9L18.9 7H20V5h-4V4a1 1 0 0 0-1-1H9Zm1 2h4v0h-4Zm-1.9 2h9.8l-.8 12H8.9l-.8-12ZM10 9v9h1.5V9H10Zm2.5 0v9H14V9h-1.5Z" />
+    </svg>
+  );
+}
+
 export type FeedPost = {
   id: string;
   type: "PHOTO" | "VIDEO" | "AUDIO";
@@ -60,16 +69,21 @@ export type FeedPost = {
   likeCount: number;
   likedByMe: boolean;
   comments: Comment[];
+  isMine: boolean;
 };
+
+const COMMENT_PREVIEW_COUNT = 2;
 
 export function SocialPostCard({ token, post }: { token: string; post: FeedPost }) {
   const t = useTranslations("socialPage");
+  const router = useRouter();
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [comments, setComments] = useState(post.comments);
   const [commentText, setCommentText] = useState("");
-  const [showComments, setShowComments] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const [pulseKey, setPulseKey] = useState(0);
+  const [deleting, setDeleting] = useState(false);
   const [isPending, startTransition] = useTransition();
   const shareSupported = useSyncExternalStore(subscribeNoop, getShareSupported, getServerShareSupported);
 
@@ -79,6 +93,15 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
     } catch {
       // el usuario canceló el diálogo de compartir — no es un error a mostrar
     }
+  }
+
+  function handleDelete() {
+    if (!window.confirm(t("confirmDelete"))) return;
+    setDeleting(true);
+    startTransition(async () => {
+      await deleteMyPost(token, post.id);
+      router.refresh();
+    });
   }
 
   function handleLike() {
@@ -109,10 +132,21 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-gold via-gold-dark to-gold-deep text-xs font-semibold text-white shadow-sm">
           {post.authorName.charAt(0).toUpperCase()}
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-ink">{post.authorName}</p>
           <p className="text-[11px] text-ink-light">{formatDateTime(new Date(post.createdAt))}</p>
         </div>
+        {post.isMine && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            aria-label={t("delete")}
+            className="text-ink-light hover:text-danger disabled:opacity-50"
+          >
+            <TrashIcon />
+          </button>
+        )}
       </div>
 
       {post.type === "AUDIO" ? (
@@ -146,7 +180,7 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
           </button>
           <button
             type="button"
-            onClick={() => setShowComments((prev) => !prev)}
+            onClick={() => setShowAllComments((prev) => !prev)}
             className="flex items-center gap-1.5 text-sm font-medium text-ink-muted"
           >
             <CommentIcon />
@@ -164,30 +198,40 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
 
         {post.caption && <p className="mt-2 text-sm text-ink">{post.caption}</p>}
 
-        {showComments && (
-          <div className="mt-3 space-y-2 border-t border-gold/15 pt-2">
-            {comments.map((comment) => (
+        {comments.length > 0 && (
+          <div className="mt-2 space-y-1">
+            {(showAllComments ? comments : comments.slice(0, COMMENT_PREVIEW_COUNT)).map((comment) => (
               <p key={comment.id} className="text-sm text-ink">
                 <span className="font-medium">{comment.authorName}</span>{" "}
                 <span className="text-ink-muted">{comment.body}</span>
               </p>
             ))}
-            <form onSubmit={handleComment} className="flex items-center gap-2">
-              <input
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder={t("commentPlaceholder")}
-                className="flex-1 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
-              />
+            {comments.length > COMMENT_PREVIEW_COUNT && (
               <button
-                type="submit"
-                className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-xs font-medium text-white"
+                type="button"
+                onClick={() => setShowAllComments((prev) => !prev)}
+                className="text-xs text-ink-muted hover:underline"
               >
-                {t("send")}
+                {showAllComments ? t("showLessComments") : t("viewAllComments", { count: comments.length })}
               </button>
-            </form>
+            )}
           </div>
         )}
+
+        <form onSubmit={handleComment} className="mt-3 flex items-center gap-2 border-t border-gold/15 pt-2">
+          <input
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            placeholder={t("commentPlaceholder")}
+            className="flex-1 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-xs font-medium text-white"
+          >
+            {t("send")}
+          </button>
+        </form>
       </div>
     </div>
   );

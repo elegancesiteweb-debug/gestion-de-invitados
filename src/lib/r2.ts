@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "crypto";
 import type { Readable } from "stream";
@@ -52,6 +52,11 @@ export async function getObjectStream(storageKey: string): Promise<Readable> {
   const command = new GetObjectCommand({ Bucket: getBucketName(), Key: storageKey });
   const response = await client.send(command);
   return response.Body as Readable;
+}
+
+export async function deleteObject(storageKey: string): Promise<void> {
+  const client = getR2Client();
+  await client.send(new DeleteObjectCommand({ Bucket: getBucketName(), Key: storageKey }));
 }
 
 export function getPublicUrl(storageKey: string): string {

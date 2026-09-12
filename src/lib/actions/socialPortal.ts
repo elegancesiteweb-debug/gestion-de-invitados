@@ -4,10 +4,10 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { createUploadUrl, buildStorageKey, getPublicUrl } from "@/lib/r2";
+import { createUploadUrl, buildStorageKey, getPublicUrl, deleteObject } from "@/lib/r2";
 
 const MAX_PHOTO_BYTES = 15 * 1024 * 1024;
-const MAX_VIDEO_BYTES = 150 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 300 * 1024 * 1024;
 const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
 
 async function requireEventBySocialToken(token: string) {
@@ -100,7 +100,7 @@ export async function requestUploadUrl(token: string, contentType: string, fileS
   if (fileSize > maxBytes) {
     throw new Error(
       isVideo
-        ? "El video no puede pesar más de 150MB"
+        ? "El video no puede pesar más de 300MB"
         : isAudio
           ? "El audio no puede pesar más de 20MB"
           : "La foto no puede pesar más de 15MB"
@@ -188,6 +188,58 @@ export async function createComment(token: string, postId: string, formData: For
   }
 
   await prisma.socialComment.create({ data: { postId, identityId: identity.id, body } });
+
+  revalidatePath(`/social/${token}`);
+}
+
+// El invitado solo puede borrar lo que él mismo subió (dueño = su propia
+// identidad de cookie, no la del evento) — a diferencia de la organización,
+// que borra desde el panel del organizador (setPostHidden/deleteSocialPost
+// en src/lib/actions/social.ts) sin este chequeo de autoría.
+export async function deleteMyPost(token: string, postId: string) {
+  const event = await requireEventBySocialToken(token);
+  const identity = await getSocialIdentity(event.id);
+  if (!identity) {
+    throw new Error("Primero dinos quién eres");
+  }
+
+  const post = await prisma.socialPost.findFirst({
+    where: { id: postId, eventId: event.id, identityId: identity.id },
+  });
+  if (!post) {
+    throw new Error("Publicación no encontrada");
+  }
+
+  await prisma.socialPost.delete({ where: { id: post.id } });
+  try {
+    await deleteObject(post.storageKey);
+  } catch {
+    // best-effort: si falla borrar el archivo de R2, no bloquea el borrado del registro
+  }
+
+  revalidatePath(`/social/${token}`);
+}
+
+export async function deleteMyStory(token: string, storyId: string) {
+  const event = await requireEventBySocialToken(token);
+  const identity = await getSocialIdentity(event.id);
+  if (!identity) {
+    throw new Error("Primero dinos quién eres");
+  }
+
+  const story = await prisma.socialStory.findFirst({
+    where: { id: storyId, eventId: event.id, identityId: identity.id },
+  });
+  if (!story) {
+    throw new Error("Historia no encontrada");
+  }
+
+  await prisma.socialStory.delete({ where: { id: story.id } });
+  try {
+    await deleteObject(story.storageKey);
+  } catch {
+    // best-effort: si falla borrar el archivo de R2, no bloquea el borrado del registro
+  }
 
   revalidatePath(`/social/${token}`);
 }

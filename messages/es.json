@@ -408,7 +408,11 @@
     "filterALL": "Todo",
     "filterPHOTO": "Fotos",
     "filterVIDEO": "Videos",
-    "filterAUDIO": "Audios"
+    "filterAUDIO": "Audios",
+    "delete": "Eliminar",
+    "confirmDelete": "¿Seguro que quieres eliminar esto?",
+    "viewAllComments": "Ver los {count} comentarios",
+    "showLessComments": "Ver menos"
   },
   "socialPanel": {
     "title": "Muro de recuerdos",

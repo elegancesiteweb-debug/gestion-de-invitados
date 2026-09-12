@@ -2,12 +2,20 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { SocialUploadButton } from "@/components/social/SocialUploadButton";
 import { SocialPostCard, type FeedPost } from "@/components/social/SocialPostCard";
 import { HighlightsCarousel, type HighlightPost } from "@/components/social/HighlightsCarousel";
+import { deleteMyStory } from "@/lib/actions/socialPortal";
 
-type FeedStory = { id: string; type: "PHOTO" | "VIDEO" | "AUDIO"; url: string; authorName: string };
+type FeedStory = {
+  id: string;
+  type: "PHOTO" | "VIDEO" | "AUDIO";
+  url: string;
+  authorName: string;
+  isMine: boolean;
+};
 type PostFilter = "ALL" | "PHOTO" | "VIDEO" | "AUDIO";
 
 const STORY_PHOTO_DURATION_MS = 5000;
@@ -21,18 +29,22 @@ function StoryOverlay({
   onClose,
   onPrev,
   onNext,
+  onDelete,
   closeLabel,
   previousLabel,
   nextLabel,
+  deleteLabel,
 }: {
   stories: FeedStory[];
   index: number;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
+  onDelete: (storyId: string) => void;
   closeLabel: string;
   previousLabel: string;
   nextLabel: string;
+  deleteLabel: string;
 }) {
   const story = stories[index];
   const [progress, setProgress] = useState(0);
@@ -99,15 +111,26 @@ function StoryOverlay({
           </div>
         ))}
       </div>
-      <div className="absolute inset-x-0 top-5 flex items-center justify-between p-3">
+      <div className="absolute inset-x-0 top-5 z-20 flex items-center justify-between gap-2 p-3">
         <span className="rounded-full bg-black/50 px-3 py-1 text-xs text-white">{story.authorName}</span>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-full bg-black/50 px-3 py-1 text-sm text-white"
-        >
-          {closeLabel}
-        </button>
+        <div className="flex items-center gap-2">
+          {story.isMine && (
+            <button
+              type="button"
+              onClick={() => onDelete(story.id)}
+              className="rounded-full bg-black/50 px-3 py-1 text-sm text-white"
+            >
+              {deleteLabel}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full bg-black/50 px-3 py-1 text-sm text-white"
+          >
+            {closeLabel}
+          </button>
+        </div>
       </div>
       <button
         type="button"
@@ -147,6 +170,7 @@ export function SocialFeed({
   highlightPosts: HighlightPost[];
 }) {
   const t = useTranslations("socialPage");
+  const router = useRouter();
   const [viewingIndex, setViewingIndex] = useState<number | null>(null);
   const [filter, setFilter] = useState<PostFilter>("ALL");
 
@@ -166,16 +190,23 @@ export function SocialFeed({
     [stories.length]
   );
 
+  async function handleDeleteStory(storyId: string) {
+    if (!window.confirm(t("confirmDelete"))) return;
+    closeViewer();
+    await deleteMyStory(token, storyId);
+    router.refresh();
+  }
+
   return (
     <div className="relative min-h-screen w-full bg-gradient-to-br from-beige-glass via-warm to-terracotta-glass/60">
-      <div className="mx-auto w-full max-w-lg px-4 py-6">
+      <div className="mx-auto w-full max-w-lg px-4 py-6 lg:max-w-4xl">
         {coverImageUrl && (
           <div className="relative mb-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={coverImageUrl}
               alt=""
-              className="h-40 w-full rounded-3xl border border-white/40 object-cover shadow-lg"
+              className="h-40 w-full rounded-3xl border border-white/40 object-cover shadow-lg lg:h-64"
             />
             {coupleImageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -248,15 +279,15 @@ export function SocialFeed({
           </div>
         )}
 
-        <div className="mt-6 space-y-4 pb-24">
+        <div className="mt-6 grid grid-cols-1 gap-4 pb-24 lg:grid-cols-2 lg:items-start">
           {filteredPosts.length === 0 ? (
-            <p className="py-10 text-center text-sm text-ink-muted">{t("empty")}</p>
+            <p className="py-10 text-center text-sm text-ink-muted lg:col-span-2">{t("empty")}</p>
           ) : (
             filteredPosts.map((post) => <SocialPostCard key={post.id} token={token} post={post} />)
           )}
         </div>
 
-        <div className="fixed bottom-6 left-1/2 z-40 w-full max-w-lg -translate-x-1/2 px-4">
+        <div className="fixed bottom-6 left-1/2 z-40 w-full max-w-lg -translate-x-1/2 px-4 lg:max-w-4xl">
           <div className="ml-auto w-fit">
             <SocialUploadButton token={token} />
           </div>
@@ -272,9 +303,11 @@ export function SocialFeed({
                 onClose={closeViewer}
                 onPrev={goPrev}
                 onNext={goNext}
+                onDelete={handleDeleteStory}
                 closeLabel={t("close")}
                 previousLabel={t("previous")}
                 nextLabel={t("next")}
+                deleteLabel={t("delete")}
               />
             </div>,
             document.body

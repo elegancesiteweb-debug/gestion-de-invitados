@@ -408,7 +408,11 @@
     "filterALL": "All",
     "filterPHOTO": "Photos",
     "filterVIDEO": "Videos",
-    "filterAUDIO": "Audio"
+    "filterAUDIO": "Audio",
+    "delete": "Delete",
+    "confirmDelete": "Are you sure you want to delete this?",
+    "viewAllComments": "View all {count} comments",
+    "showLessComments": "Show less"
   },
   "socialPanel": {
     "title": "Memory wall",

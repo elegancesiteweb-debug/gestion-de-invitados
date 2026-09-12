@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { requestUploadUrl, createSocialPost, createSocialStory } from "@/lib/actions/socialPortal";
+import { resolveContentType } from "@/lib/mediaType";
 
 export function SocialUploadButton({ token }: { token: string }) {
   const t = useTranslations("socialPage");
@@ -38,10 +39,11 @@ export function SocialUploadButton({ token }: { token: string }) {
     setUploading(true);
     setError(null);
     try {
-      const { uploadUrl, storageKey, type } = await requestUploadUrl(token, file.type, file.size);
+      const contentType = resolveContentType(file.type, file.name);
+      const { uploadUrl, storageKey, type } = await requestUploadUrl(token, contentType, file.size);
       const res = await fetch(uploadUrl, {
         method: "PUT",
-        headers: { "Content-Type": file.type },
+        headers: { "Content-Type": contentType },
         body: file,
       });
       if (!res.ok) {
@@ -67,7 +69,7 @@ export function SocialUploadButton({ token }: { token: string }) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*,video/*,audio/*"
+        accept="image/*,video/*,audio/*,.mov,.heic,.heif,.m4a,.3gp,.mkv"
         className="hidden"
         onChange={handleFileChange}
       />

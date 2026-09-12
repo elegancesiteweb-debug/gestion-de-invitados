@@ -118,6 +118,7 @@ export default async function SocialWallPage({
       body: comment.body,
       authorName: comment.identity.displayName,
     })),
+    isMine: post.identityId === identity.id,
   }));
 
   const feedStories = stories.map((story) => ({
@@ -125,6 +126,7 @@ export default async function SocialWallPage({
     type: story.type,
     url: getPublicUrl(story.storageKey),
     authorName: story.identity.displayName,
+    isMine: story.identityId === identity.id,
   }));
 
   // "Momentos destacados": quién ha subido más (contado sobre los posts ya
