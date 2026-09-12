@@ -18,6 +18,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
 
         const organizer = await prisma.organizer.findUnique({ where: { email } });
         if (organizer) {
+          if (!organizer.passwordHash) return null;
           const isValid = await bcrypt.compare(password, organizer.passwordHash);
           if (!isValid) return null;
 
@@ -50,6 +51,33 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
           isAdmin: false,
           teamRole: teamMember.role,
           teamMemberName: teamMember.name,
+        };
+      },
+    }),
+    // Acceso permanente para cuentas Particulares creadas por el admin (sin
+    // correo/contraseña): la clave en sí es la credencial, reutilizable
+    // siempre — no hay redención de un solo uso como con AccessCode.
+    Credentials({
+      id: "access-code",
+      name: "Clave de acceso",
+      credentials: {
+        code: { label: "Clave", type: "text" },
+      },
+      authorize: async (credentials) => {
+        const code = (credentials?.code as string | undefined)?.trim().toUpperCase();
+        if (!code) return null;
+
+        const organizer = await prisma.organizer.findUnique({ where: { loginCode: code } });
+        if (!organizer) return null;
+
+        return {
+          id: organizer.id,
+          name: organizer.name,
+          email: organizer.email,
+          accountType: organizer.accountType,
+          isAdmin: organizer.isAdmin,
+          teamRole: "OWNER",
+          teamMemberName: null,
         };
       },
     }),

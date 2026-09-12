@@ -3,7 +3,12 @@ import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createAccessCode, renewPlannerAccess, impersonateOrganizer } from "@/lib/actions/admin";
+import {
+  createAccessCode,
+  createParticularAccess,
+  renewPlannerAccess,
+  impersonateOrganizer,
+} from "@/lib/actions/admin";
 import { EventSocialAccessList } from "@/components/admin/EventSocialAccessList";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { formatDate } from "@/lib/dates";
@@ -39,7 +44,7 @@ export default async function AdminPage({
   const individuals = await prisma.organizer.findMany({
     where: { accountType: "INDIVIDUAL" },
     orderBy: { createdAt: "asc" },
-    select: { id: true, name: true, email: true, events: { select: { title: true } } },
+    select: { id: true, name: true, email: true, loginCode: true, events: { select: { title: true } } },
   });
 
   const allEvents = await prisma.event.findMany({
@@ -102,19 +107,9 @@ export default async function AdminPage({
 
       <section className="mt-6 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
         <h2 className="font-serif text-lg font-medium text-ink">{t("generateNewCode")}</h2>
+        <p className="mt-1 text-xs text-ink-muted">{t("generateNewCodeHint")}</p>
         <form action={createAccessCode} className="mt-3 flex flex-wrap items-end gap-3">
-          <div>
-            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
-              {t("planType")}
-            </label>
-            <select
-              name="accountType"
-              className="rounded-lg border border-gold/25 px-3 py-2 text-sm"
-            >
-              <option value="INDIVIDUAL">{t("individual")}</option>
-              <option value="PLANNER">{t("planner")}</option>
-            </select>
-          </div>
+          <input type="hidden" name="accountType" value="PLANNER" />
           <div>
             <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
               {t("duration")}
@@ -144,6 +139,30 @@ export default async function AdminPage({
             className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2 text-sm font-medium text-white shadow-md shadow-gold/30 hover:shadow-lg"
           >
             {t("generate")}
+          </button>
+        </form>
+      </section>
+
+      <section className="mt-6 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
+        <h2 className="font-serif text-lg font-medium text-ink">{t("particularAccessTitle")}</h2>
+        <p className="mt-1 text-xs text-ink-muted">{t("particularAccessHint")}</p>
+        <form action={createParticularAccess} className="mt-3 flex flex-wrap items-end gap-3">
+          <div className="flex-1">
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+              {t("customerName")}
+            </label>
+            <input
+              name="name"
+              required
+              placeholder={t("customerNamePlaceholder")}
+              className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
+            />
+          </div>
+          <button
+            type="submit"
+            className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2 text-sm font-medium text-white shadow-md shadow-gold/30 hover:shadow-lg"
+          >
+            {t("generateAccess")}
           </button>
         </form>
       </section>
@@ -220,7 +239,13 @@ export default async function AdminPage({
               >
                 <div>
                   <p className="font-medium text-ink">{org.name}</p>
-                  <p className="text-xs text-ink-muted">{org.email}</p>
+                  {org.loginCode ? (
+                    <p className="text-xs text-ink-muted">
+                      {t("loginCodeLabel")} <span className="font-mono">{org.loginCode}</span>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-ink-muted">{org.email}</p>
+                  )}
                   <p className="mt-1 text-xs text-ink-light">
                     {org.events.length > 0
                       ? org.events.map((e) => e.title).join(", ")

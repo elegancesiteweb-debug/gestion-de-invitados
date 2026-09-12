@@ -16,8 +16,16 @@ model Organizer {
   id           String   @id @default(cuid())
   name         String
   email        String   @unique
-  passwordHash String
+  // Opcional: las cuentas Particulares creadas por el admin con clave permanente
+  // (ver loginCode) no tienen contraseña — entran solo con la clave.
+  passwordHash String?
   createdAt    DateTime @default(now())
+
+  // Clave permanente de acceso para cuentas Particulares creadas por el admin
+  // (login sin correo/contraseña, ver src/lib/auth.ts provider "access-code").
+  // null para Wedding Planners y para los Particulares que ya se registraron
+  // con correo/contraseña antes de que existiera este mecanismo.
+  loginCode String? @unique
 
   accountType        AccountType @default(INDIVIDUAL)
   eventsCreatedCount Int         @default(0)

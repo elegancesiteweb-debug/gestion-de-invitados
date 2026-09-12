@@ -35,6 +35,51 @@ export async function createAccessCode(formData: FormData) {
   redirect(`/dashboard/admin?created=${encodeURIComponent(code)}`);
 }
 
+// Alta directa de un cliente Particular: el admin escribe su nombre y la cuenta
+// se crea de una vez con una clave permanente — el cliente nunca se registra,
+// entra siempre con esa clave (ver provider "access-code" en src/lib/auth.ts).
+export async function createParticularAccess(formData: FormData) {
+  await requireAdmin();
+
+  const name = (formData.get("name") as string | null)?.trim();
+  if (!name) {
+    throw new Error("Escribe el nombre del cliente");
+  }
+
+  let code = generateAccessCode("INDIVIDUAL");
+  for (let attempts = 0; attempts < 5; attempts++) {
+    const existing = await prisma.organizer.findUnique({ where: { loginCode: code } });
+    if (!existing) break;
+    code = generateAccessCode("INDIVIDUAL");
+  }
+
+  const placeholderEmail = `particular-${code.toLowerCase()}@sincorreo.eleganciasite.local`;
+
+  await prisma.$transaction(async (tx) => {
+    const organizer = await tx.organizer.create({
+      data: {
+        name,
+        email: placeholderEmail,
+        passwordHash: null,
+        accountType: "INDIVIDUAL",
+        loginCode: code,
+      },
+    });
+
+    await tx.accessCode.create({
+      data: {
+        code,
+        accountType: "INDIVIDUAL",
+        label: name,
+        usedAt: new Date(),
+        usedByOrganizerId: organizer.id,
+      },
+    });
+  });
+
+  redirect(`/dashboard/admin?created=${encodeURIComponent(code)}`);
+}
+
 export async function renewPlannerAccess(organizerId: string, formData: FormData) {
   await requireAdmin();
 

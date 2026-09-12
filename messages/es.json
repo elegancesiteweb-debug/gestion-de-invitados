@@ -60,7 +60,11 @@
       "submitting": "Ingresando...",
       "error": "Email o contraseña incorrectos",
       "noAccount": "¿No tienes cuenta?",
-      "signUp": "Regístrate"
+      "signUp": "Regístrate",
+      "plannerTab": "Wedding Planner",
+      "particularTab": "Particular",
+      "accessCode": "Clave de acceso",
+      "codeError": "Clave incorrecta"
     },
     "register": {
       "badge": "Acceso por invitación",
@@ -909,6 +913,13 @@
     "codeCreated": "Código creado",
     "copyCode": "Copiar código",
     "generateNewCode": "Generar código nuevo",
+    "generateNewCodeHint": "Código de registro para Wedding Planner (correo y contraseña).",
+    "particularAccessTitle": "Nuevo acceso Particular",
+    "particularAccessHint": "Escribe el nombre del cliente y genera su clave — entra directo a su cuenta con esa clave, sin correo ni contraseña, las veces que quiera.",
+    "customerName": "Nombre del cliente",
+    "customerNamePlaceholder": "Nombre y apellido",
+    "generateAccess": "Generar clave",
+    "loginCodeLabel": "Clave:",
     "planType": "Tipo de plan",
     "individual": "Particular (1 evento)",
     "planner": "Wedding Planner (ilimitado)",
