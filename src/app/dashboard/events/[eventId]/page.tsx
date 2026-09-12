@@ -218,6 +218,8 @@ export default async function EventDetailPage({
             socialToken={event.socialToken}
             baseUrl={baseUrl}
             posts={socialPosts}
+            hasCoverImage={Boolean(event.socialCoverImageType)}
+            hasCoupleImage={Boolean(event.socialCoupleImageType)}
           />
         ) : activeTab === "tareas" ? (
           <TasksPanel eventId={event.id} tasks={event.tasks} />

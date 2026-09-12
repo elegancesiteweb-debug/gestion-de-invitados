@@ -8,6 +8,7 @@ import { createUploadUrl, buildStorageKey, getPublicUrl } from "@/lib/r2";
 
 const MAX_PHOTO_BYTES = 15 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 150 * 1024 * 1024;
+const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
 
 async function requireEventBySocialToken(token: string) {
   const event = await prisma.event.findUnique({ where: { socialToken: token } });
@@ -91,23 +92,31 @@ export async function requestUploadUrl(token: string, contentType: string, fileS
 
   const isVideo = contentType.startsWith("video/");
   const isPhoto = contentType.startsWith("image/");
-  if (!isVideo && !isPhoto) {
-    throw new Error("Solo se aceptan fotos o videos");
+  const isAudio = contentType.startsWith("audio/");
+  if (!isVideo && !isPhoto && !isAudio) {
+    throw new Error("Solo se aceptan fotos, videos o audios");
   }
-  const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_PHOTO_BYTES;
+  const maxBytes = isVideo ? MAX_VIDEO_BYTES : isAudio ? MAX_AUDIO_BYTES : MAX_PHOTO_BYTES;
   if (fileSize > maxBytes) {
-    throw new Error(isVideo ? "El video no puede pesar más de 150MB" : "La foto no puede pesar más de 15MB");
+    throw new Error(
+      isVideo
+        ? "El video no puede pesar más de 150MB"
+        : isAudio
+          ? "El audio no puede pesar más de 20MB"
+          : "La foto no puede pesar más de 15MB"
+    );
   }
 
   const storageKey = buildStorageKey(event.id, contentType);
   const uploadUrl = await createUploadUrl(storageKey, contentType);
-  return { uploadUrl, storageKey, type: (isVideo ? "VIDEO" : "PHOTO") as "VIDEO" | "PHOTO" };
+  const type: "VIDEO" | "PHOTO" | "AUDIO" = isVideo ? "VIDEO" : isAudio ? "AUDIO" : "PHOTO";
+  return { uploadUrl, storageKey, type };
 }
 
 export async function createSocialPost(
   token: string,
   storageKey: string,
-  type: "PHOTO" | "VIDEO",
+  type: "PHOTO" | "VIDEO" | "AUDIO",
   caption: string
 ) {
   const event = await requireEventBySocialToken(token);
@@ -123,7 +132,7 @@ export async function createSocialPost(
   revalidatePath(`/social/${token}`);
 }
 
-export async function createSocialStory(token: string, storageKey: string, type: "PHOTO" | "VIDEO") {
+export async function createSocialStory(token: string, storageKey: string, type: "PHOTO" | "VIDEO" | "AUDIO") {
   const event = await requireEventBySocialToken(token);
   const identity = await getSocialIdentity(event.id);
   if (!identity) {
@@ -185,7 +194,7 @@ export async function createComment(token: string, postId: string, formData: For
 
 export type ProjectionItem = {
   id: string;
-  type: "PHOTO" | "VIDEO";
+  type: "PHOTO" | "VIDEO" | "AUDIO";
   url: string;
   authorName: string;
   caption: string | null;

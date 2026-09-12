@@ -67,7 +67,7 @@ export function SocialUploadButton({ token }: { token: string }) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*,video/*"
+        accept="image/*,video/*,audio/*"
         className="hidden"
         onChange={handleFileChange}
       />

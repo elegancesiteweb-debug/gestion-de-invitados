@@ -61,3 +61,68 @@ export async function deleteSocialPost(eventId: string, postId: string) {
 
   revalidatePath(`/dashboard/events/${eventId}`);
 }
+
+const MAX_SOCIAL_IMAGE_BYTES = 5 * 1024 * 1024;
+
+async function uploadSocialImage(
+  eventId: string,
+  formData: FormData,
+  fieldName: string,
+  column: "socialCoverImage" | "socialCoupleImage"
+) {
+  const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
+
+  const file = formData.get(fieldName);
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("Selecciona una imagen");
+  }
+  if (!file.type.startsWith("image/")) {
+    throw new Error("El archivo debe ser una imagen");
+  }
+  if (file.size > MAX_SOCIAL_IMAGE_BYTES) {
+    throw new Error("La imagen no puede pesar más de 5MB");
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const result = await prisma.event.updateMany({
+    where: { id: eventId, organizerId },
+    data: { [column]: buffer, [`${column}Type`]: file.type },
+  });
+  if (result.count === 0) {
+    throw new Error("Evento no encontrado");
+  }
+
+  revalidatePath(`/dashboard/events/${eventId}`);
+}
+
+async function removeSocialImage(
+  eventId: string,
+  column: "socialCoverImage" | "socialCoupleImage"
+) {
+  const organizerId = await requireOrganizerId();
+  await requireWriteAccess();
+
+  await prisma.event.updateMany({
+    where: { id: eventId, organizerId },
+    data: { [column]: null, [`${column}Type`]: null },
+  });
+
+  revalidatePath(`/dashboard/events/${eventId}`);
+}
+
+export async function uploadSocialCoverImage(eventId: string, formData: FormData) {
+  await uploadSocialImage(eventId, formData, "cover", "socialCoverImage");
+}
+
+export async function removeSocialCoverImage(eventId: string) {
+  await removeSocialImage(eventId, "socialCoverImage");
+}
+
+export async function uploadSocialCoupleImage(eventId: string, formData: FormData) {
+  await uploadSocialImage(eventId, formData, "couple", "socialCoupleImage");
+}
+
+export async function removeSocialCoupleImage(eventId: string) {
+  await removeSocialImage(eventId, "socialCoupleImage");
+}

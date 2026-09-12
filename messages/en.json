@@ -402,7 +402,13 @@
     "cancel": "Cancel",
     "publish": "Publish",
     "uploading": "Uploading...",
-    "uploadError": "Couldn't upload the file"
+    "uploadError": "Couldn't upload the file",
+    "highlightsTitle": "Featured moments",
+    "topUploader": "{name} has uploaded the most",
+    "filterALL": "All",
+    "filterPHOTO": "Photos",
+    "filterVIDEO": "Videos",
+    "filterAUDIO": "Audio"
   },
   "socialPanel": {
     "title": "Memory wall",
@@ -420,6 +426,10 @@
     "castHelpAndroid": "On Android: open Chrome's ⋮ menu and tap \"Cast\" to send it to your TV.",
     "castHelpOther": "Use your phone's screen mirroring/casting feature to view it on a TV.",
     "downloadZip": "Download all (.zip)",
+    "coverTitle": "Cover and couple photo",
+    "coverHint": "Shown above the wall your guests see.",
+    "upload": "Upload",
+    "remove": "Remove",
     "postsTitle": "Uploaded memories ({count})",
     "noPosts": "No memories uploaded yet.",
     "showInProjection": "Show in projection",

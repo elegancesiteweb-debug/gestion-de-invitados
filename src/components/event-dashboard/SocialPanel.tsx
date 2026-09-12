@@ -1,6 +1,13 @@
 import { getTranslations } from "next-intl/server";
 import type { SocialPost, SocialIdentity } from "@prisma/client";
-import { setPostHidden, deleteSocialPost } from "@/lib/actions/social";
+import {
+  setPostHidden,
+  deleteSocialPost,
+  uploadSocialCoverImage,
+  removeSocialCoverImage,
+  uploadSocialCoupleImage,
+  removeSocialCoupleImage,
+} from "@/lib/actions/social";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { CastButton } from "@/components/social/CastButton";
 import { getPublicUrl } from "@/lib/r2";
@@ -17,12 +24,16 @@ export async function SocialPanel({
   socialToken,
   baseUrl,
   posts,
+  hasCoverImage,
+  hasCoupleImage,
 }: {
   eventId: string;
   eventTitle: string;
   socialToken: string | null;
   baseUrl: string;
   posts: PostWithIdentity[];
+  hasCoverImage: boolean;
+  hasCoupleImage: boolean;
 }) {
   const t = await getTranslations("socialPanel");
 
@@ -88,6 +99,65 @@ export async function SocialPanel({
         )}
       </section>
 
+      <section className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl">
+        <h2 className="font-serif text-lg font-medium text-ink">{t("coverTitle")}</h2>
+        <p className="mt-1 text-xs text-ink-muted">{t("coverHint")}</p>
+
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          {hasCoverImage && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/api/events/${eventId}/social-cover`}
+                alt=""
+                className="h-16 w-28 rounded-lg object-cover"
+              />
+              <form action={removeSocialCoverImage.bind(null, eventId)}>
+                <button type="submit" className="text-xs text-danger hover:underline">
+                  {t("remove")}
+                </button>
+              </form>
+            </>
+          )}
+          <form action={uploadSocialCoverImage.bind(null, eventId)} className="flex items-center gap-2">
+            <input type="file" name="cover" accept="image/*" required className="text-sm" />
+            <button
+              type="submit"
+              className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm font-medium text-white hover:shadow-lg"
+            >
+              {t("upload")}
+            </button>
+          </form>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-gold/15 pt-4">
+          {hasCoupleImage && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/api/events/${eventId}/social-couple`}
+                alt=""
+                className="h-16 w-16 rounded-full object-cover"
+              />
+              <form action={removeSocialCoupleImage.bind(null, eventId)}>
+                <button type="submit" className="text-xs text-danger hover:underline">
+                  {t("remove")}
+                </button>
+              </form>
+            </>
+          )}
+          <form action={uploadSocialCoupleImage.bind(null, eventId)} className="flex items-center gap-2">
+            <input type="file" name="couple" accept="image/*" required className="text-sm" />
+            <button
+              type="submit"
+              className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm font-medium text-white hover:shadow-lg"
+            >
+              {t("upload")}
+            </button>
+          </form>
+        </div>
+      </section>
+
       <section>
         <h2 className="mb-3 font-serif text-lg font-medium text-ink">
           {t("postsTitle", { count: posts.length })}
@@ -100,6 +170,10 @@ export async function SocialPanel({
               <div key={post.id} className="overflow-hidden rounded-lg border border-gold/20 bg-white shadow-sm">
                 {post.type === "VIDEO" ? (
                   <video src={getPublicUrl(post.storageKey)} className="h-32 w-full object-cover" muted />
+                ) : post.type === "AUDIO" ? (
+                  <div className="flex h-32 w-full items-center justify-center bg-gradient-to-br from-gold-light/40 to-gold/20 text-3xl">
+                    🎵
+                  </div>
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={getPublicUrl(post.storageKey)} alt="" className="h-32 w-full object-cover" />

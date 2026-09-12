@@ -402,7 +402,13 @@
     "cancel": "Cancelar",
     "publish": "Publicar",
     "uploading": "Subiendo...",
-    "uploadError": "No se pudo subir el archivo"
+    "uploadError": "No se pudo subir el archivo",
+    "highlightsTitle": "Momentos destacados",
+    "topUploader": "{name} ha subido más recuerdos",
+    "filterALL": "Todo",
+    "filterPHOTO": "Fotos",
+    "filterVIDEO": "Videos",
+    "filterAUDIO": "Audios"
   },
   "socialPanel": {
     "title": "Muro de recuerdos",
@@ -420,6 +426,10 @@
     "castHelpAndroid": "En Android: abre el menú ⋮ de Chrome y toca \"Transmitir\" para enviarlo a tu TV.",
     "castHelpOther": "Usa la función de transmitir o duplicar pantalla de tu celular para verlo en una TV.",
     "downloadZip": "Descargar todo (.zip)",
+    "coverTitle": "Portada y foto de los novios",
+    "coverHint": "Se muestran arriba del muro que ven tus invitados.",
+    "upload": "Subir",
+    "remove": "Quitar",
     "postsTitle": "Recuerdos subidos ({count})",
     "noPosts": "Todavía no hay recuerdos subidos.",
     "showInProjection": "Mostrar en proyección",

@@ -66,6 +66,16 @@ export function ProjectionViewer({
               className="h-full w-full object-contain"
               onEnded={() => setIndex((prev) => (items.length > 0 ? (prev + 1) % items.length : 0))}
             />
+          ) : current.type === "AUDIO" ? (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-6 bg-gradient-to-br from-gold-dark to-gold-deep">
+              <span className="text-7xl">🎵</span>
+              <audio
+                key={current.id}
+                src={current.url}
+                autoPlay
+                onEnded={() => setIndex((prev) => (items.length > 0 ? (prev + 1) % items.length : 0))}
+              />
+            </div>
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img key={current.id} src={current.url} alt="" className="h-full w-full object-contain" />

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getPublicUrl } from "@/lib/r2";
 import { identifyGuest, getSocialIdentity } from "@/lib/actions/socialPortal";
 import { SocialFeed } from "@/components/social/SocialFeed";
+import type { HighlightPost } from "@/components/social/HighlightsCarousel";
 
 export default async function SocialWallPage({
   params,
@@ -126,6 +127,38 @@ export default async function SocialWallPage({
     authorName: story.identity.displayName,
   }));
 
+  // "Momentos destacados": quién ha subido más (contado sobre los posts ya
+  // traídos, sin query aparte) y los más likeados, sin duplicar la
+  // interacción completa que ya vive en el muro principal de abajo.
+  const uploadCounts = new Map<string, { name: string; count: number }>();
+  for (const post of posts) {
+    const entry = uploadCounts.get(post.identityId);
+    if (entry) {
+      entry.count += 1;
+    } else {
+      uploadCounts.set(post.identityId, { name: post.identity.displayName, count: 1 });
+    }
+  }
+  let topUploaderName: string | null = null;
+  let topUploaderCount = 0;
+  for (const { name, count } of uploadCounts.values()) {
+    if (count > topUploaderCount) {
+      topUploaderCount = count;
+      topUploaderName = name;
+    }
+  }
+
+  const highlightPosts: HighlightPost[] = [...feedPosts]
+    .sort((a, b) => b.likeCount - a.likeCount || (a.createdAt < b.createdAt ? 1 : -1))
+    .slice(0, 8)
+    .map((post) => ({
+      id: post.id,
+      type: post.type,
+      url: post.url,
+      authorName: post.authorName,
+      likeCount: post.likeCount,
+    }));
+
   return (
     <SocialFeed
       token={token}
@@ -133,6 +166,10 @@ export default async function SocialWallPage({
       myName={identity.displayName}
       posts={feedPosts}
       stories={feedStories}
+      coverImageUrl={event.socialCoverImageType ? `/api/events/${event.id}/social-cover` : null}
+      coupleImageUrl={event.socialCoupleImageType ? `/api/events/${event.id}/social-couple` : null}
+      topUploaderName={topUploaderName}
+      highlightPosts={highlightPosts}
     />
   );
 }

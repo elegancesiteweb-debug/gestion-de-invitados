@@ -26,7 +26,9 @@ function getBucketName(): string {
 }
 
 export function buildStorageKey(eventId: string, contentType: string): string {
-  const ext = contentType.startsWith("video/") ? "mp4" : contentType.split("/")[1] || "jpg";
+  const ext = contentType.startsWith("video/")
+    ? "mp4"
+    : contentType.split("/")[1] || (contentType.startsWith("audio/") ? "webm" : "jpg");
   return `social/${eventId}/${randomUUID()}.${ext}`;
 }
 

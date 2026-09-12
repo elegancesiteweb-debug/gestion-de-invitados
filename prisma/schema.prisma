@@ -265,6 +265,13 @@ model Event {
   // Es a la vez el interruptor de encendido y el token del link/QR público.
   socialToken String? @unique
 
+  // Portada + foto de los novios que se muestran arriba del muro de recuerdos.
+  // Contenido del organizador (no de los invitados), mismo patrón Bytes-en-Postgres que logoImage.
+  socialCoverImage      Bytes?
+  socialCoverImageType  String?
+  socialCoupleImage     Bytes?
+  socialCoupleImageType String?
+
   // Portal "elige tu nombre" para proveedores: siempre presente (no es un toggle
   // como clientPortalToken), ya que solo lista nombres y enlaza a páginas que ya
   // son públicas individualmente por proveedor (EventVendor.confirmationToken).
@@ -446,6 +453,7 @@ model Companion {
 enum SocialMediaType {
   PHOTO
   VIDEO
+  AUDIO
 }
 
 model SocialIdentity {

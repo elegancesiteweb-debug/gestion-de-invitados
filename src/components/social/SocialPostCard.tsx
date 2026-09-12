@@ -42,9 +42,17 @@ function BookmarkIcon() {
   );
 }
 
+function AudioWaveIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden>
+      <path d="M4 12v1M8 9v7M12 5v15M16 9v7M20 12v1" />
+    </svg>
+  );
+}
+
 export type FeedPost = {
   id: string;
-  type: "PHOTO" | "VIDEO";
+  type: "PHOTO" | "VIDEO" | "AUDIO";
   url: string;
   caption: string | null;
   authorName: string;
@@ -107,14 +115,21 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
         </div>
       </div>
 
-      <MediaLightbox url={post.url} type={post.type}>
-        {post.type === "VIDEO" ? (
-          <video src={post.url} muted loop playsInline className="max-h-[32rem] w-full bg-black object-contain" />
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={post.url} alt="" className="max-h-[32rem] w-full object-cover" />
-        )}
-      </MediaLightbox>
+      {post.type === "AUDIO" ? (
+        <div className="flex flex-col items-center gap-3 bg-gradient-to-br from-gold-light/40 via-warm to-gold-light/30 px-4 py-6 text-gold-dark">
+          <AudioWaveIcon />
+          <audio src={post.url} controls className="w-full" />
+        </div>
+      ) : (
+        <MediaLightbox url={post.url} type={post.type}>
+          {post.type === "VIDEO" ? (
+            <video src={post.url} muted loop playsInline className="max-h-[32rem] w-full bg-black object-contain" />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={post.url} alt="" className="max-h-[32rem] w-full object-cover" />
+          )}
+        </MediaLightbox>
+      )}
 
       <div className="px-3.5 py-2.5">
         <div className="flex items-center gap-4">
