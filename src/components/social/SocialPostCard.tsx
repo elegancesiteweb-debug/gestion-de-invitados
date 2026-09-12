@@ -1,10 +1,46 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toggleLike, createComment } from "@/lib/actions/socialPortal";
+import { MediaLightbox } from "@/components/social/MediaLightbox";
+import { formatDateTime } from "@/lib/dates";
 
 type Comment = { id: string; body: string; authorName: string };
+
+function subscribeNoop() {
+  return () => {};
+}
+function getShareSupported() {
+  return typeof navigator !== "undefined" && "share" in navigator;
+}
+function getServerShareSupported() {
+  return false;
+}
+
+function CommentIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+      <path d="M12 3C6.99 3 3 6.58 3 11c0 2.3 1.09 4.36 2.84 5.8-.1.98-.46 2.24-1.34 3.55a.5.5 0 0 0 .55.76c1.9-.5 3.5-1.28 4.66-2 .74.16 1.51.24 2.29.24 5.01 0 9-3.58 9-8s-3.99-8-9-8Z" />
+    </svg>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+      <path d="M3.4 20.6 21 12 3.4 3.4 3 10l12 2-12 2z" />
+    </svg>
+  );
+}
+
+function BookmarkIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+      <path d="M6 2h12a1 1 0 0 1 1 1v19l-7-4-7 4V3a1 1 0 0 1 1-1Z" />
+    </svg>
+  );
+}
 
 export type FeedPost = {
   id: string;
@@ -27,6 +63,15 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
   const [showComments, setShowComments] = useState(false);
   const [pulseKey, setPulseKey] = useState(0);
   const [isPending, startTransition] = useTransition();
+  const shareSupported = useSyncExternalStore(subscribeNoop, getShareSupported, getServerShareSupported);
+
+  async function handleShare() {
+    try {
+      await navigator.share({ url: post.url, text: post.caption ?? undefined });
+    } catch {
+      // el usuario canceló el diálogo de compartir — no es un error a mostrar
+    }
+  }
 
   function handleLike() {
     setLiked((prev) => !prev);
@@ -51,22 +96,27 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gold/20 bg-white shadow-md shadow-gold/5">
-      <div className="flex items-center gap-2 px-3 py-2.5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-gold via-gold-dark to-gold-deep text-xs font-semibold text-white shadow-sm">
+    <div className="overflow-hidden rounded-3xl border border-gold/20 bg-white shadow-md shadow-gold/5">
+      <div className="flex items-center gap-2.5 px-3.5 py-3">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-gold via-gold-dark to-gold-deep text-xs font-semibold text-white shadow-sm">
           {post.authorName.charAt(0).toUpperCase()}
         </span>
-        <span className="text-sm font-medium text-ink">{post.authorName}</span>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-ink">{post.authorName}</p>
+          <p className="text-[11px] text-ink-light">{formatDateTime(new Date(post.createdAt))}</p>
+        </div>
       </div>
 
-      {post.type === "VIDEO" ? (
-        <video src={post.url} controls className="max-h-[32rem] w-full bg-black object-contain" />
-      ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={post.url} alt="" className="max-h-[32rem] w-full object-cover" />
-      )}
+      <MediaLightbox url={post.url} type={post.type}>
+        {post.type === "VIDEO" ? (
+          <video src={post.url} muted loop playsInline className="max-h-[32rem] w-full bg-black object-contain" />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={post.url} alt="" className="max-h-[32rem] w-full object-cover" />
+        )}
+      </MediaLightbox>
 
-      <div className="px-3 py-2">
+      <div className="px-3.5 py-2.5">
         <div className="flex items-center gap-4">
           <button
             type="button"
@@ -82,16 +132,18 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
           <button
             type="button"
             onClick={() => setShowComments((prev) => !prev)}
-            className="text-sm text-ink-muted"
+            className="flex items-center gap-1.5 text-sm font-medium text-ink-muted"
           >
-            {t("commentsCount", { count: comments.length })}
+            <CommentIcon />
+            {comments.length}
           </button>
-          <a
-            href={post.url}
-            download
-            className="ml-auto text-sm text-gold-dark hover:underline"
-          >
-            {t("download")}
+          {shareSupported && (
+            <button type="button" onClick={handleShare} aria-label={t("share")} className="text-ink-muted">
+              <ShareIcon />
+            </button>
+          )}
+          <a href={post.url} download aria-label={t("download")} className="ml-auto text-gold-dark">
+            <BookmarkIcon />
           </a>
         </div>
 
