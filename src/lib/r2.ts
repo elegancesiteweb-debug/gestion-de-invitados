@@ -1,6 +1,7 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "crypto";
+import type { Readable } from "stream";
 
 function getR2Client(): S3Client {
   const accountId = process.env.R2_ACCOUNT_ID;
@@ -39,6 +40,16 @@ export async function createUploadUrl(storageKey: string, contentType: string): 
     ContentType: contentType,
   });
   return getSignedUrl(client, command, { expiresIn: 300 });
+}
+
+// Para armar el .zip de todos los recuerdos: lee un objeto de R2 como stream
+// en vez de cargarlo completo en memoria (importante con videos pesados en
+// el plan gratuito de Render).
+export async function getObjectStream(storageKey: string): Promise<Readable> {
+  const client = getR2Client();
+  const command = new GetObjectCommand({ Bucket: getBucketName(), Key: storageKey });
+  const response = await client.send(command);
+  return response.Body as Readable;
 }
 
 export function getPublicUrl(storageKey: string): string {

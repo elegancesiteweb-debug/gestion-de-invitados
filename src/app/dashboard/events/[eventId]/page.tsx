@@ -214,6 +214,7 @@ export default async function EventDetailPage({
         ) : activeTab === "recuerdos" ? (
           <SocialPanel
             eventId={event.id}
+            eventTitle={event.title}
             socialToken={event.socialToken}
             baseUrl={baseUrl}
             posts={socialPosts}

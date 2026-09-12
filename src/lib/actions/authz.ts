@@ -12,3 +12,13 @@ export async function requireWriteAccess() {
     throw new Error("Tu cuenta es de solo lectura. Pide a un administrador que haga este cambio.");
   }
 }
+
+export async function requireAdmin() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+  if (!session.user.isAdmin) {
+    throw new Error("No autorizado");
+  }
+}

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { nanoid } from "nanoid";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { requireWriteAccess } from "@/lib/actions/authz";
+import { requireWriteAccess, requireAdmin } from "@/lib/actions/authz";
 
 async function requireOrganizerId() {
   const session = await auth();
@@ -23,17 +23,19 @@ async function requireEventOwnedByOrganizer(eventId: string, organizerId: string
   return event;
 }
 
+// El acceso al muro de recuerdos ya no lo activa cada organizador: lo decide
+// el admin de Elegance Site, evento por evento, desde /dashboard/admin.
 export async function toggleSocialWall(eventId: string, formData: FormData) {
-  const organizerId = await requireOrganizerId();
-  await requireWriteAccess();
+  await requireAdmin();
 
   const enable = formData.get("enable") === "true";
 
-  await prisma.event.updateMany({
-    where: { id: eventId, organizerId },
+  await prisma.event.update({
+    where: { id: eventId },
     data: { socialToken: enable ? nanoid(12) : null },
   });
 
+  revalidatePath("/dashboard/admin");
   revalidatePath(`/dashboard/events/${eventId}`);
 }
 

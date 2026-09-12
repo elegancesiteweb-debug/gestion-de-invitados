@@ -25,11 +25,13 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
   const [comments, setComments] = useState(post.comments);
   const [commentText, setCommentText] = useState("");
   const [showComments, setShowComments] = useState(false);
+  const [pulseKey, setPulseKey] = useState(0);
   const [isPending, startTransition] = useTransition();
 
   function handleLike() {
     setLiked((prev) => !prev);
     setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+    setPulseKey((prev) => prev + 1);
     startTransition(async () => {
       await toggleLike(token, post.id);
     });
@@ -49,9 +51,9 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gold/20 bg-white shadow-sm">
-      <div className="flex items-center gap-2 px-3 py-2">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gold/15 text-xs font-medium text-gold-dark">
+    <div className="overflow-hidden rounded-2xl border border-gold/20 bg-white shadow-md shadow-gold/5">
+      <div className="flex items-center gap-2 px-3 py-2.5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-gold via-gold-dark to-gold-deep text-xs font-semibold text-white shadow-sm">
           {post.authorName.charAt(0).toUpperCase()}
         </span>
         <span className="text-sm font-medium text-ink">{post.authorName}</span>
@@ -72,7 +74,9 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
             disabled={isPending}
             className={`flex items-center gap-1.5 text-sm font-medium ${liked ? "text-danger" : "text-ink-muted"}`}
           >
-            <span aria-hidden>{liked ? "♥" : "♡"}</span>
+            <span key={pulseKey} aria-hidden className="inline-block animate-[likePulse_0.35s_ease]">
+              {liked ? "♥" : "♡"}
+            </span>
             {likeCount}
           </button>
           <button

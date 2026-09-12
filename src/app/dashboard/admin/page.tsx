@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAccessCode, renewPlannerAccess, impersonateOrganizer } from "@/lib/actions/admin";
+import { EventSocialAccessList } from "@/components/admin/EventSocialAccessList";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { formatDate } from "@/lib/dates";
 import { daysUntil } from "@/lib/accessExpiry";
@@ -40,6 +41,24 @@ export default async function AdminPage({
     orderBy: { createdAt: "asc" },
     select: { id: true, name: true, email: true, events: { select: { title: true } } },
   });
+
+  const allEvents = await prisma.event.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      socialToken: true,
+      organizer: { select: { name: true, email: true, accountType: true } },
+    },
+  });
+  const socialAccessEvents = allEvents.map((e) => ({
+    id: e.id,
+    title: e.title,
+    socialToken: e.socialToken,
+    organizerName: e.organizer.name,
+    organizerEmail: e.organizer.email,
+    accountType: e.organizer.accountType,
+  }));
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const landingUrl = `${baseUrl}/landing`;
@@ -220,6 +239,12 @@ export default async function AdminPage({
             ))}
           </div>
         )}
+      </section>
+
+      <section className="mt-6">
+        <h2 className="mb-3 font-serif text-lg font-medium text-ink">{t("socialAccessTitle")}</h2>
+        <p className="mb-3 text-xs text-ink-muted">{t("socialAccessHint")}</p>
+        <EventSocialAccessList events={socialAccessEvents} />
       </section>
 
       <section className="mt-6">

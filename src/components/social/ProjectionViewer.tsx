@@ -56,7 +56,7 @@ export function ProjectionViewer({
           <p className="mt-3 text-white/60">Esperando los primeros recuerdos…</p>
         </div>
       ) : (
-        <div className="relative h-full w-full">
+        <div key={current.id} className="relative h-full w-full animate-[fadeIn_0.8s_ease]">
           {current.type === "VIDEO" ? (
             <video
               key={current.id}

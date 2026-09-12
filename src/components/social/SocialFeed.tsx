@@ -35,15 +35,15 @@ export function SocialFeed({
   }, [viewingStory, stories.length]);
 
   return (
-    <div className="mx-auto w-full max-w-lg px-4 py-6">
+    <div className="mx-auto min-h-screen w-full max-w-lg bg-gradient-to-b from-gold-light/25 via-warm to-warm px-4 py-6">
       <header className="text-center">
-        <p className="text-xs uppercase tracking-[0.2em] text-gold-dark">{t("title")}</p>
-        <h1 className="mt-1 font-serif text-xl font-medium text-ink">{eventTitle}</h1>
+        <p className="text-xs uppercase tracking-[0.25em] text-gold-dark">{t("title")}</p>
+        <h1 className="mt-1 font-serif text-2xl font-medium text-ink">{eventTitle}</h1>
         <p className="mt-1 text-xs text-ink-muted">{t("greeting", { name: myName })}</p>
       </header>
 
       {stories.length > 0 && (
-        <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+        <div className="mt-5 flex gap-3 overflow-x-auto pb-2">
           {stories.map((story, i) => (
             <button
               key={story.id}
@@ -51,13 +51,15 @@ export function SocialFeed({
               onClick={() => setViewingIndex(i)}
               className="flex flex-none flex-col items-center gap-1"
             >
-              <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-gold bg-warm p-0.5">
-                {story.type === "VIDEO" ? (
-                  <video src={story.url} className="h-full w-full rounded-full object-cover" />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={story.url} alt="" className="h-full w-full rounded-full object-cover" />
-                )}
+              <span className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-gradient-to-br from-gold via-gold-dark to-gold-deep p-[3px] shadow-md shadow-gold/20">
+                <span className="flex h-full w-full items-center justify-center rounded-full bg-warm p-0.5">
+                  {story.type === "VIDEO" ? (
+                    <video src={story.url} className="h-full w-full rounded-full object-cover" />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={story.url} alt="" className="h-full w-full rounded-full object-cover" />
+                  )}
+                </span>
               </span>
               <span className="max-w-16 truncate text-[10px] text-ink-muted">{story.authorName}</span>
             </button>
@@ -65,16 +67,18 @@ export function SocialFeed({
         </div>
       )}
 
-      <div className="mt-4">
-        <SocialUploadButton token={token} />
-      </div>
-
-      <div className="mt-6 space-y-4">
+      <div className="mt-6 space-y-4 pb-24">
         {posts.length === 0 ? (
           <p className="py-10 text-center text-sm text-ink-muted">{t("empty")}</p>
         ) : (
           posts.map((post) => <SocialPostCard key={post.id} token={token} post={post} />)
         )}
+      </div>
+
+      <div className="fixed bottom-6 left-1/2 z-40 w-full max-w-lg -translate-x-1/2 px-4">
+        <div className="ml-auto w-fit">
+          <SocialUploadButton token={token} />
+        </div>
       </div>
 
       {viewingStory &&

@@ -2,20 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { auth, unstable_update } from "@/lib/auth";
+import { unstable_update } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateAccessCode } from "@/lib/accessCode";
 import { extendAccess } from "@/lib/accessExpiry";
-
-async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-  if (!session.user.isAdmin) {
-    throw new Error("No autorizado");
-  }
-}
+import { requireAdmin } from "@/lib/actions/authz";
 
 export async function createAccessCode(formData: FormData) {
   await requireAdmin();
