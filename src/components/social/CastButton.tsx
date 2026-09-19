@@ -37,7 +37,16 @@ export function CastButton({ token }: { token: string }) {
   useEffect(() => {
     let cancelled = false;
     loadCastSdk().then((available) => {
-      if (!cancelled) setSdkAvailable(available);
+      if (cancelled) return;
+      setSdkAvailable(available);
+      // Prepara el contexto de Cast apenas el SDK está listo, no hasta que
+      // el usuario presiona el botón — la búsqueda de pantallas de Google
+      // tarda un momento en encontrar dispositivos, y pedir una sesión de
+      // inmediato sin haberle dado ese tiempo hacía que pareciera que no
+      // encontraba nada aunque el Chromecast sí estuviera disponible (el
+      // propio "Transmitir..." de Chrome, que empieza a buscar desde que el
+      // navegador arranca, sí lo encontraba).
+      if (available) getCastContext();
     });
     return () => {
       cancelled = true;
