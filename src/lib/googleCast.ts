@@ -59,6 +59,13 @@ let sdkPromise: Promise<boolean> | null = null;
 // varias veces desde distintos componentes) y resuelve cuando confirma que
 // de verdad está disponible — no todo navegador que carga el script trae
 // Cast real (Safari/Firefox no, por ejemplo).
+//
+// Importante: se confía directamente en el "isAvailable" que manda Google —
+// una versión anterior también exigía que "cast.framework" ya existiera en
+// ese mismo instante, pero el SDK a veces lo termina de adjuntar una
+// fracción de segundo después de disparar el callback, así que esa
+// verificación extra podía reportar "no disponible" por una carrera de
+// tiempos aunque Google sí hubiera confirmado que sí lo está.
 export function loadCastSdk(): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
   if (sdkPromise) return sdkPromise;
@@ -70,7 +77,7 @@ export function loadCastSdk(): Promise<boolean> {
       return;
     }
     w.__onGCastApiAvailable = (isAvailable) => {
-      resolve(Boolean(isAvailable && getWindow().cast?.framework));
+      resolve(Boolean(isAvailable));
     };
     const script = document.createElement("script");
     script.src = "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js";
