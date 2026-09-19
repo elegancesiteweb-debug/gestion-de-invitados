@@ -432,6 +432,7 @@
     "castConnected": "Transmitiendo a tu pantalla",
     "stopCasting": "Detener transmisión",
     "castError": "No se pudo conectar con la pantalla",
+    "castNoDevices": "No se encontró ninguna pantalla — revisa que el Chromecast o la TV estén prendidos y en la misma red WiFi",
     "castHowTo": "Cómo transmitir",
     "castHelpIos": "En iPhone: abre el Centro de Control y activa \"Duplicar pantalla\" (AirPlay) hacia tu TV.",
     "castHelpAndroid": "En Android: abre el menú ⋮ de Chrome y toca \"Transmitir\" para enviarlo a tu TV.",

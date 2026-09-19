@@ -432,6 +432,7 @@
     "castConnected": "Casting to your screen",
     "stopCasting": "Stop casting",
     "castError": "Couldn't connect to the screen",
+    "castNoDevices": "No screen found — check that your Chromecast or TV is on and on the same WiFi network",
     "castHowTo": "How to cast",
     "castHelpIos": "On iPhone: open Control Center and turn on \"Screen Mirroring\" (AirPlay) to your TV.",
     "castHelpAndroid": "On Android: open Chrome's ⋮ menu and tap \"Cast\" to send it to your TV.",

@@ -68,11 +68,14 @@ export function CastButton({ token }: { token: string }) {
       await getCastContext().requestSession();
       setConnected(true);
     } catch (err) {
-      // "cancel" es el usuario cerrando el selector sin elegir nada — no es un error real
+      // El SDK usa el mismo código "cancel" tanto si el usuario cierra el
+      // selector a propósito como si nunca encontró ninguna pantalla que
+      // mostrar — no se puede distinguir uno de otro, así que se avisa en
+      // vez de fallar en silencio (antes esto no mostraba nada, lo que hacía
+      // parecer que el botón simplemente no hacía nada al presionarlo).
+      console.error("Google Cast requestSession falló:", err);
       const code = (err as { code?: string } | undefined)?.code;
-      if (code !== "cancel") {
-        setError(t("castError"));
-      }
+      setError(code === "cancel" ? t("castNoDevices") : t("castError"));
     } finally {
       setConnecting(false);
     }

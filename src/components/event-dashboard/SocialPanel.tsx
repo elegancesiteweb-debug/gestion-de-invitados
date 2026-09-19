@@ -10,6 +10,7 @@ import {
 } from "@/lib/actions/social";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { CastButton } from "@/components/social/CastButton";
+import { SocialQrButton } from "@/components/social/SocialQrButton";
 import { getPublicUrl } from "@/lib/r2";
 import { formatDateTime } from "@/lib/dates";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
@@ -79,6 +80,7 @@ export async function SocialPanel({
                 {t("wallLink")}
               </span>
               <CopyLinkButton url={wallUrl} />
+              <SocialQrButton url={wallUrl} eventTitle={eventTitle} />
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-xs font-medium uppercase tracking-wide text-ink-muted">
