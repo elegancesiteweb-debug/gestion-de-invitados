@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { requestUploadUrl, createSocialPost, createSocialStory } from "@/lib/actions/socialPortal";
@@ -14,8 +14,18 @@ export function SocialUploadButton({ token }: { token: string }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Vistas previas locales de las fotos seleccionadas antes de publicar —
+  // derivadas de pendingFiles, no estado aparte; el efecto solo libera los
+  // URLs viejos, nunca actualiza estado.
+  const previewUrls = useMemo(() => pendingFiles.map((file) => URL.createObjectURL(file)), [pendingFiles]);
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
 
   function openPicker(pickMode: "post" | "story") {
     setMode(pickMode);
@@ -25,36 +35,53 @@ export function SocialUploadButton({ token }: { token: string }) {
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+    const files = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (!file) return;
+    if (files.length === 0) return;
+
     if (mode === "story") {
-      void upload(file, "story", "");
-    } else {
-      setPendingFile(file);
+      void upload([files[0]], "story", "");
+      return;
     }
+
+    // Varias fotos a la vez se suben como carrusel; si viene cualquier
+    // archivo que no sea imagen mezclado, se ignora la multi-selección y se
+    // sube solo el primero (comportamiento de siempre, sin sorpresas).
+    const allImages = files.every((file) => resolveContentType(file.type, file.name).startsWith("image/"));
+    setPendingFiles(files.length > 1 && allImages ? files : [files[0]]);
   }
 
-  async function upload(file: File, kind: "post" | "story", captionText: string) {
+  async function upload(files: File[], kind: "post" | "story", captionText: string) {
     setUploading(true);
     setError(null);
     try {
-      const contentType = resolveContentType(file.type, file.name);
-      const { uploadUrl, storageKey, type } = await requestUploadUrl(token, contentType, file.size);
-      const res = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": contentType },
-        body: file,
-      });
-      if (!res.ok) {
-        throw new Error(t("uploadError"));
-      }
+      const uploaded = await Promise.all(
+        files.map(async (file) => {
+          const contentType = resolveContentType(file.type, file.name);
+          const { uploadUrl, storageKey, type } = await requestUploadUrl(token, contentType, file.size);
+          const res = await fetch(uploadUrl, {
+            method: "PUT",
+            headers: { "Content-Type": contentType },
+            body: file,
+          });
+          if (!res.ok) {
+            throw new Error(t("uploadError"));
+          }
+          return { storageKey, type };
+        })
+      );
+
       if (kind === "story") {
-        await createSocialStory(token, storageKey, type);
+        await createSocialStory(token, uploaded[0].storageKey, uploaded[0].type);
       } else {
-        await createSocialPost(token, storageKey, type, captionText);
+        await createSocialPost(
+          token,
+          uploaded.map((u) => u.storageKey),
+          uploaded[0].type,
+          captionText
+        );
       }
-      setPendingFile(null);
+      setPendingFiles([]);
       setCaption("");
       router.refresh();
     } catch (err) {
@@ -69,6 +96,7 @@ export function SocialUploadButton({ token }: { token: string }) {
       <input
         ref={fileInputRef}
         type="file"
+        multiple
         accept="image/*,video/*,audio/*,.mov,.heic,.heif,.m4a,.3gp,.mkv"
         className="hidden"
         onChange={handleFileChange}
@@ -77,13 +105,22 @@ export function SocialUploadButton({ token }: { token: string }) {
       {error && (
         <p className="max-w-72 rounded-lg bg-white px-3 py-1.5 text-xs text-danger shadow-md">{error}</p>
       )}
-      {uploading && !pendingFile && (
+      {uploading && pendingFiles.length === 0 && (
         <p className="rounded-lg bg-white px-3 py-1.5 text-xs text-ink-muted shadow-md">{t("uploading")}</p>
       )}
 
-      {pendingFile && (
+      {pendingFiles.length > 0 && (
         <div className="w-72 rounded-lg border border-gold/20 bg-white p-3 shadow-lg">
-          <p className="truncate text-xs text-ink-muted">{pendingFile.name}</p>
+          {previewUrls.length > 1 ? (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {previewUrls.map((url, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={i} src={url} alt="" className="h-16 w-16 flex-none rounded-lg object-cover" />
+              ))}
+            </div>
+          ) : (
+            <p className="truncate text-xs text-ink-muted">{pendingFiles[0].name}</p>
+          )}
           <input
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
@@ -93,7 +130,7 @@ export function SocialUploadButton({ token }: { token: string }) {
           <div className="mt-2 flex gap-2">
             <button
               type="button"
-              onClick={() => setPendingFile(null)}
+              onClick={() => setPendingFiles([])}
               className="flex-1 rounded-lg border border-gold/25 px-3 py-1.5 text-xs font-medium hover:bg-warm"
             >
               {t("cancel")}
@@ -101,7 +138,7 @@ export function SocialUploadButton({ token }: { token: string }) {
             <button
               type="button"
               disabled={uploading}
-              onClick={() => pendingFile && void upload(pendingFile, "post", caption)}
+              onClick={() => pendingFiles.length > 0 && void upload(pendingFiles, "post", caption)}
               className="flex-1 rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
             >
               {uploading ? t("uploading") : t("publish")}

@@ -3,7 +3,7 @@
 // reportan file.type vacío o genérico ("application/octet-stream") para
 // formatos que sí son válidos — sin esto, esos archivos se rechazaban aunque
 // fueran fotos/videos/audios reales.
-const EXTENSION_MIME_MAP: Record<string, string> = {
+export const EXTENSION_MIME_MAP: Record<string, string> = {
   mov: "video/quicktime",
   mp4: "video/mp4",
   m4v: "video/mp4",

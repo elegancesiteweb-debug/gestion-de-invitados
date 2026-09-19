@@ -113,9 +113,13 @@ export async function requestUploadUrl(token: string, contentType: string, fileS
   return { uploadUrl, storageKey, type };
 }
 
+// storageKeys[0] es la foto/video/audio "principal" (SocialPost.storageKey,
+// igual que siempre); el resto (solo aplica a fotos — un carrusel) se guarda
+// en SocialPostMedia, para no tocar el campo existente que ya usan el resto
+// de las vistas (admin, destacados, proyección).
 export async function createSocialPost(
   token: string,
-  storageKey: string,
+  storageKeys: string[],
   type: "PHOTO" | "VIDEO" | "AUDIO",
   caption: string
 ) {
@@ -124,9 +128,28 @@ export async function createSocialPost(
   if (!identity) {
     throw new Error("Primero dinos quién eres");
   }
+  if (storageKeys.length === 0) {
+    throw new Error("Selecciona al menos un archivo");
+  }
 
-  await prisma.socialPost.create({
-    data: { eventId: event.id, identityId: identity.id, type, storageKey, caption: caption.trim() || null },
+  const [primary, ...rest] = storageKeys;
+
+  await prisma.$transaction(async (tx) => {
+    const post = await tx.socialPost.create({
+      data: {
+        eventId: event.id,
+        identityId: identity.id,
+        type,
+        storageKey: primary,
+        caption: caption.trim() || null,
+      },
+    });
+
+    if (rest.length > 0) {
+      await tx.socialPostMedia.createMany({
+        data: rest.map((storageKey, i) => ({ postId: post.id, storageKey, order: i + 1 })),
+      });
+    }
   });
 
   revalidatePath(`/social/${token}`);
@@ -205,16 +228,19 @@ export async function deleteMyPost(token: string, postId: string) {
 
   const post = await prisma.socialPost.findFirst({
     where: { id: postId, eventId: event.id, identityId: identity.id },
+    include: { media: true },
   });
   if (!post) {
     throw new Error("Publicación no encontrada");
   }
 
   await prisma.socialPost.delete({ where: { id: post.id } });
-  try {
-    await deleteObject(post.storageKey);
-  } catch {
-    // best-effort: si falla borrar el archivo de R2, no bloquea el borrado del registro
+  for (const storageKey of [post.storageKey, ...post.media.map((m) => m.storageKey)]) {
+    try {
+      await deleteObject(storageKey);
+    } catch {
+      // best-effort: si falla borrar el archivo de R2, no bloquea el borrado del registro
+    }
   }
 
   revalidatePath(`/social/${token}`);
@@ -265,7 +291,7 @@ export async function getProjectionFeed(token: string): Promise<ProjectionItem[]
   const [posts, stories] = await Promise.all([
     prisma.socialPost.findMany({
       where: { eventId: event.id, hiddenFromProjection: false },
-      include: { identity: { select: { displayName: true } } },
+      include: { identity: { select: { displayName: true } }, media: { orderBy: { order: "asc" } } },
       orderBy: { createdAt: "desc" },
       take: 100,
     }),
@@ -285,14 +311,26 @@ export async function getProjectionFeed(token: string): Promise<ProjectionItem[]
       caption: null,
       createdAt: story.createdAt.toISOString(),
     })),
-    ...posts.map((post) => ({
-      id: `post-${post.id}`,
-      type: post.type,
-      url: getPublicUrl(post.storageKey),
-      authorName: post.identity.displayName,
-      caption: post.caption,
-      createdAt: post.createdAt.toISOString(),
-    })),
+    // Las fotos adicionales de un carrusel entran cada una como su propia
+    // diapositiva (mismo autor/caption/fecha), no solo la primera.
+    ...posts.flatMap((post) => [
+      {
+        id: `post-${post.id}`,
+        type: post.type,
+        url: getPublicUrl(post.storageKey),
+        authorName: post.identity.displayName,
+        caption: post.caption,
+        createdAt: post.createdAt.toISOString(),
+      },
+      ...post.media.map((m) => ({
+        id: `post-${post.id}-${m.id}`,
+        type: "PHOTO" as const,
+        url: getPublicUrl(m.storageKey),
+        authorName: post.identity.displayName,
+        caption: post.caption,
+        createdAt: post.createdAt.toISOString(),
+      })),
+    ]),
   ];
 
   return items.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));

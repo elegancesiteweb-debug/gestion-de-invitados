@@ -1,10 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { getProjectionFeed, type ProjectionItem } from "@/lib/actions/socialPortal";
-
-const PHOTO_DURATION_MS = 6000;
-const POLL_INTERVAL_MS = 20000;
+import { useProjectionCycle } from "@/components/social/useProjectionCycle";
+import type { ProjectionItem } from "@/lib/actions/socialPortal";
 
 export function ProjectionViewer({
   token,
@@ -15,38 +12,7 @@ export function ProjectionViewer({
   eventTitle: string;
   initialItems: ProjectionItem[];
 }) {
-  const [items, setItems] = useState(initialItems);
-  const [index, setIndex] = useState(0);
-  const itemsRef = useRef(items);
-
-  useEffect(() => {
-    itemsRef.current = items;
-  }, [items]);
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const fresh = await getProjectionFeed(token);
-        setItems(fresh);
-      } catch {
-        // silencioso: sigue mostrando lo que ya tenía si falla un ciclo de actualización
-      }
-    }, POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [token]);
-
-  // Módulo en vez de recortar el índice en un efecto: siempre cae dentro de rango
-  // aunque la lista cambie de tamaño entre actualizaciones por polling.
-  const safeIndex = items.length > 0 ? index % items.length : 0;
-  const current = items[safeIndex] ?? null;
-
-  useEffect(() => {
-    if (!current || current.type !== "PHOTO") return;
-    const timer = setTimeout(() => {
-      setIndex((prev) => (itemsRef.current.length > 0 ? (prev + 1) % itemsRef.current.length : 0));
-    }, PHOTO_DURATION_MS);
-    return () => clearTimeout(timer);
-  }, [current]);
+  const { current, advance } = useProjectionCycle(token, { initialItems });
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black">
@@ -64,17 +30,12 @@ export function ProjectionViewer({
               autoPlay
               muted
               className="h-full w-full object-contain"
-              onEnded={() => setIndex((prev) => (items.length > 0 ? (prev + 1) % items.length : 0))}
+              onEnded={advance}
             />
           ) : current.type === "AUDIO" ? (
             <div className="flex h-full w-full flex-col items-center justify-center gap-6 bg-gradient-to-br from-gold-dark to-gold-deep">
               <span className="text-7xl">🎵</span>
-              <audio
-                key={current.id}
-                src={current.url}
-                autoPlay
-                onEnded={() => setIndex((prev) => (items.length > 0 ? (prev + 1) % items.length : 0))}
-              />
+              <audio key={current.id} src={current.url} autoPlay onEnded={advance} />
             </div>
           ) : (
             // eslint-disable-next-line @next/next/no-img-element

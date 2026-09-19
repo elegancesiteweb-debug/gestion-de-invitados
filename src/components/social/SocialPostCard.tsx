@@ -63,6 +63,7 @@ export type FeedPost = {
   id: string;
   type: "PHOTO" | "VIDEO" | "AUDIO";
   url: string;
+  mediaUrls: string[];
   caption: string | null;
   authorName: string;
   createdAt: string;
@@ -84,6 +85,7 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
   const [showAllComments, setShowAllComments] = useState(false);
   const [pulseKey, setPulseKey] = useState(0);
   const [deleting, setDeleting] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
   const shareSupported = useSyncExternalStore(subscribeNoop, getShareSupported, getServerShareSupported);
 
@@ -111,6 +113,12 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
     startTransition(async () => {
       await toggleLike(token, post.id);
     });
+  }
+
+  function handleCarouselScroll(e: React.UIEvent<HTMLDivElement>) {
+    const el = e.currentTarget;
+    if (el.clientWidth === 0) return;
+    setCarouselIndex(Math.round(el.scrollLeft / el.clientWidth));
   }
 
   function handleComment(e: React.FormEvent<HTMLFormElement>) {
@@ -153,6 +161,22 @@ export function SocialPostCard({ token, post }: { token: string; post: FeedPost 
         <div className="flex flex-col items-center gap-3 bg-gradient-to-br from-gold-light/40 via-warm to-gold-light/30 px-4 py-6 text-gold-dark">
           <AudioWaveIcon />
           <audio src={post.url} controls className="w-full" />
+        </div>
+      ) : post.mediaUrls.length > 1 ? (
+        <div className="relative">
+          <div onScroll={handleCarouselScroll} className="flex snap-x snap-mandatory overflow-x-auto">
+            {post.mediaUrls.map((url, i) => (
+              <div key={i} className="w-full flex-none snap-center">
+                <MediaLightbox url={url} type="PHOTO">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="max-h-[32rem] w-full object-cover" />
+                </MediaLightbox>
+              </div>
+            ))}
+          </div>
+          <span className="absolute right-3 top-3 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white">
+            {carouselIndex + 1}/{post.mediaUrls.length}
+          </span>
         </div>
       ) : (
         <MediaLightbox url={post.url} type={post.type}>

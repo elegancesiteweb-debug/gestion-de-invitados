@@ -1,23 +1,13 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-
-function subscribeNoop() {
-  return () => {};
-}
-
-function getSupportSnapshot() {
-  return typeof window !== "undefined" && "PresentationRequest" in window;
-}
-
-function getServerSupportSnapshot() {
-  return false;
-}
+import { loadCastSdk, getCastContext, buildLoadRequest } from "@/lib/googleCast";
+import { useProjectionCycle } from "@/components/social/useProjectionCycle";
 
 type Platform = "ios" | "android" | "other";
 
-function getPlatformSnapshot(): Platform {
+function getPlatform(): Platform {
   if (typeof navigator === "undefined") return "other";
   const ua = navigator.userAgent;
   if (/iPhone|iPad|iPod/.test(ua)) return "ios";
@@ -25,51 +15,91 @@ function getPlatformSnapshot(): Platform {
   return "other";
 }
 
-function getServerPlatformSnapshot(): Platform {
-  return "other";
-}
-
-// Presentation API: es el mecanismo estándar detrás del diálogo "Buscar
-// dispositivos" de Chrome para mandar una página a un Chromecast/TV
-// compatible. Solo la soportan navegadores Chromium de escritorio — en
-// celulares (iOS Safari, y Chrome/Android en la práctica) no está disponible,
-// así que ahí el botón muestra instrucciones para usar el mecanismo nativo
-// del teléfono (AirPlay / "Transmitir" de Chrome) en vez de desaparecer.
-export function CastButton({ url }: { url: string }) {
+// Transmisión real tipo Netflix: el SDK de Google Cast (cargado por script
+// tag, no es una dependencia npm) abre el selector nativo de Chromecast y,
+// una vez conectado, el propio Chromecast reproduce el contenido directo
+// desde R2 — no hay mirror de esta página. El ritmo (cuándo pasar a la
+// siguiente foto/video) lo decide useProjectionCycle aquí mismo, en vez de
+// una cola nativa de Cast, porque su comportamiento con fotos no se puede
+// verificar sin un Chromecast real; un loadMedia() por cambio es la
+// operación más básica y confiable del SDK. Solo funciona en navegadores
+// Chromium (no Safari/AirPlay) — ahí se muestra la guía "Cómo transmitir"
+// de siempre en su lugar.
+export function CastButton({ token }: { token: string }) {
   const t = useTranslations("socialPanel");
-  const supported = useSyncExternalStore(subscribeNoop, getSupportSnapshot, getServerSupportSnapshot);
-  const platform = useSyncExternalStore(subscribeNoop, getPlatformSnapshot, getServerPlatformSnapshot);
+  const [sdkAvailable, setSdkAvailable] = useState<boolean | null>(null);
+  const [connecting, setConnecting] = useState(false);
+  const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const { current } = useProjectionCycle(token, { enabled: connected });
+
+  useEffect(() => {
+    let cancelled = false;
+    loadCastSdk().then((available) => {
+      if (!cancelled) setSdkAvailable(available);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!connected || !current) return;
+    const session = getCastContext().getCurrentSession();
+    session?.loadMedia(buildLoadRequest(current)).catch(() => {
+      // best-effort: si un elemento falla en cargar, el siguiente ciclo lo reintenta
+    });
+  }, [connected, current]);
 
   async function handleClick() {
-    if (!supported) {
+    if (!sdkAvailable) {
       setShowHelp((prev) => !prev);
       return;
     }
+    if (connected) {
+      getCastContext().endCurrentSession(true);
+      setConnected(false);
+      return;
+    }
     setError(null);
+    setConnecting(true);
     try {
-      const PresentationRequestCtor = (
-        window as unknown as { PresentationRequest: new (urls: string[]) => { start: () => Promise<unknown> } }
-      ).PresentationRequest;
-      const request = new PresentationRequestCtor([url]);
-      await request.start();
-    } catch {
-      setError(t("castError"));
+      await getCastContext().requestSession();
+      setConnected(true);
+    } catch (err) {
+      // "cancel" es el usuario cerrando el selector sin elegir nada — no es un error real
+      const code = (err as { code?: string } | undefined)?.code;
+      if (code !== "cancel") {
+        setError(t("castError"));
+      }
+    } finally {
+      setConnecting(false);
     }
   }
+
+  const platform = getPlatform();
 
   return (
     <div>
       <button
         type="button"
         onClick={handleClick}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-gold/25 bg-white px-3 py-1.5 text-sm text-gold-dark hover:bg-warm"
+        disabled={connecting}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-gold/25 bg-white px-3 py-1.5 text-sm text-gold-dark hover:bg-warm disabled:opacity-50"
       >
-        <span aria-hidden>📺</span> {supported ? t("castButton") : t("castHowTo")}
+        <span aria-hidden>📺</span>{" "}
+        {sdkAvailable === false
+          ? t("castHowTo")
+          : connected
+            ? t("stopCasting")
+            : connecting
+              ? t("castConnecting")
+              : t("castButton")}
       </button>
       {error && <p className="mt-1 text-xs text-danger">{error}</p>}
-      {showHelp && !supported && (
+      {connected && <p className="mt-1 text-xs text-success">{t("castConnected")}</p>}
+      {showHelp && sdkAvailable === false && (
         <p className="mt-1 max-w-xs text-xs text-ink-muted">
           {platform === "ios" ? t("castHelpIos") : platform === "android" ? t("castHelpAndroid") : t("castHelpOther")}
         </p>

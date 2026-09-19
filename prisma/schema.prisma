@@ -497,9 +497,23 @@ model SocialPost {
 
   likes    SocialLike[]
   comments SocialComment[]
+  media    SocialPostMedia[]
 
   @@index([eventId])
   @@index([identityId])
+}
+
+// Fotos adicionales de un carrusel (la primera foto sigue siendo
+// SocialPost.storageKey, por compatibilidad con lo ya existente — esto
+// solo guarda la 2a en adelante).
+model SocialPostMedia {
+  id         String     @id @default(cuid())
+  postId     String
+  post       SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  storageKey String
+  order      Int        @default(0)
+
+  @@index([postId])
 }
 
 model SocialStory {

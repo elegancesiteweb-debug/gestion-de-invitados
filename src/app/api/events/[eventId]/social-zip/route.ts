@@ -38,7 +38,7 @@ export async function GET(
   const [posts, stories] = await Promise.all([
     prisma.socialPost.findMany({
       where: { eventId },
-      include: { identity: { select: { displayName: true } } },
+      include: { identity: { select: { displayName: true } }, media: { orderBy: { order: "asc" } } },
       orderBy: { createdAt: "asc" },
     }),
     prisma.socialStory.findMany({
@@ -48,7 +48,16 @@ export async function GET(
     }),
   ]);
 
-  const items = [...posts, ...stories];
+  // Las fotos adicionales de un carrusel (SocialPostMedia) se aplanan al mismo
+  // formato — mismo autor y fecha que su publicación, para que el .zip traiga
+  // todas las fotos, no solo la primera de cada carrusel.
+  const items = [
+    ...posts.flatMap((post) => [
+      { storageKey: post.storageKey, identity: post.identity, createdAt: post.createdAt },
+      ...post.media.map((m) => ({ storageKey: m.storageKey, identity: post.identity, createdAt: post.createdAt })),
+    ]),
+    ...stories,
+  ];
 
   const archive = new ZipArchive({ zlib: { level: 6 } });
   archive.on("warning", (err: Error) => console.error("social-zip warning:", err));

@@ -88,7 +88,7 @@ export async function SocialPanel({
               <a href={projectionUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-gold-dark hover:underline">
                 {t("openProjection")}
               </a>
-              <CastButton url={projectionUrl} />
+              <CastButton token={socialToken} />
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <a href={zipUrl} className="text-sm text-gold-dark hover:underline">
