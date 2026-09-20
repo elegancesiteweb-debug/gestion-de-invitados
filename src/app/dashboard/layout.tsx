@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeature } from "@/lib/features";
-import { DashboardSidebar, type SidebarLink } from "@/components/DashboardSidebar";
+import { DashboardSidebar, ImpersonationBanner, type SidebarLink } from "@/components/DashboardSidebar";
 
 export default async function DashboardLayout({
   children,
@@ -58,17 +58,21 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex flex-col md:flex-row">
-      <DashboardSidebar
-        links={links}
-        userName={session.user.name ?? ""}
-        teamMemberName={session.user.teamMemberName}
-        isCollaborator={isCollaborator}
-        currentLocale={locale as "es" | "en"}
+    <div className="flex flex-col">
+      <ImpersonationBanner
         impersonating={session.user.impersonating}
         impersonatedName={session.user.impersonatedName}
       />
-      <div className="min-w-0 flex-1">{children}</div>
+      <div className="flex flex-col md:flex-row">
+        <DashboardSidebar
+          links={links}
+          userName={session.user.name ?? ""}
+          teamMemberName={session.user.teamMemberName}
+          isCollaborator={isCollaborator}
+          currentLocale={locale as "es" | "en"}
+        />
+        <div className="min-w-0 flex-1">{children}</div>
+      </div>
     </div>
   );
 }

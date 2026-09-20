@@ -36,22 +36,41 @@ function NavLinks({ links, onNavigate }: { links: SidebarLink[]; onNavigate?: ()
   );
 }
 
+export function ImpersonationBanner({
+  impersonating,
+  impersonatedName,
+}: {
+  impersonating?: boolean;
+  impersonatedName?: string | null;
+}) {
+  const t = useTranslations("nav");
+
+  if (!impersonating) return null;
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-warning/30 bg-warning-bg px-4 py-2 text-xs text-warning">
+      <span>{t("viewingAs", { name: impersonatedName ?? "" })}</span>
+      <form action={stopImpersonation}>
+        <button type="submit" className="font-medium underline hover:no-underline">
+          {t("exitViewingAs")}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export function DashboardSidebar({
   links,
   userName,
   teamMemberName,
   isCollaborator,
   currentLocale,
-  impersonating,
-  impersonatedName,
 }: {
   links: SidebarLink[];
   userName: string;
   teamMemberName: string | null;
   isCollaborator: boolean;
   currentLocale: AppLocale;
-  impersonating?: boolean;
-  impersonatedName?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const t = useTranslations("nav");
@@ -62,17 +81,6 @@ export function DashboardSidebar({
 
   return (
     <>
-      {impersonating && (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-warning/30 bg-warning-bg px-4 py-2 text-xs text-warning">
-          <span>{t("viewingAs", { name: impersonatedName ?? "" })}</span>
-          <form action={stopImpersonation}>
-            <button type="submit" className="font-medium underline hover:no-underline">
-              {t("exitViewingAs")}
-            </button>
-          </form>
-        </div>
-      )}
-
       {/* Barra móvil: parte normal del flujo, no flotante, no tapa contenido */}
       <div className="flex items-center justify-between border-b border-gold/20 bg-white/60 px-4 py-3 md:hidden">
         <button
