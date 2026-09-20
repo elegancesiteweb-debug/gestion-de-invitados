@@ -73,17 +73,50 @@ export function loadCastSdk(): Promise<boolean> {
   sdkPromise = new Promise((resolve) => {
     const w = getWindow();
     if (w.cast?.framework) {
+      console.log("[Cast] SDK ya estaba cargado antes de este intento");
       resolve(true);
       return;
     }
-    w.__onGCastApiAvailable = (isAvailable) => {
-      resolve(Boolean(isAvailable));
+
+    let settled = false;
+    const finish = (value: boolean) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
     };
+
+    w.__onGCastApiAvailable = (isAvailable) => {
+      console.log(
+        "[Cast] __onGCastApiAvailable llamado — isAvailable:",
+        isAvailable,
+        "| cast.framework presente:",
+        Boolean(getWindow().cast?.framework)
+      );
+      finish(Boolean(isAvailable));
+    };
+
     const script = document.createElement("script");
     script.src = "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js";
     script.async = true;
-    script.onerror = () => resolve(false);
+    script.onload = () => console.log("[Cast] cast_sender.js se descargó correctamente");
+    script.onerror = (e) => {
+      console.error("[Cast] cast_sender.js falló al cargar (bloqueado por red/firewall/extensión):", e);
+      finish(false);
+    };
     document.head.appendChild(script);
+
+    // Si nunca llega ni el evento de error ni la confirmación de Google después
+    // de varios segundos, algo bloqueó la petición de forma silenciosa (sin
+    // disparar onerror) — se reporta como no disponible en vez de quedar
+    // colgado para siempre en un estado intermedio que el botón no sabe mostrar.
+    setTimeout(() => {
+      if (!settled) {
+        console.warn(
+          "[Cast] Pasaron 8s sin respuesta de Google Cast — probablemente cast_sender.js fue bloqueado silenciosamente (firewall/antivirus/DNS) ya que Chrome nativo sí encuentra dispositivos sin depender de este script."
+        );
+        finish(false);
+      }
+    }, 8000);
   });
 
   return sdkPromise;
