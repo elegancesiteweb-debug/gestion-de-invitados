@@ -46,7 +46,13 @@ export function CastButton({ token }: { token: string }) {
       // encontraba nada aunque el Chromecast sí estuviera disponible (el
       // propio "Transmitir..." de Chrome, que empieza a buscar desde que el
       // navegador arranca, sí lo encontraba).
-      if (available) getCastContext();
+      if (available) {
+        try {
+          getCastContext();
+        } catch (err) {
+          console.error("[Cast] getCastContext() falló durante la preparación temprana:", err);
+        }
+      }
     });
     return () => {
       cancelled = true;
@@ -55,10 +61,14 @@ export function CastButton({ token }: { token: string }) {
 
   useEffect(() => {
     if (!connected || !current) return;
-    const session = getCastContext().getCurrentSession();
-    session?.loadMedia(buildLoadRequest(current)).catch(() => {
-      // best-effort: si un elemento falla en cargar, el siguiente ciclo lo reintenta
-    });
+    try {
+      const session = getCastContext().getCurrentSession();
+      session?.loadMedia(buildLoadRequest(current)).catch(() => {
+        // best-effort: si un elemento falla en cargar, el siguiente ciclo lo reintenta
+      });
+    } catch (err) {
+      console.error("[Cast] no se pudo cargar el siguiente recuerdo en la pantalla:", err);
+    }
   }, [connected, current]);
 
   async function handleClick() {

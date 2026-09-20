@@ -55,25 +55,36 @@ function getWindow(): GCastWindow {
 
 let sdkPromise: Promise<boolean> | null = null;
 
+function isCastReady(): boolean {
+  const w = getWindow();
+  return Boolean(w.cast?.framework && w.chrome?.cast);
+}
+
 // Inyecta el script del SDK de Google Cast una sola vez (aunque se llame
 // varias veces desde distintos componentes) y resuelve cuando confirma que
 // de verdad está disponible — no todo navegador que carga el script trae
 // Cast real (Safari/Firefox no, por ejemplo).
 //
-// Importante: se confía directamente en el "isAvailable" que manda Google —
-// una versión anterior también exigía que "cast.framework" ya existiera en
-// ese mismo instante, pero el SDK a veces lo termina de adjuntar una
-// fracción de segundo después de disparar el callback, así que esa
-// verificación extra podía reportar "no disponible" por una carrera de
-// tiempos aunque Google sí hubiera confirmado que sí lo está.
+// Dos bugs reales encontrados aquí, en direcciones opuestas — la solución
+// final tiene que cubrir ambos:
+// 1. Exigir que "cast.framework" ya existiera en el mismo instante síncrono
+//    del callback "isAvailable=true" reportaba "no disponible" de más,
+//    porque el SDK a veces lo termina de adjuntar una fracción de segundo
+//    después de avisar.
+// 2. Confiar ciegamente en "isAvailable=true" sin verificar nada más
+//    causaba que getCastContext() (llamado justo después) explotara con
+//    "Cannot read properties of undefined (reading 'framework')", porque
+//    ese "momento después" a veces es más que un instante.
+// La solución: cuando isAvailable=true, se reintenta cada 100ms (hasta 2s)
+// revisando si cast.framework Y chrome.cast ya existen de verdad, en vez de
+// exigirlo en el mismo tick o confiar sin revisar nunca.
 export function loadCastSdk(): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
   if (sdkPromise) return sdkPromise;
 
   sdkPromise = new Promise((resolve) => {
-    const w = getWindow();
-    if (w.cast?.framework) {
-      console.log("[Cast] SDK ya estaba cargado antes de este intento");
+    if (isCastReady()) {
+      console.log("[Cast] SDK ya estaba listo antes de este intento");
       resolve(true);
       return;
     }
@@ -85,14 +96,29 @@ export function loadCastSdk(): Promise<boolean> {
       resolve(value);
     };
 
-    w.__onGCastApiAvailable = (isAvailable) => {
-      console.log(
-        "[Cast] __onGCastApiAvailable llamado — isAvailable:",
-        isAvailable,
-        "| cast.framework presente:",
-        Boolean(getWindow().cast?.framework)
-      );
-      finish(Boolean(isAvailable));
+    function waitUntilReady(attempt: number) {
+      if (isCastReady()) {
+        console.log("[Cast] cast.framework/chrome.cast listos tras", attempt, "reintento(s)");
+        finish(true);
+        return;
+      }
+      if (attempt >= 20) {
+        console.warn(
+          "[Cast] Google avisó isAvailable=true pero cast.framework/chrome.cast nunca terminaron de aparecer tras 2s — se reporta como no disponible."
+        );
+        finish(false);
+        return;
+      }
+      setTimeout(() => waitUntilReady(attempt + 1), 100);
+    }
+
+    getWindow().__onGCastApiAvailable = (isAvailable) => {
+      console.log("[Cast] __onGCastApiAvailable llamado — isAvailable:", isAvailable);
+      if (!isAvailable) {
+        finish(false);
+        return;
+      }
+      waitUntilReady(0);
     };
 
     const script = document.createElement("script");
@@ -126,6 +152,13 @@ export function loadCastSdk(): Promise<boolean> {
 // decisión confirmada con el usuario.
 export function getCastContext(): GCastContext {
   const w = getWindow();
+  if (!isCastReady()) {
+    // No debería pasar si loadCastSdk() ya resolvió true (que solo ocurre
+    // cuando isCastReady() ya dio verdadero), pero da un mensaje claro en
+    // vez de un TypeError críptico si algo llega a llamar esto demasiado
+    // pronto — como pasó antes de este arreglo.
+    throw new Error("Google Cast SDK todavía no está listo (cast.framework/chrome.cast no existen aún)");
+  }
   const context = w.cast!.framework.CastContext.getInstance();
   context.setOptions({
     receiverApplicationId: w.chrome!.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
