@@ -172,6 +172,18 @@ export async function updateEventSettings(eventId: string, formData: FormData) {
   await logActivity(eventId, "Actualizó la configuración del evento");
 
   revalidatePath(`/dashboard/events/${eventId}`);
+
+  // Estos ajustes también se reflejan en el formulario público general — sin
+  // esto, un cambio (por ejemplo quitar el máximo de acompañantes) se
+  // guardaba bien en la base de datos pero el formulario público seguía
+  // mostrando la versión vieja hasta que algo más lo revalidara.
+  const publicEvent = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { publicRsvpToken: true },
+  });
+  if (publicEvent?.publicRsvpToken) {
+    revalidatePath(`/g/${publicEvent.publicRsvpToken}`);
+  }
 }
 
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;

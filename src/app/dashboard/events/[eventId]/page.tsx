@@ -129,7 +129,7 @@ export default async function EventDetailPage({
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 md:flex-row">
+    <div className="flex w-full max-w-6xl flex-col gap-6 px-4 py-10 md:flex-row">
       <aside className="w-full md:w-48 md:flex-none">
         <Link href="/dashboard" className="text-sm text-gold-dark hover:underline">
           {t("backToEvents")}
