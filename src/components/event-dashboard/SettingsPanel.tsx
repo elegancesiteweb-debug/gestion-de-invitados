@@ -112,7 +112,10 @@ export async function SettingsPanel({
           </label>
         </div>
 
-        <GeneralPassesInput initialValue={event.generalMaxCompanions} />
+        <GeneralPassesInput
+          key={String(event.generalMaxCompanions)}
+          initialValue={event.generalMaxCompanions}
+        />
 
         <div className="border-t border-gold/15 pt-4">
           <h3 className="font-serif text-base font-medium text-ink">{t("invitationLinkTitle")}</h3>
