@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Guest } from "@prisma/client";
 import { deleteGuest, sendGuestEmail, updateGuest } from "@/lib/actions/guests";
@@ -41,101 +41,111 @@ function TagBadges({ tags }: { tags: string[] }) {
   );
 }
 
-function GuestEditForm({ eventId, guest }: { eventId: string; guest: Guest }) {
+function GuestEditFields({ eventId, guest }: { eventId: string; guest: Guest }) {
   const t = useTranslations("guests");
   const tagLabel = useTagLabels();
   const customTags = guest.tags.filter((tag) => !PRESET_GUEST_TAGS.includes(tag as never));
 
   return (
-    <details className="mt-2">
-      <summary className="cursor-pointer text-sm text-gold-dark hover:underline">{t("edit")}</summary>
-      <form
-        action={updateGuest.bind(null, eventId, guest.id)}
-        className="mt-2 flex flex-wrap items-end gap-2 rounded-lg border border-gold/20 bg-white p-3"
-      >
-        <div>
-          <label className="block text-xs font-medium mb-1">{t("name")}</label>
-          <input
-            name="name"
-            required
-            defaultValue={guest.name}
-            className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
-          />
+    <form
+      action={updateGuest.bind(null, eventId, guest.id)}
+      className="mt-2 grid grid-cols-1 gap-3 rounded-lg border border-gold/20 bg-white p-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <div>
+        <label className="block text-xs font-medium mb-1">{t("name")}</label>
+        <input
+          name="name"
+          required
+          defaultValue={guest.name}
+          className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-medium mb-1">{t("email")}</label>
+        <input
+          name="email"
+          type="email"
+          defaultValue={guest.email ?? ""}
+          className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-medium mb-1">{t("phone")}</label>
+        <input
+          name="phone"
+          defaultValue={guest.phone ?? ""}
+          className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-medium mb-1">{t("table")}</label>
+        <input
+          name="tableName"
+          list="table-names"
+          defaultValue={guest.tableName ?? ""}
+          className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-medium mb-1">{t("companions")}</label>
+        <input
+          name="maxCompanions"
+          type="number"
+          min={0}
+          defaultValue={guest.maxCompanions}
+          className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-medium mb-1">{t("invitationLink")}</label>
+        <input
+          name="invitationLinkUrl"
+          type="url"
+          defaultValue={guest.invitationLinkUrl ?? ""}
+          className="w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
+        />
+      </div>
+      <div className="col-span-full">
+        <label className="block text-xs font-medium mb-1">{t("tags")}</label>
+        <div className="flex flex-wrap gap-3">
+          {PRESET_GUEST_TAGS.map((tag) => (
+            <label key={tag} className="flex items-center gap-1.5 text-xs text-ink-muted">
+              <input
+                type="checkbox"
+                name="presetTags"
+                value={tag}
+                defaultChecked={guest.tags.includes(tag)}
+              />
+              {tagLabel(tag)}
+            </label>
+          ))}
         </div>
-        <div>
-          <label className="block text-xs font-medium mb-1">{t("email")}</label>
-          <input
-            name="email"
-            type="email"
-            defaultValue={guest.email ?? ""}
-            className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium mb-1">{t("phone")}</label>
-          <input
-            name="phone"
-            defaultValue={guest.phone ?? ""}
-            className="rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium mb-1">{t("table")}</label>
-          <input
-            name="tableName"
-            list="table-names"
-            defaultValue={guest.tableName ?? ""}
-            className="w-28 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium mb-1">{t("companions")}</label>
-          <input
-            name="maxCompanions"
-            type="number"
-            min={0}
-            defaultValue={guest.maxCompanions}
-            className="w-20 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium mb-1">{t("invitationLink")}</label>
-          <input
-            name="invitationLinkUrl"
-            type="url"
-            defaultValue={guest.invitationLinkUrl ?? ""}
-            className="w-48 rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
-          />
-        </div>
-        <div className="w-full">
-          <label className="block text-xs font-medium mb-1">{t("tags")}</label>
-          <div className="flex flex-wrap gap-2">
-            {PRESET_GUEST_TAGS.map((tag) => (
-              <label key={tag} className="flex items-center gap-1 text-xs text-ink-muted">
-                <input
-                  type="checkbox"
-                  name="presetTags"
-                  value={tag}
-                  defaultChecked={guest.tags.includes(tag)}
-                />
-                {tagLabel(tag)}
-              </label>
-            ))}
-          </div>
-          <input
-            name="customTags"
-            defaultValue={customTags.join(", ")}
-            placeholder={t("customTagsPlaceholder")}
-            className="mt-1 w-full rounded-lg border border-gold/25 px-2 py-1.5 text-sm"
-          />
-        </div>
+        <input
+          name="customTags"
+          defaultValue={customTags.join(", ")}
+          placeholder={t("customTagsPlaceholder")}
+          className="mt-2 w-full rounded-lg border border-gold/25 px-3 py-2 text-sm"
+        />
+      </div>
+      <div className="col-span-full flex justify-end">
         <button
           type="submit"
-          className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-3 py-1.5 text-sm font-medium text-white hover:shadow-lg"
+          className="rounded-lg bg-gradient-to-br from-gold-dark to-gold-deep px-4 py-2 text-sm font-medium text-white hover:shadow-lg"
         >
           {t("save")}
         </button>
-      </form>
+      </div>
+    </form>
+  );
+}
+
+function GuestEditForm({ eventId, guest }: { eventId: string; guest: Guest }) {
+  const t = useTranslations("guests");
+
+  return (
+    <details className="mt-2">
+      <summary className="cursor-pointer text-sm text-gold-dark hover:underline">{t("edit")}</summary>
+      <GuestEditFields eventId={eventId} guest={guest} />
     </details>
   );
 }
@@ -153,6 +163,7 @@ export function GuestsList({
   const tagLabel = useTagLabels();
   const [query, setQuery] = useState("");
   const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [editingGuestId, setEditingGuestId] = useState<string | null>(null);
 
   const allTags = useMemo(() => {
     const set = new Set<string>();
@@ -246,7 +257,8 @@ export function GuestsList({
               </thead>
               <tbody>
                 {filtered.map(({ guest, confirmUrl, whatsappLink }) => (
-                  <tr key={guest.id} className="border-t border-gold/15 align-top">
+                  <Fragment key={guest.id}>
+                  <tr className="border-t border-gold/15 align-top">
                     <td className="px-4 py-2">
                       <p className="font-medium">
                         {guest.name}
@@ -305,9 +317,25 @@ export function GuestsList({
                           {t("delete")}
                         </button>
                       </form>
-                      <GuestEditForm eventId={eventId} guest={guest} />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditingGuestId((id) => (id === guest.id ? null : guest.id))
+                        }
+                        className="mt-2 block text-sm text-gold-dark hover:underline"
+                      >
+                        {t("edit")} {editingGuestId === guest.id ? "▲" : "▼"}
+                      </button>
                     </td>
                   </tr>
+                  {editingGuestId === guest.id && (
+                    <tr className="border-t border-gold/15 bg-warm/30">
+                      <td colSpan={7} className="px-4 py-3">
+                        <GuestEditFields eventId={eventId} guest={guest} />
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
