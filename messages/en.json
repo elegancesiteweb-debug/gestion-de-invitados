@@ -637,7 +637,9 @@
     "eventStatusConfirmed": "Confirmed",
     "eventStatusCompleted": "Completed",
     "eventStatusCancelled": "Cancelled",
-    "printOrSavePdf": "Print / Save as PDF"
+    "printOrSavePdf": "Print / Save as PDF",
+    "whatsappMessageTitle": "WhatsApp message",
+    "sendWhatsapp": "Send via WhatsApp"
   },
   "leadsPage": {
     "stageNew": "New",
@@ -961,6 +963,8 @@
     "enterAs": "Enter as →",
     "socialAccessTitle": "Memory wall by event",
     "socialAccessHint": "Turn it on per event — organizers can no longer do this themselves.",
+    "searchOrganizersPlaceholder": "Search Individual or Wedding Planner by name, email or event...",
+    "noSearchResults": "No accounts matched your search.",
     "searchEventsPlaceholder": "Search event or organizer...",
     "noEvents": "No events yet.",
     "active": "Active",

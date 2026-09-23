@@ -9,8 +9,13 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { GuestQrButton } from "@/components/GuestQrButton";
 import { EmbedCodeButton } from "@/components/EmbedCodeButton";
+import { WhatsAppSendButton } from "@/components/WhatsAppSendButton";
 
-type GuestView = { guest: Guest; confirmUrl: string; whatsappLink: string | null };
+type GuestView = {
+  guest: Guest;
+  confirmUrl: string;
+  whatsapp: { phone: string; message: string } | null;
+};
 
 function useTagLabels() {
   const t = useTranslations("guests");
@@ -256,7 +261,7 @@ export function GuestsList({
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(({ guest, confirmUrl, whatsappLink }) => (
+                {filtered.map(({ guest, confirmUrl, whatsapp }) => (
                   <Fragment key={guest.id}>
                   <tr className="border-t border-gold/15 align-top">
                     <td className="px-4 py-2">
@@ -297,15 +302,8 @@ export function GuestsList({
                           </button>
                         </form>
                       )}
-                      {whatsappLink && (
-                        <a
-                          href={whatsappLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-success hover:underline"
-                        >
-                          WhatsApp
-                        </a>
+                      {whatsapp && (
+                        <WhatsAppSendButton phone={whatsapp.phone} initialMessage={whatsapp.message} />
                       )}
                       {guest.invitationSentAt && (
                         <span className="block text-xs text-ink-light">{t("sent")}</span>
@@ -342,7 +340,7 @@ export function GuestsList({
           </div>
 
           <div className="space-y-3 md:hidden">
-            {filtered.map(({ guest, confirmUrl, whatsappLink }) => (
+            {filtered.map(({ guest, confirmUrl, whatsapp }) => (
               <div
                 key={guest.id}
                 className="rounded-lg border border-gold/20 bg-white/60 p-4 shadow-md backdrop-blur-xl"
@@ -389,15 +387,8 @@ export function GuestsList({
                       </button>
                     </form>
                   )}
-                  {whatsappLink && (
-                    <a
-                      href={whatsappLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-success hover:underline"
-                    >
-                      WhatsApp
-                    </a>
+                  {whatsapp && (
+                    <WhatsAppSendButton phone={whatsapp.phone} initialMessage={whatsapp.message} />
                   )}
                   {guest.invitationSentAt && <span className="text-xs text-ink-light">{t("sent")}</span>}
                   <form action={deleteGuest.bind(null, eventId, guest.id)}>

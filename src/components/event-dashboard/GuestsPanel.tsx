@@ -6,7 +6,7 @@ import {
   importGuestsCsv,
   sendAllPendingEmails,
 } from "@/lib/actions/guests";
-import { buildWhatsAppLink, buildRsvpMessage } from "@/lib/whatsapp";
+import { buildRsvpMessage } from "@/lib/whatsapp";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { formatDate } from "@/lib/dates";
 import { PRESET_GUEST_TAGS } from "@/lib/guestTags";
@@ -37,10 +37,10 @@ export async function GuestsPanel({
 
   const guestViews = guests.map((guest) => {
     const confirmUrl = `${baseUrl}/c/${guest.token}`;
-    const whatsappLink = guest.phone
-      ? buildWhatsAppLink(
-          guest.phone,
-          buildRsvpMessage({
+    const whatsapp = guest.phone
+      ? {
+          phone: guest.phone,
+          message: buildRsvpMessage({
             template,
             guestName: guest.name,
             eventTitle: event.title,
@@ -50,10 +50,10 @@ export async function GuestsPanel({
             maxCompanions: guest.maxCompanions,
             confirmUrl,
             invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
-          })
-        )
+          }),
+        }
       : null;
-    return { guest, confirmUrl, whatsappLink };
+    return { guest, confirmUrl, whatsapp };
   });
 
   return (

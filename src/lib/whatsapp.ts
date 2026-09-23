@@ -17,7 +17,7 @@ export function buildRsvpMessage(params: {
   confirmUrl: string;
   invitationUrl?: string | null;
 }): string {
-  return renderTemplate(params.template, {
+  const rendered = renderTemplate(params.template, {
     nombre: params.guestName,
     evento: params.eventTitle,
     fecha: params.eventDate,
@@ -27,4 +27,11 @@ export function buildRsvpMessage(params: {
     link: params.confirmUrl,
     invitacion: params.invitationUrl || "",
   });
+
+  // Si la plantilla no incluye {invitacion} pero el invitado sí tiene un link de
+  // invitación, se agrega al final para no perderlo silenciosamente.
+  if (params.invitationUrl && !params.template.includes("{invitacion}")) {
+    return `${rendered}\n\nInvitación: ${params.invitationUrl}`;
+  }
+  return rendered;
 }

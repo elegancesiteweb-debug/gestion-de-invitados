@@ -3,16 +3,11 @@ import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import {
-  createAccessCode,
-  createParticularAccess,
-  renewPlannerAccess,
-  impersonateOrganizer,
-} from "@/lib/actions/admin";
+import { createAccessCode, createParticularAccess } from "@/lib/actions/admin";
 import { EventSocialAccessList } from "@/components/admin/EventSocialAccessList";
+import { AdminOrganizersSearch } from "@/components/admin/AdminOrganizersSearch";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { formatDate } from "@/lib/dates";
-import { daysUntil } from "@/lib/accessExpiry";
 
 export default async function AdminPage({
   searchParams,
@@ -168,102 +163,7 @@ export default async function AdminPage({
       </section>
 
       <section className="mt-6">
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">
-          {t("plannersTitle", { count: planners.length })}
-        </h2>
-        {planners.length === 0 ? (
-          <p className="text-sm text-ink-muted">{t("noPlanners")}</p>
-        ) : (
-          <div className="space-y-2">
-            {planners.map((p) => {
-              const remaining = p.accessExpiresAt ? daysUntil(p.accessExpiresAt) : null;
-              return (
-                <div
-                  key={p.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-sm backdrop-blur-xl"
-                >
-                  <div>
-                    <p className="font-medium text-ink">{p.name}</p>
-                    <p className="text-xs text-ink-muted">{p.email}</p>
-                    {p.accessExpiresAt == null ? (
-                      <p className="mt-1 text-xs text-ink-light">{t("noExpiry")}</p>
-                    ) : remaining !== null && remaining < 0 ? (
-                      <p className="mt-1 text-xs font-medium text-danger">
-                        {t("expiredDaysAgo", { days: Math.abs(remaining) })}
-                      </p>
-                    ) : (
-                      <p className="mt-1 text-xs text-ink-muted">
-                        {t("expiresOn", { date: formatDate(p.accessExpiresAt, "medium") })} ·{" "}
-                        {t("daysRemaining", { days: remaining ?? 0 })}
-                      </p>
-                    )}
-                  </div>
-                  <form
-                    action={renewPlannerAccess.bind(null, p.id)}
-                    className="flex flex-none items-center gap-2"
-                  >
-                    <select
-                      name="durationMonths"
-                      className="rounded-lg border border-gold/25 px-2 py-1.5 text-xs"
-                    >
-                      <option value="1">{t("duration1Month")}</option>
-                      <option value="12">{t("duration1Year")}</option>
-                    </select>
-                    <button
-                      type="submit"
-                      className="rounded-lg border border-gold/25 px-3 py-1.5 text-xs font-medium hover:bg-warm"
-                    >
-                      {t("renew")}
-                    </button>
-                  </form>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <section className="mt-6">
-        <h2 className="mb-3 font-serif text-lg font-medium text-ink">
-          {t("individualsTitle", { count: individuals.length })}
-        </h2>
-        <p className="mb-3 text-xs text-ink-muted">{t("individualsHint")}</p>
-        {individuals.length === 0 ? (
-          <p className="text-sm text-ink-muted">{t("noIndividuals")}</p>
-        ) : (
-          <div className="space-y-2">
-            {individuals.map((org) => (
-              <div
-                key={org.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gold/20 bg-white/60 p-4 shadow-sm backdrop-blur-xl"
-              >
-                <div>
-                  <p className="font-medium text-ink">{org.name}</p>
-                  {org.loginCode ? (
-                    <p className="text-xs text-ink-muted">
-                      {t("loginCodeLabel")} <span className="font-mono">{org.loginCode}</span>
-                    </p>
-                  ) : (
-                    <p className="text-xs text-ink-muted">{org.email}</p>
-                  )}
-                  <p className="mt-1 text-xs text-ink-light">
-                    {org.events.length > 0
-                      ? org.events.map((e) => e.title).join(", ")
-                      : t("noEventYet")}
-                  </p>
-                </div>
-                <form action={impersonateOrganizer.bind(null, org.id)}>
-                  <button
-                    type="submit"
-                    className="rounded-lg border border-gold/25 px-3 py-1.5 text-xs font-medium hover:bg-warm"
-                  >
-                    {t("enterAs")}
-                  </button>
-                </form>
-              </div>
-            ))}
-          </div>
-        )}
+        <AdminOrganizersSearch planners={planners} individuals={individuals} />
       </section>
 
       <section className="mt-6">
