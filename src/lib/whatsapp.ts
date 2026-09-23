@@ -35,3 +35,11 @@ export function buildRsvpMessage(params: {
   }
   return rendered;
 }
+
+export function buildInvitationMessage(params: {
+  guestName: string;
+  eventTitle: string;
+  invitationUrl: string;
+}): string {
+  return `Hola ${params.guestName},\n\nAquí está tu invitación para ${params.eventTitle}:\n${params.invitationUrl}`;
+}

@@ -3,9 +3,10 @@ import { getTranslations } from "next-intl/server";
 import { sendAllPendingEmails, sendGuestEmail } from "@/lib/actions/guests";
 import { sendRemindersNow } from "@/lib/actions/reminders";
 import { getReminderEligibleGuests } from "@/lib/reminders";
-import { buildWhatsAppLink, buildRsvpMessage } from "@/lib/whatsapp";
+import { buildRsvpMessage, buildInvitationMessage } from "@/lib/whatsapp";
 import { DEFAULT_MESSAGE_TEMPLATE } from "@/lib/messageTemplate";
 import { formatDate } from "@/lib/dates";
+import { WhatsAppSendButton } from "@/components/WhatsAppSendButton";
 
 export async function SendsPanel({
   event,
@@ -73,21 +74,23 @@ export async function SendsPanel({
             <tbody>
               {notSent.map((guest) => {
                 const confirmUrl = `${baseUrl}/c/${guest.token}`;
-                const whatsappLink = guest.phone
-                  ? buildWhatsAppLink(
-                      guest.phone,
-                      buildRsvpMessage({
-                        template,
-                        guestName: guest.name,
-                        eventTitle: event.title,
-                        eventDate: formatDate(event.eventDate),
-                        location: event.location,
-                        tableName: guest.tableName,
-                        maxCompanions: guest.maxCompanions,
-                        confirmUrl,
-                        invitationUrl: guest.invitationLinkUrl ?? event.invitationLinkUrl,
-                      })
-                    )
+                const invitationUrl = guest.invitationLinkUrl ?? event.invitationLinkUrl;
+                const confirmationMessage = buildRsvpMessage({
+                  template,
+                  guestName: guest.name,
+                  eventTitle: event.title,
+                  eventDate: formatDate(event.eventDate),
+                  location: event.location,
+                  tableName: guest.tableName,
+                  maxCompanions: guest.maxCompanions,
+                  confirmUrl,
+                });
+                const invitationMessage = invitationUrl
+                  ? buildInvitationMessage({
+                      guestName: guest.name,
+                      eventTitle: event.title,
+                      invitationUrl,
+                    })
                   : null;
 
                 return (
@@ -104,15 +107,19 @@ export async function SendsPanel({
                           </button>
                         </form>
                       )}
-                      {whatsappLink && (
-                        <a
-                          href={whatsappLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-success hover:underline"
-                        >
-                          WhatsApp
-                        </a>
+                      {guest.phone && (
+                        <WhatsAppSendButton
+                          phone={guest.phone}
+                          initialMessage={confirmationMessage}
+                          label={t("confirmationWhatsapp")}
+                        />
+                      )}
+                      {guest.phone && invitationMessage && (
+                        <WhatsAppSendButton
+                          phone={guest.phone}
+                          initialMessage={invitationMessage}
+                          label={t("invitationWhatsapp")}
+                        />
                       )}
                     </td>
                   </tr>

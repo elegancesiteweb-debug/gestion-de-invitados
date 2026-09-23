@@ -230,7 +230,9 @@
     "allContacted": "Ya se contactó a todos los invitados.",
     "name": "Nombre",
     "contact": "Contacto",
-    "send": "Enviar"
+    "send": "Enviar",
+    "confirmationWhatsapp": "WhatsApp confirmación",
+    "invitationWhatsapp": "WhatsApp invitación"
   },
   "budget": {
     "addTitle": "Agregar renglón",

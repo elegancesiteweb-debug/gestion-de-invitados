@@ -230,7 +230,9 @@
     "allContacted": "All guests have already been contacted.",
     "name": "Name",
     "contact": "Contact",
-    "send": "Send"
+    "send": "Send",
+    "confirmationWhatsapp": "WhatsApp confirmation",
+    "invitationWhatsapp": "WhatsApp invitation"
   },
   "budget": {
     "addTitle": "Add line item",
